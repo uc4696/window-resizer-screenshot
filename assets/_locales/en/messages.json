@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "Window & Viewport Resizer"
+  },
+  "extensionDescription": {
+    "message": "Chrome extension that resizes the window/viewport to a specified size and captures screenshots of the visible area or the full page"
+  }
+}

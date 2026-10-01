@@ -1,0 +1,25 @@
+# Plasmo
+.plasmo
+.idea
+node_modules
+.cache
+build
+dist
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Env
+.env
+.env.local
+
+# System
+.DS_Store
+Thumbs.db
+
+# Editor
+*.iml
+.vscode/*
+!.vscode/settings.json

@@ -1,0 +1,51 @@
+{
+  "name": "window-resizer-extension",
+  "displayName": "__MSG_extensionName__",
+  "version": "0.8.0",
+  "description": "__MSG_extensionDescription__",
+  "author": "cline-sample-ext_claude",
+  "packageManager": "npm@11.19.0",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package",
+    "icon": "node scripts/generate-icon.js"
+  },
+  "dependencies": {
+    "@plasmohq/storage": "1.15.0",
+    "plasmo": "0.90.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.3.0",
+    "@types/node": "22.13.10",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "prettier": "3.9.9",
+    "svgo": "3.3.2",
+    "typescript": "5.8.2"
+  },
+  "manifest": {
+    "default_locale": "en",
+    "host_permissions": [
+      "<all_urls>"
+    ],
+    "permissions": [
+      "tabs",
+      "activeTab",
+      "storage",
+      "downloads",
+      "scripting",
+      "system.display"
+    ]
+  },
+  "allowScripts": {
+    "lmdb": true,
+    "@parcel/watcher": true,
+    "@swc/core": true,
+    "esbuild": true,
+    "msgpackr-extract": true,
+    "sharp": true
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "Window & Viewport Resizer"
+  },
+  "extensionDescription": {
+    "message": "指定サイズへウィンドウ/ビューポートをリサイズし、表示部分/ページ全体のスクリーンショットを撮影できるChrome拡張機能"
+  }
+}
