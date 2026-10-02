@@ -1,9 +1,9 @@
 {
-  "name": "window-resizer-extension",
+  "name": "window-resizer-screenshot",
   "displayName": "__MSG_extensionName__",
-  "version": "0.8.0",
+  "version": "0.1.0",
   "description": "__MSG_extensionDescription__",
-  "author": "cline-sample-ext_claude",
+  "author": "uc4696",
   "packageManager": "npm@11.19.0",
   "scripts": {
     "dev": "plasmo dev",

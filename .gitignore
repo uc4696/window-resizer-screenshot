@@ -23,3 +23,11 @@ Thumbs.db
 *.iml
 .vscode/*
 !.vscode/settings.json
+
+# Generated file listings
+tree.txt
+tree_claude.txt
+
+# AI Workflow
+.clinerules
+Cline_WORKFLOW.md

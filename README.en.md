@@ -2,6 +2,8 @@
 
 [日本語](README.md) | **English**
 
+> **Current version: `0.1.0` (beta `0.1.0-beta.1`)**
+
 A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or viewport to a preset or custom size, and captures screenshots of the visible area or the full page and downloads them.
 
 ## Overview
@@ -17,39 +19,72 @@ A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or v
 - Factory reset that restores settings, custom sizes and preset offsets to their defaults
 - Multilingual UI (Japanese / English). Choose "Auto / 日本語 / English" under "Language" on the Options page ("Auto" follows the browser UI language; anything other than Japanese falls back to English)
 
-## Internationalization (i18n)
+## Bug reports and feedback
 
-- Translation dictionaries are `src/lib/i18n/messages.en.ts` (the source of keys) and `src/lib/i18n/messages.ja.ts` (typed so that it must contain the same keys). When adding a string, add the same key to both files; omissions are caught by `npx tsc --noEmit`.
-- In code, use `t(key, params?)` from `src/lib/i18n/index.ts`. `{name}` style placeholders are supported. In React components, use `useI18n()` (`src/lib/i18n/useI18n.tsx`) so components re-render when the language changes.
-- The language setting (`auto` / `ja` / `en`) is stored as `Settings.language` in `local` storage (and is included in the factory reset).
-- The extension name and description (shown on `chrome://extensions` and the store) are managed in `assets/_locales/{en,ja}/messages.json` and referenced through `__MSG_*__` in `package.json` with `default_locale` set to `en`. They follow the browser language and are independent of the language setting on the Options page.
+Please report bugs and feature requests on the GitHub Issues page.
 
-## Tech stack
+- [Issues](https://github.com/uc4696/window-resizer-screenshot/issues)
+
+## Tech stack / Project layout
+
+### Tech stack
 
 - [Plasmo](https://www.plasmo.com/) (Chrome Extension Framework)
 - TypeScript / React
 - `@plasmohq/storage`
 - Chrome Extension Manifest V3
 
-## Project layout
+### Project layout
 
 The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/customization/src) feature, and `tsconfig.json` maps `~*` to `./src/*`. **All Plasmo entry files (`popup.tsx` / `options.tsx` / `background.ts`, etc.) must therefore live under `src/`** (`assets/` stays at the project root).
 
 ```
 .
-├── assets/               # Icons, support button image, _locales (extension name/description)
-├── scripts/              # Icon generation script
+├── assets/
+│   ├── _locales/{en,ja}/messages.json  # Localized extension name/description
+│   ├── icon-source.png             # Design source of the current icon (128x128)
+│   ├── icon.png                    # Base PNG icon required by Plasmo (512x512)
+│   ├── icon16.png / icon32.png / icon48.png / icon64.png / icon128.png  # Icons by size
+│   ├── icon.svg                    # Old placeholder icon (kept for reference)
+│   └── buymeacoffee-button.png     # Image for the support link
+├── scripts/
+│   └── generate-icon.js            # Generates icons of each size from icon-source.png (uses sharp)
 ├── src/
-│   ├── background.ts     # Service worker (screenshot handling)
-│   ├── popup.tsx         # Popup UI
-│   ├── options.tsx       # Options page
-│   ├── components/       # UI components
-│   └── lib/              # Logic (resize, screenshot, storage, i18n, ...)
-├── package.json
-└── README.md / README.en.md
+│   ├── popup.tsx                   # Popup UI (template selection, custom sizes, screenshot buttons)
+│   ├── style.css                   # Popup styles (dark mode supported)
+│   ├── options.tsx                 # Options page
+│   ├── options.css                 # Options page styles (dark mode supported)
+│   ├── background.ts               # Screenshot capture and download handling (service worker)
+│   ├── components/
+│   │   ├── PresetGrid.tsx          # Template size buttons
+│   │   ├── CustomSizeList.tsx      # Saved custom sizes: apply / edit / delete UI
+│   │   ├── CustomSizeManager.tsx   # Add/edit form for custom sizes (accordion)
+│   │   └── SupportLink.tsx         # Support link
+│   └── lib/
+│       ├── types.ts                # Type definitions
+│       ├── constants.ts            # Default templates, storage keys and other constants
+│       ├── storage.ts              # Settings/data management with local/sync switching
+│       ├── offset.ts               # Offset (correction value) calculation
+│       ├── resize.ts               # Window / viewport resizing and validation
+│       ├── screenshot.ts           # Visible Tab / Full Page screenshot capture
+│       ├── filename.ts             # Saved file name and path construction
+│       ├── messages.ts             # Message types between popup and background
+│       └── i18n/                   # Internationalization (messages.en.ts / messages.ja.ts / index.ts / useI18n.tsx)
+├── package.json                    # Dependencies and manifest settings (permissions, etc.)
+├── tsconfig.json                   # TypeScript settings (alias ~* -> ./src/*)
+├── Cline_WORKFLOW.md               # App-specific development rules
+├── README.md / README.en.md        # Documentation (Japanese / English)
+└── .prettierrc / .gitignore
 ```
 
-## Installation
+### Internationalization (i18n) implementation
+
+- Translation dictionaries are `src/lib/i18n/messages.en.ts` (the source of keys) and `src/lib/i18n/messages.ja.ts` (typed so that it must contain the same keys). When adding a string, add the same key to both files; omissions are caught by `npx tsc --noEmit`.
+- In code, use `t(key, params?)` from `src/lib/i18n/index.ts`. `{name}` style placeholders are supported. In React components, use `useI18n()` (`src/lib/i18n/useI18n.tsx`) so components re-render when the language changes.
+- The language setting (`auto` / `ja` / `en`) is stored as `Settings.language` in `local` storage (and is included in the factory reset).
+- The extension name and description (shown on `chrome://extensions` and the store) are managed in `assets/_locales/{en,ja}/messages.json` and referenced through `__MSG_*__` in `package.json` with `default_locale` set to `en`. They follow the browser language and are independent of the language setting on the Options page.
+
+## Installation and development
 
 1. Make sure Node.js (latest LTS or newer recommended) is installed.
 2. Install the dependencies (PowerShell).
@@ -68,8 +103,6 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 
    (Re-running `npm install` may block them again, so run `npm rebuild` each time.)
 
-## Build and development
-
 - Start the dev server (with hot reload):
 
   ```powershell
@@ -86,11 +119,13 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 
   This generates `build/chrome-mv3-prod`.
 
-- Create a distributable package (zip):
+- Create a package for the store (zip):
 
   ```powershell
   npm run package
   ```
+
+  This generates `build/chrome-mv3-prod.zip`. When distributing a beta version, rename the file, for example to `window-resizer-screenshot-v0.1.0-beta.1.zip` (see `Cline_WORKFLOW.md` for the naming rules).
 
 ## Specifications and limitations
 
@@ -110,7 +145,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 - Both screenshot features ("Capture visible area" and "Capture full page") capture **only the web page content inside the tab (the viewport area)**.
 - A "whole window screenshot" that includes the OS title bar, browser toolbar and window frame cannot be taken with Chrome's standard capture APIs, so please use an external capture tool.
 
-## Permissions
+### 4. Permissions
 
 | Permission | Purpose |
 |---|---|
@@ -122,10 +157,20 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 | `system.display` | Getting the current display resolution when entering custom sizes (validation) |
 | `host_permissions: <all_urls>` | Screenshot and resize operations on any page |
 
-## Versioning
+## Versioning and changelog
 
-The version is managed in the `version` field of `package.json` (current: `0.7.0`) and is incremented following SemVer whenever features are added or fixed. See the Japanese README ([README.md](README.md)) for the detailed history.
+Because of a Plasmo constraint, the `version` field of `package.json` is managed strictly as three dot-separated integers (MAJOR.MINOR.PATCH) (current: `0.1.0`). Beta status is expressed in the distributable ZIP file name, the README and Git tags (for example, `window-resizer-screenshot-v0.1.0-beta.1.zip`).
 
-| Version | Summary |
-|---|---|
-| 0.7.0 | Added multilingual support (Japanese / English) with a language selector (Auto / 日本語 / English) on the Options page. UI strings and error messages moved to translation dictionaries (`src/lib/i18n`), and the extension name/description are localized via `_locales` |
+| Version | Release date | Summary |
+|---|---|---|
+| 0.1.0 (beta.1) | 2026-10-03 | First release of the 0.1.0 beta. Includes window/viewport resizing (16:9 and 4:3 resolution templates, per-template offsets, adding/editing/deleting custom sizes), visible-area / full-page (scrolling capture + stitching) screenshots saved as JPG into the `Captures` folder, local/sync storage switching, factory reset, multilingual UI (Japanese / English) and dark mode support |
+
+---
+
+## License and usage of the source code
+
+- The source code in this repository is published solely as a reference for the explanations and learning material in the accompanying technical blog.
+- **Commercial use is prohibited.**
+- **Redistribution and resale are prohibited.** Redistributing, publishing or selling this source code, either as-is or with modifications, on the Chrome Web Store or any similar platform is strictly prohibited.
+- Free use within the scope of personal use is permitted.
+
