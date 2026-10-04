@@ -125,7 +125,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
   npm run package
   ```
 
-  `build/chrome-mv3-prod.zip` が生成されます。ベータ版として配布する場合は、`window-resizer-screenshot-v0.1.0-beta.1.zip` のようにファイル名を変更してください（命名規則は `Cline_WORKFLOW.md` を参照）。
+  `build/chrome-mv3-prod.zip` が生成されます。ベータ版として配布する場合は、`window-resizer-screenshot-v0.1.1-beta.1.zip` のようにファイル名を変更してください（命名規則は `Cline_WORKFLOW.md` を参照）。
 
 ## リサイズ・スクリーンショットの仕様と制約事項
 
@@ -149,20 +149,20 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 
 | 権限 | 用途 |
 |---|---|
-| `tabs` | 現在のタブ情報の取得、タブ操作 |
-| `activeTab` | アクティブタブへのスクリプト注入 |
+| `activeTab` | 拡張機能を操作したアクティブタブに対するスクリプト注入・スクリーンショット撮影 |
 | `storage` | 設定・カスタムサイズの保存（local/sync） |
 | `downloads` | スクリーンショットの `Captures` フォルダへの保存 |
 | `scripting` | ビューポート実測、およびページ全体スクリーンショットのスクロール制御・計測スクリプト注入 |
-| `system.display` | カスタムサイズ入力時の現在ディスプレイ解像度の取得（バリデーション基準） |
-| `host_permissions: <all_urls>` | 任意のページでのスクリーンショット・リサイズ操作 |
+
+`host_permissions`（`<all_urls>`）、`tabs`、`system.display` は使用していません。カスタムサイズ入力時の解像度の上限チェックには、ポップアップが表示されているディスプレイの `window.screen` の値を使用します。
 
 ## バージョン管理・変更履歴（Changelog）
 
-`package.json` の `version` フィールドは、Plasmoの制約によりドット区切り3桁の整数（MAJOR.MINOR.PATCH）のみで管理しています（現在: `0.1.0`）。ベータ版であることは、配布用ZIPのファイル名・README・Gitタグで表記します（例: `window-resizer-screenshot-v0.1.0-beta.1.zip`）。
+`package.json` の `version` フィールドは、Plasmoの制約によりドット区切り3桁の整数（MAJOR.MINOR.PATCH）のみで管理しています（現在: `0.1.1`）。ベータ版であることは、配布用ZIPのファイル名・README・Gitタグで表記します（例: `window-resizer-screenshot-v0.1.1-beta.1.zip`）。
 
 | バージョン | リリース日 | 内容 |
 |---|---|---|
+| 0.1.1（beta.1） | 2026-10-04 | 権限を最小化。`host_permissions`（`<all_urls>`）、`tabs`、`system.display` を削除し、`activeTab`・`scripting`・`storage`・`downloads` のみで動作するように変更。解像度の上限チェックは `window.screen` を参照するように変更 |
 | 0.1.0（beta.1） | 2026-10-03 | 0.1.0 ベータ版の初回リリース。ウィンドウ／ビューポートのリサイズ（16:9・4:3の解像度テンプレート、テンプレートごとのオフセット設定、カスタムサイズの追加・編集・削除）、表示部分／ページ全体（スクロール分割撮影＋結合）のスクリーンショット撮影と `Captures` フォルダへのJPG保存、local/syncストレージの切り替え、ファクトリーリセット、多言語対応（日本語 / English）、ダークモード対応を搭載 |
 
 ---

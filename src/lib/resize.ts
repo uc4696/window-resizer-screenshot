@@ -7,30 +7,12 @@ import type { DisplayBounds, ValidationResult } from "./types"
  * 解像度を取得する。取得できない場合はフォールバック値を返す。
  */
 export async function getCurrentDisplayBounds(): Promise<DisplayBounds> {
-  try {
-    const displays = await chrome.system.display.getInfo()
-    const currentWindow = await chrome.windows.getCurrent()
-    const winLeft = currentWindow.left ?? 0
-    const winTop = currentWindow.top ?? 0
-
-    const match =
-      displays.find((d) => {
-        const b = d.bounds
-        return (
-          winLeft >= b.left &&
-          winLeft < b.left + b.width &&
-          winTop >= b.top &&
-          winTop < b.top + b.height
-        )
-      }) ||
-      displays.find((d) => d.isPrimary) ||
-      displays[0]
-
-    if (match) {
-      return { width: match.bounds.width, height: match.bounds.height }
-    }
-  } catch (e) {
-    // chrome.system.display が使用できない環境向けフォールバック
+  // system.display 権限を使わず、ポップアップが表示されているディスプレイの
+  // 解像度（window.screen）を参照する。
+  const width = window.screen?.width
+  const height = window.screen?.height
+  if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+    return { width, height }
   }
   return { width: MAX_SIZE_FALLBACK, height: MAX_SIZE_FALLBACK }
 }
