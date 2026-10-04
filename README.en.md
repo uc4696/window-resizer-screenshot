@@ -174,3 +174,11 @@ Because of a Plasmo constraint, the `version` field of `package.json` is managed
 - **Redistribution and resale are prohibited.** Redistributing, publishing or selling this source code, either as-is or with modifications, on the Chrome Web Store or any similar platform is strictly prohibited.
 - Free use within the scope of personal use is permitted.
 
+
+---
+
+## Support the project
+
+If you find this extension useful, you can treat me to a drink to support development.
+
+<a href="https://www.buymeacoffee.com/uc4696" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>

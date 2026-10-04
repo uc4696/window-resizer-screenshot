@@ -174,3 +174,11 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 - **再配布・転売は禁止**します。ソースコードをそのまま、あるいは一部改変して、Chromeウェブストア等に再配布・公開・販売することは固く禁止します。
 - 個人利用の範囲内であれば、自由に利用していただけます。
 
+
+---
+
+## 開発を応援する
+
+この拡張機能が役に立ったら、ドリンクを1杯ごちそうしていただけると励みになります。
+
+<a href="https://www.buymeacoffee.com/uc4696" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
