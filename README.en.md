@@ -125,7 +125,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
   npm run package
   ```
 
-  This generates `build/chrome-mv3-prod.zip`. When distributing a beta version, rename the file, for example to `window-resizer-screenshot-v0.1.0-beta.1.zip` (see `Cline_WORKFLOW.md` for the naming rules).
+  This generates `build/chrome-mv3-prod.zip`. When distributing a beta version, rename the file, for example to `window-resizer-screenshot-v0.1.1-beta.1.zip` (see `Cline_WORKFLOW.md` for the naming rules).
 
 ## Specifications and limitations
 
@@ -149,20 +149,20 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 
 | Permission | Purpose |
 |---|---|
-| `tabs` | Getting current tab information and tab operations |
-| `activeTab` | Script injection into the active tab |
+| `activeTab` | Script injection and screenshot capture for the active tab you interact with the extension on |
 | `storage` | Saving settings and custom sizes (local/sync) |
 | `downloads` | Saving screenshots into the `Captures` folder |
 | `scripting` | Measuring the viewport, and scroll control/measurement scripts for full-page screenshots |
-| `system.display` | Getting the current display resolution when entering custom sizes (validation) |
-| `host_permissions: <all_urls>` | Screenshot and resize operations on any page |
+
+`host_permissions` (`<all_urls>`), `tabs` and `system.display` are not used. The upper-limit check for custom sizes uses `window.screen` of the display where the popup is shown.
 
 ## Versioning and changelog
 
-Because of a Plasmo constraint, the `version` field of `package.json` is managed strictly as three dot-separated integers (MAJOR.MINOR.PATCH) (current: `0.1.0`). Beta status is expressed in the distributable ZIP file name, the README and Git tags (for example, `window-resizer-screenshot-v0.1.0-beta.1.zip`).
+Because of a Plasmo constraint, the `version` field of `package.json` is managed strictly as three dot-separated integers (MAJOR.MINOR.PATCH) (current: `0.1.1`). Beta status is expressed in the distributable ZIP file name, the README and Git tags (for example, `window-resizer-screenshot-v0.1.1-beta.1.zip`).
 
 | Version | Release date | Summary |
 |---|---|---|
+| 0.1.1 (beta.1) | 2026-10-04 | Minimized permissions. Removed `host_permissions` (`<all_urls>`), `tabs` and `system.display`; the extension now works with only `activeTab`, `scripting`, `storage` and `downloads`. The upper-limit check for sizes now uses `window.screen` |
 | 0.1.0 (beta.1) | 2026-10-03 | First release of the 0.1.0 beta. Includes window/viewport resizing (16:9 and 4:3 resolution templates, per-template offsets, adding/editing/deleting custom sizes), visible-area / full-page (scrolling capture + stitching) screenshots saved as JPG into the `Captures` folder, local/sync storage switching, factory reset, multilingual UI (Japanese / English) and dark mode support |
 
 ---

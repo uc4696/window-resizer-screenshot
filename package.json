@@ -1,7 +1,7 @@
 {
   "name": "window-resizer-screenshot",
   "displayName": "__MSG_extensionName__",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "__MSG_extensionDescription__",
   "author": "uc4696",
   "packageManager": "npm@11.19.0",
@@ -28,16 +28,11 @@
   },
   "manifest": {
     "default_locale": "en",
-    "host_permissions": [
-      "<all_urls>"
-    ],
     "permissions": [
-      "tabs",
       "activeTab",
       "storage",
       "downloads",
-      "scripting",
-      "system.display"
+      "scripting"
     ]
   },
   "allowScripts": {
