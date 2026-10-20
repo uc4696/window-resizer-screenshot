@@ -8,9 +8,20 @@ export const ja: Record<MessageKey, string> = {
   modeWindow: "ウィンドウ基準",
   modeViewport: "ビューポート基準",
   screenshotTitle: "スクリーンショット",
-  captureVisible: "表示部分を撮影",
-  captureFullPage: "ページ全体を撮影",
-  openSettings: "⚙ 設定を開く",
+  captureVisibleLabel: "表示部分",
+  captureFullPageLabel: "ページ全体",
+  captureVisibleDownload: "表示部分のスクリーンショットをダウンロード",
+  captureVisibleCopy: "表示部分のスクリーンショットをクリップボードにコピー",
+  captureFullPageDownload: "ページ全体のスクリーンショットをダウンロード",
+  captureFullPageCopy: "ページ全体のスクリーンショットをクリップボードにコピー",
+  statusCopied: "クリップボードにコピーしました。",
+  errClipboard: "クリップボードへのコピーに失敗しました。",
+  openSettings: "設定を開く",
+  shareOnX: "Xで共有",
+  shareOnXTitle: "この拡張機能をXで共有する（投稿画面が開きます）",
+  shareText:
+    "「このサイズだとどう見える？」をすぐ確認。\nウィンドウ/ビューポートのリサイズもページ全体スクショもこれ1つ📸",
+  shareHashtags: "#Chrome拡張機能 #Web制作",
   statusResized: "サイズを {width} x {height} に変更しました。",
   statusError: "エラー: {message}",
   statusCapturingFullPage: "ページ全体を撮影中...",
@@ -60,6 +71,9 @@ export const ja: Record<MessageKey, string> = {
   captureDirLabel: "スクリーンショット保存先フォルダ名",
   captureDirHint:
     "ダウンロードフォルダ配下に作成されるフォルダ名です（例: Downloads/Captures/...）。",
+  imageFormatLabel: "スクリーンショットの既定形式",
+  imageFormatHint:
+    "ダウンロード保存時の形式です。クリップボードへのコピーは常にPNG形式になります。",
   storageLabel: "ストレージ領域（カスタムサイズの保存先）",
   storageHint:
     "local: この端末のみに保存されます。sync: Googleアカウントに紐づき、他端末とも同期されます。",
@@ -74,7 +88,7 @@ export const ja: Record<MessageKey, string> = {
   clear: "クリア",
   resetLabel: "ファクトリーリセット（設定の初期化）",
   resetHint:
-    "保存先フォルダ名・ストレージ領域・言語・カスタムサイズ・プリセットのオフセットをすべて初期状態に戻します。",
+    "保存先フォルダ名・スクリーンショット形式・ストレージ領域・言語・カスタムサイズ・プリセットのオフセットをすべて初期状態に戻します。",
   resetButton: "設定を初期化する",
   resetDone: "設定を初期化しました。",
   resetConfirm:

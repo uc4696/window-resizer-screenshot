@@ -28,13 +28,21 @@ async function handleCapture(message: CaptureRequest): Promise<CaptureResponse> 
     return { ok: false, error: t("errNoActiveTab") }
   }
 
+  const settings = await getSettings()
+  // クリップボードへコピーする場合は常に PNG（Chrome が確実に書き込める形式）
+  const isCopy = message.action === "copy"
+  const format = isCopy ? "png" : settings.imageFormat
+
   const dataUrl =
     message.mode === "full-page"
-      ? await captureFullPage(tab.id, tab.windowId)
-      : await captureVisibleTab(tab.windowId)
+      ? await captureFullPage(tab.id, tab.windowId, format)
+      : await captureVisibleTab(tab.windowId, format)
 
-  const settings = await getSettings()
-  const filename = buildScreenshotFilename()
+  if (isCopy) {
+    return { ok: true, dataUrl }
+  }
+
+  const filename = buildScreenshotFilename(new Date(), format)
   const path = buildDownloadPath(settings.captureDirName, filename)
 
   const downloadId = await chrome.downloads.download({

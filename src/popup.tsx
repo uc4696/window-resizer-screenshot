@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react"
 
+import { CaptureSection } from "~components/CaptureSection"
 import { CustomSizeList } from "~components/CustomSizeList"
 import { CustomSizeManager } from "~components/CustomSizeManager"
 import { PresetGrid } from "~components/PresetGrid"
+import { ShareButton } from "~components/ShareButton"
 import { SupportLink } from "~components/SupportLink"
 import { PRESET_GROUPS } from "~lib/constants"
 import { I18nProvider, useI18n } from "~lib/i18n/useI18n"
-import type { CaptureMode, CaptureResponse } from "~lib/messages"
 import {
   getCurrentDisplayBounds,
   getCurrentViewportSize,
@@ -103,26 +104,6 @@ function PopupContent() {
     setEditingCustomSizeId(null)
   }
 
-  async function handleCapture(captureMode: CaptureMode) {
-    setBusy(true)
-    setStatus(captureMode === "full-page" ? t("statusCapturingFullPage") : t("statusCapturing"))
-    try {
-      const response: CaptureResponse = await chrome.runtime.sendMessage({
-        type: "capture-screenshot",
-        mode: captureMode
-      })
-      if (response?.ok) {
-        setStatus(t("statusSaved", { filename: response.filename ?? "" }))
-      } else {
-        setStatus(t("statusError", { message: response?.error ?? t("errCaptureFailed") }))
-      }
-    } catch (e) {
-      setStatus(t("statusError", { message: e instanceof Error ? e.message : String(e) }))
-    } finally {
-      setBusy(false)
-    }
-  }
-
   return (
     <main className="popup-root">
       <h1 className="popup-title">Window &amp; Viewport Resizer</h1>
@@ -188,29 +169,19 @@ function PopupContent() {
         onCancelEdit={handleCancelEditCustomSize}
       />
 
-      <section className="capture-section">
-        <p className="section-title">{t("screenshotTitle")}</p>
-        <div className="capture-buttons">
-          <button
-            className="secondary-button"
-            disabled={busy}
-            onClick={() => handleCapture("visible")}>
-            {t("captureVisible")}
-          </button>
-          <button
-            className="secondary-button"
-            disabled={busy}
-            onClick={() => handleCapture("full-page")}>
-            {t("captureFullPage")}
-          </button>
-        </div>
-      </section>
+      <CaptureSection busy={busy} onBusyChange={setBusy} onStatus={setStatus} />
 
-      {status && <p className="status-text">{status}</p>}
+      {/* ステータス表示は常に1行分の高さを確保し、表示時にレイアウトが跳ねないようにする */}
+      <p className="status-text" title={status ?? undefined}>
+        {status}
+      </p>
 
-      <button className="options-link" onClick={() => chrome.runtime.openOptionsPage()}>
-        {t("openSettings")}
-      </button>
+      <div className="popup-footer-row">
+        <button className="options-link" onClick={() => chrome.runtime.openOptionsPage()}>
+          ⚙ {t("openSettings")}
+        </button>
+        <ShareButton />
+      </div>
 
       <SupportLink />
     </main>

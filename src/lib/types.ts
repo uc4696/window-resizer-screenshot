@@ -5,6 +5,9 @@ export type SizeMode = "window" | "viewport"
 /** 表示言語の設定。auto はブラウザのUI言語に従う（日本語以外は英語）。 */
 export type LanguageSetting = "auto" | "ja" | "en"
 
+/** スクリーンショットの保存形式。 */
+export type ImageFormat = "png" | "webp" | "jpeg"
+
 export interface SizePreset {
   id: string
   label: string

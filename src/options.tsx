@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 
 import { SupportLink } from "~components/SupportLink"
-import { DEFAULT_SETTINGS, PRESET_GROUPS } from "~lib/constants"
+import { DEFAULT_SETTINGS, IMAGE_FORMATS, PRESET_GROUPS } from "~lib/constants"
 import { LANGUAGE_NATIVE_NAMES, setLanguage } from "~lib/i18n"
 import { I18nProvider, useI18n } from "~lib/i18n/useI18n"
 import { validateOffset } from "~lib/resize"
@@ -15,7 +15,7 @@ import {
   setSettings,
   type Settings
 } from "~lib/storage"
-import type { LanguageSetting, PresetModeOffsets, SizeMode } from "~lib/types"
+import type { ImageFormat, LanguageSetting, PresetModeOffsets, SizeMode } from "~lib/types"
 
 import "./options.css"
 
@@ -73,6 +73,14 @@ function OptionsContent() {
   /** 言語は選択した時点で保存・反映する（他の設定は「保存」ボタンで保存）。 */
   async function handleLanguageChange(language: LanguageSetting) {
     await handleSave({ ...settings, language })
+  }
+
+  /** 画像形式は選択した時点で保存・反映する。 */
+  async function handleImageFormatChange(imageFormat: ImageFormat) {
+    // 選択の見た目は即時に反映し、保存は続けて行う
+    const next = { ...settings, imageFormat }
+    setSettingsState(next)
+    await handleSave(next)
   }
 
   async function handleSaveOffset(presetId: string, mode: SizeMode) {
@@ -165,6 +173,25 @@ function OptionsContent() {
             setSettingsState({ ...settings, captureDirName: e.target.value })
           }
         />
+      </section>
+
+      <section className="options-section">
+        <label className="options-label">{t("imageFormatLabel")}</label>
+        <p className="options-hint">{t("imageFormatHint")}</p>
+        <div className="options-radio-group">
+          {IMAGE_FORMATS.map((format) => (
+            <label key={format} className="options-radio">
+              <input
+                type="radio"
+                name="imageFormat"
+                value={format}
+                checked={settings.imageFormat === format}
+                onChange={() => handleImageFormatChange(format)}
+              />
+              {format === "jpeg" ? "JPEG" : format === "webp" ? "WebP" : "PNG"}
+            </label>
+          ))}
+        </div>
       </section>
 
       <section className="options-section">
@@ -278,6 +305,8 @@ function OptionsContent() {
       </section>
 
       <SupportLink />
+
+      <p className="options-credit">Icons: Tabler Icons (MIT License)</p>
     </main>
   )
 }

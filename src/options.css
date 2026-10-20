@@ -241,3 +241,11 @@ body {
   width: 200px;
   height: auto;
 }
+
+.options-credit {
+  margin: 16px 0 0 0;
+  font-size: 11px;
+  text-align: center;
+  color: var(--subtitle-color);
+}
+

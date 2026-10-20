@@ -2,7 +2,7 @@
 
 [日本語](README.md) | **English**
 
-> **Current version: `0.1.0` (beta `0.1.0-beta.1`)**
+> **Current version: `0.2.0` (beta `0.2.0-beta.1`)**
 
 A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or viewport to a preset or custom size, and captures screenshots of the visible area or the full page and downloads them.
 
@@ -14,7 +14,10 @@ A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or v
 - Add, edit and delete custom sizes (a correction offset can be specified in window-based mode). The list is always shown right below the templates, and the "Custom size settings" accordion only contains the add/edit form
 - Popup UI opened from the toolbar icon (automatic dark mode support)
 - Screenshots of the visible tab or the full page (scrolling capture + stitching)
-- Saved as JPG into the `Captures` folder under Downloads (the folder name can be changed)
+- Saved into the `Captures` folder under Downloads (the folder name can be changed). The format is selectable in the settings: PNG (default) / WebP / JPEG
+- Copy screenshots to the clipboard (PNG only)
+- Icon-button UI with Tabler Icons (Visible area / Full page rows x Download / Copy)
+- Share button for X (opens the post screen)
 - Local / sync storage switching via `@plasmohq/storage`
 - Factory reset that restores settings, custom sizes and preset offsets to their defaults
 - Multilingual UI (Japanese / English). Choose "Auto / 日本語 / English" under "Language" on the Options page ("Auto" follows the browser UI language; anything other than Japanese falls back to English)
@@ -64,6 +67,9 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │   │   ├── PresetGrid.tsx          # Template size buttons
 │   │   ├── CustomSizeList.tsx      # Saved custom sizes: apply / edit / delete UI
 │   │   ├── CustomSizeManager.tsx   # Add/edit form for custom sizes (accordion)
+│   │   ├── CaptureSection.tsx      # Screenshot rows (Download / Copy)
+│   │   ├── Icon.tsx                # Inline Tabler Icons SVG
+│   │   ├── ShareButton.tsx         # Share on X button
 │   │   └── SupportLink.tsx         # Support link
 │   └── lib/
 │       ├── types.ts                # Type definitions
@@ -71,7 +77,8 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │       ├── storage.ts              # Settings/data management with local/sync switching
 │       ├── offset.ts               # Offset (correction value) calculation
 │       ├── resize.ts               # Window / viewport resizing and validation
-│       ├── screenshot.ts           # Visible Tab / Full Page screenshot capture
+│       ├── screenshot.ts           # Visible Tab / Full Page screenshot capture (PNG/WebP/JPEG output)
+│       ├── share.ts                # Builds the X post URL
 │       ├── filename.ts             # Saved file name and path construction
 │       ├── messages.ts             # Message types between popup and background
 │       └── i18n/                   # Internationalization (messages.en.ts / messages.ja.ts / index.ts / useI18n.tsx)
@@ -130,7 +137,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
   npm run package
   ```
 
-  This generates `build/chrome-mv3-prod.zip`. When distributing a beta version, rename the file, for example to `window-resizer-screenshot-v0.1.1-beta.1.zip` (see `Cline_WORKFLOW.md` for the naming rules).
+  This generates `build/chrome-mv3-prod.zip`. When distributing a beta version, rename the file, for example to `window-resizer-screenshot-v0.2.0-beta.1.zip` (see `Cline_WORKFLOW.md` for the naming rules).
 
 ### E2E tests (automated tests)
 
@@ -165,7 +172,7 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 - If you run a viewport-based resize while such a page is active, a guidance error message is shown and the resize is aborted. Use a tab with a regular web page (`https://` or `http://`).
 
 ### 3. What the screenshots capture
-- Both screenshot features ("Capture visible area" and "Capture full page") capture **only the web page content inside the tab (the viewport area)**.
+- Both screenshot features ("Visible area" and "Full page") capture **only the web page content inside the tab (the viewport area)**.
 - A "whole window screenshot" that includes the OS title bar, browser toolbar and window frame cannot be taken with Chrome's standard capture APIs, so please use an external capture tool.
 
 ### 4. Permissions
@@ -181,10 +188,11 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 
 ## Versioning and changelog
 
-Because of a Plasmo constraint, the `version` field of `package.json` is managed strictly as three dot-separated integers (MAJOR.MINOR.PATCH) (current: `0.1.1`). Beta status is expressed in the distributable ZIP file name, the README and Git tags (for example, `window-resizer-screenshot-v0.1.1-beta.1.zip`).
+Because of a Plasmo constraint, the `version` field of `package.json` is managed strictly as three dot-separated integers (MAJOR.MINOR.PATCH) (current: `0.2.0`). Beta status is expressed in the distributable ZIP file name, the README and Git tags (for example, `window-resizer-screenshot-v0.2.0-beta.1.zip`).
 
 | Version | Release date | Summary |
 |---|---|---|
+| 0.2.0 (beta.1) | 2026-10-20 | Added PNG and WebP screenshot formats (PNG is the default and can be changed in the settings; JPEG is still available). Added copying to the clipboard (PNG). Redesigned the screenshot section with Tabler Icons buttons (Visible area / Full page rows x Download / Copy), showing a check icon for 1.5 seconds after copying. Added a Share on X button. Tightened the popup spacing to reduce its height. Added the Tabler Icons (MIT License) credit to the settings page |
 | 0.1.1 (beta.1) | 2026-10-04 | Minimized permissions. Removed `host_permissions` (`<all_urls>`), `tabs` and `system.display`; the extension now works with only `activeTab`, `scripting`, `storage` and `downloads`. The upper-limit check for sizes now uses `window.screen` |
 | 0.1.0 (beta.1) | 2026-10-03 | First release of the 0.1.0 beta. Includes window/viewport resizing (16:9 and 4:3 resolution templates, per-template offsets, adding/editing/deleting custom sizes), visible-area / full-page (scrolling capture + stitching) screenshots saved as JPG into the `Captures` folder, local/sync storage switching, factory reset, multilingual UI (Japanese / English) and dark mode support |
 
@@ -197,6 +205,12 @@ Because of a Plasmo constraint, the `version` field of `package.json` is managed
 - **Redistribution and resale are prohibited.** Redistributing, publishing or selling this source code, either as-is or with modifications, on the Chrome Web Store or any similar platform is strictly prohibited.
 - Free use within the scope of personal use is permitted.
 
+
+---
+
+## Third-party
+
+- Icons: [Tabler Icons](https://tabler.io/icons) (MIT License). Only the required SVGs are bundled in `icons/`; the full license text is in `licenses/LICENSE-tabler.txt`.
 
 ---
 

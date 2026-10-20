@@ -1,17 +1,50 @@
+import { IMAGE_MIME_TYPES } from "./constants"
 import { t } from "./i18n"
+import type { ImageFormat } from "./types"
 
+/** JPEG 出力時の品質（0〜100）。 */
 const JPEG_QUALITY = 90
+/** WebP 出力時の品質（0〜1）。 */
+const WEBP_QUALITY = 0.9
+
+/** タイルの撮影は常に PNG（劣化なし）で行い、最終出力時にのみ指定形式へエンコードする。 */
+async function captureTilePng(windowId: number): Promise<string> {
+  return chrome.tabs.captureVisibleTab(windowId, { format: "png" })
+}
+
+/** キャンバスを指定形式の Blob にエンコードする。 */
+async function encodeCanvas(canvas: OffscreenCanvas, format: ImageFormat): Promise<Blob> {
+  if (format === "jpeg") {
+    return canvas.convertToBlob({ type: IMAGE_MIME_TYPES.jpeg, quality: JPEG_QUALITY / 100 })
+  }
+  if (format === "webp") {
+    return canvas.convertToBlob({ type: IMAGE_MIME_TYPES.webp, quality: WEBP_QUALITY })
+  }
+  return canvas.convertToBlob({ type: IMAGE_MIME_TYPES.png })
+}
 
 /**
  * 現在の表示部分（Visible Tab）のスクリーンショットを撮影する。
- * @returns JPEG形式のdata URL
+ * @param format 出力形式（既定は PNG）
+ * @returns 指定形式のdata URL
  */
-export async function captureVisibleTab(windowId: number): Promise<string> {
-  const dataUrl = await chrome.tabs.captureVisibleTab(windowId, {
-    format: "jpeg",
-    quality: JPEG_QUALITY
-  })
-  return dataUrl
+export async function captureVisibleTab(
+  windowId: number,
+  format: ImageFormat = "png"
+): Promise<string> {
+  const pngDataUrl = await captureTilePng(windowId)
+  if (format === "png") return pngDataUrl
+
+  const bitmap = await createImageBitmap(dataUrlToBlob(pngDataUrl))
+  try {
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
+    const ctx = canvas.getContext("2d")
+    if (!ctx) throw new Error(t("errCanvas"))
+    ctx.drawImage(bitmap, 0, 0)
+    return await blobToDataUrl(await encodeCanvas(canvas, format))
+  } finally {
+    bitmap.close()
+  }
 }
 
 interface PageMetrics {
@@ -175,7 +208,7 @@ async function scrollAndMeasure(
 function dataUrlToBlob(dataUrl: string): Blob {
   const [meta, base64] = dataUrl.split(",")
   const mimeMatch = /data:(.*?);base64/.exec(meta)
-  const mime = mimeMatch?.[1] ?? "image/jpeg"
+  const mime = mimeMatch?.[1] ?? "image/png"
   const binary = atob(base64)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) {
@@ -207,9 +240,14 @@ async function blobToDataUrl(blob: Blob): Promise<string> {
  *   （最上部タイルのみ隠蔽しない）
  * - 実際のタイル画像から実DPR（devicePixelRatioの申告値とズレる場合がある）を算出する
  * - 最終的な描画済み高さでキャンバスをクロップする（末尾の余白防止）
- * @returns JPEG形式のdata URL
+ * @param format 出力形式（既定は PNG）。タイルの撮影自体は常に PNG で行う
+ * @returns 指定形式のdata URL
  */
-export async function captureFullPage(tabId: number, windowId: number): Promise<string> {
+export async function captureFullPage(
+  tabId: number,
+  windowId: number,
+  format: ImageFormat = "png"
+): Promise<string> {
   const metrics = await measurePage(tabId)
   const { scrollWidth, viewportWidth, dpr, scrollX, scrollY, backgroundColor } = metrics
   let viewportHeight = metrics.viewportHeight
@@ -238,10 +276,7 @@ export async function captureFullPage(tabId: number, windowId: number): Promise<
     viewportHeight = first.viewportHeight || viewportHeight
     await wait(SCROLL_SETTLE_MS)
 
-    const firstTileDataUrl = await chrome.tabs.captureVisibleTab(windowId, {
-      format: "jpeg",
-      quality: JPEG_QUALITY
-    })
+    const firstTileDataUrl = await captureTilePng(windowId)
     const firstBitmap = await createImageBitmap(dataUrlToBlob(firstTileDataUrl))
 
     // 実際に撮影された画像から実DPRを算出（申告値とズレる場合があるため）
@@ -301,10 +336,7 @@ export async function captureFullPage(tabId: number, windowId: number): Promise<
       await wait(HIDE_SETTLE_MS)
 
       // 4. 固定要素が消えた状態で撮影する
-      const tileDataUrl = await chrome.tabs.captureVisibleTab(windowId, {
-        format: "jpeg",
-        quality: JPEG_QUALITY
-      })
+      const tileDataUrl = await captureTilePng(windowId)
       const tileBitmap = await createImageBitmap(dataUrlToBlob(tileDataUrl))
       tileCount++
 
@@ -337,11 +369,7 @@ export async function captureFullPage(tabId: number, windowId: number): Promise<
       }
     }
 
-    const blob = await canvas.convertToBlob({
-      type: "image/jpeg",
-      quality: JPEG_QUALITY / 100
-    })
-    return await blobToDataUrl(blob)
+    return await blobToDataUrl(await encodeCanvas(canvas, format))
   } finally {
     await restoreAfterCapture(tabId, { scrollX, scrollY })
   }

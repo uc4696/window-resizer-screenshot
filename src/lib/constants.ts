@@ -1,4 +1,25 @@
-import type { PresetGroup, SizePreset } from "./types"
+import type { ImageFormat, PresetGroup, SizePreset } from "./types"
+
+/** 選択可能なスクリーンショット形式（表示順）。 */
+export const IMAGE_FORMATS: ImageFormat[] = ["png", "webp", "jpeg"]
+
+/** 形式ごとの MIME タイプ。 */
+export const IMAGE_MIME_TYPES: Record<ImageFormat, string> = {
+  png: "image/png",
+  webp: "image/webp",
+  jpeg: "image/jpeg"
+}
+
+/** 形式ごとのファイル拡張子。 */
+export const IMAGE_EXTENSIONS: Record<ImageFormat, string> = {
+  png: "png",
+  webp: "webp",
+  jpeg: "jpg"
+}
+
+/** Chrome ウェブストアの拡張機能ページ（X共有の投稿に使用）。 */
+export const STORE_URL =
+  "https://chromewebstore.google.com/detail/kaikockbajglbkgoeepfbamdknadhiji"
 
 /**
  * 解像度テンプレート（プリセット）。アスペクト比ごとにグループ化されている。
@@ -47,6 +68,7 @@ export const STORAGE_KEYS = {
 export const DEFAULT_SETTINGS = {
   captureDirName: "Captures",
   storageArea: "local" as "local" | "sync",
-  language: "auto" as "auto" | "ja" | "en"
+  language: "auto" as "auto" | "ja" | "en",
+  imageFormat: "png" as ImageFormat
 }
 

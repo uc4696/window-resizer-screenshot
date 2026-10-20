@@ -1,8 +1,9 @@
 import { Storage } from "@plasmohq/storage"
 
-import { DEFAULT_SETTINGS, STORAGE_KEYS } from "./constants"
+import { DEFAULT_SETTINGS, IMAGE_FORMATS, STORAGE_KEYS } from "./constants"
 import type {
   CustomSize,
+  ImageFormat,
   LanguageSetting,
   PresetModeOffsets,
   PresetOffset,
@@ -13,6 +14,7 @@ export interface Settings {
   captureDirName: string
   storageArea: "local" | "sync"
   language: LanguageSetting
+  imageFormat: ImageFormat
 }
 
 /**
@@ -39,7 +41,11 @@ export async function getSettings(): Promise<Settings> {
   return {
     captureDirName: raw?.captureDirName || DEFAULT_SETTINGS.captureDirName,
     storageArea: raw?.storageArea || DEFAULT_SETTINGS.storageArea,
-    language: raw?.language || DEFAULT_SETTINGS.language
+    language: raw?.language || DEFAULT_SETTINGS.language,
+    // 未設定・不正値は既定（png）に正規化する
+    imageFormat: IMAGE_FORMATS.includes(raw?.imageFormat as ImageFormat)
+      ? (raw?.imageFormat as ImageFormat)
+      : DEFAULT_SETTINGS.imageFormat
   }
 }
 

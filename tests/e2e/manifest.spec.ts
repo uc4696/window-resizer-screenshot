@@ -38,6 +38,16 @@ test.describe("manifest.json（配布物の回帰チェック）", () => {
     expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/)
   })
 
+  test("クリップボード用の追加権限（clipboardWrite）を要求していない", () => {
+    expect(manifest.permissions).not.toContain("clipboardWrite")
+  })
+
+  test("Tabler Icons の MIT ライセンス（licenses/LICENSE-tabler.txt）がリポジトリに同梱されている", () => {
+    const license = path.resolve(BUILD_PATH, "../../licenses/LICENSE-tabler.txt")
+    expect(existsSync(license)).toBe(true)
+    expect(readFileSync(license, "utf8")).toContain("MIT License")
+  })
+
   test("popup / options / background / ロケールが成果物に含まれる", () => {
     expect(existsSync(path.join(BUILD_PATH, "popup.html"))).toBe(true)
     expect(existsSync(path.join(BUILD_PATH, "options.html"))).toBe(true)

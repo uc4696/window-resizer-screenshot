@@ -39,7 +39,7 @@ body {
   width: 300px;
   max-height: 560px;
   overflow-y: auto;
-  padding: 14px;
+  padding: 12px 14px;
   background-color: var(--bg-color);
   color: var(--text-color);
 }
@@ -65,7 +65,7 @@ body {
 .popup-title {
   font-size: 14px;
   font-weight: 700;
-  margin: 0 0 10px 0;
+  margin: 0 0 6px 0;
   color: var(--accent-color);
 }
 
@@ -73,7 +73,7 @@ body {
   background-color: var(--panel-bg);
   border-radius: 8px;
   padding: 8px 10px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .size-row {
@@ -94,7 +94,7 @@ body {
 .mode-toggle {
   display: flex;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .mode-button {
@@ -119,7 +119,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .preset-group-title {
@@ -142,7 +142,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  padding: 8px 4px;
+  padding: 6px 4px;
   font-size: 11px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
@@ -383,25 +383,63 @@ body {
 }
 
 .capture-section {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .section-title {
   font-size: 12px;
   font-weight: 600;
   color: var(--subtitle-color);
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
 }
 
-.capture-buttons {
+.capture-row {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.capture-scope {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-color);
+}
+
+.capture-scope-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.capture-actions {
+  display: flex;
+  flex-shrink: 0;
   gap: 6px;
 }
 
-.secondary-button {
-  flex: 1;
-  padding: 8px 4px;
-  font-size: 11px;
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  padding: 0;
   border: 1px solid var(--accent-color);
   border-radius: 6px;
   background: transparent;
@@ -409,42 +447,79 @@ body {
   cursor: pointer;
 }
 
-.secondary-button:hover:not(:disabled) {
+.icon-button:hover:not(:disabled) {
   background-color: var(--accent-color);
   color: var(--button-text);
 }
 
-.secondary-button:disabled {
+.icon-button.copied {
+  background-color: var(--accent-color);
+  color: var(--button-text);
+}
+
+.icon-button:focus-visible,
+.share-button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.icon-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 .status-text {
+  min-height: 16px;
   font-size: 11px;
+  line-height: 16px;
   color: var(--subtitle-color);
   text-align: center;
-  margin: 6px 0;
-  word-break: break-all;
+  margin: 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.popup-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .options-link {
-  width: 100%;
-  padding: 6px;
+  padding: 4px 6px;
   font-size: 11px;
   border: none;
   background: none;
   color: var(--subtitle-color);
   cursor: pointer;
-  text-align: center;
 }
 
 .options-link:hover {
   color: var(--accent-color);
 }
 
+.share-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--accent-color);
+  border-radius: 999px;
+  color: var(--accent-color);
+}
+
+.share-button:hover {
+  background-color: var(--accent-color);
+  color: var(--button-text);
+}
 .support-section {
-  margin-top: 6px;
-  padding-top: 10px;
+  margin-top: 4px;
+  padding-top: 8px;
   border-top: 1px solid var(--border-color);
   text-align: center;
 }
@@ -452,7 +527,7 @@ body {
 .support-text {
   font-size: 11px;
   color: var(--subtitle-color);
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
 }
 
 .support-link {
@@ -461,6 +536,6 @@ body {
 
 .support-image {
   display: block;
-  width: 160px;
+  width: 130px;
   height: auto;
 }
