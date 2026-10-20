@@ -33,6 +33,7 @@ Please report bugs and feature requests on the GitHub Issues page.
 - TypeScript / React
 - `@plasmohq/storage`
 - Chrome Extension Manifest V3
+- E2E tests: [Playwright](https://playwright.dev/) + Chrome for Testing (Beta channel in CI)
 
 ### Project layout
 
@@ -48,7 +49,11 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │   ├── icon.svg                    # Old placeholder icon (kept for reference)
 │   └── buymeacoffee-button.png     # Image for the support link
 ├── scripts/
-│   └── generate-icon.js            # Generates icons of each size from icon-source.png (uses sharp)
+│   ├── generate-icon.js            # Generates icons of each size from icon-source.png (uses sharp)
+│   └── install-chrome.mjs          # Downloads Chrome for Testing for E2E tests (set CHROME_CHANNEL)
+├── tests/e2e/                      # E2E tests (Playwright), shared fixtures and a test server
+├── playwright.config.ts            # Playwright configuration
+├── .github/workflows/e2e-beta.yml  # Daily E2E run (Chrome Beta) and failure notifications
 ├── src/
 │   ├── popup.tsx                   # Popup UI (template selection, custom sizes, screenshot buttons)
 │   ├── style.css                   # Popup styles (dark mode supported)
@@ -126,6 +131,24 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
   ```
 
   This generates `build/chrome-mv3-prod.zip`. When distributing a beta version, rename the file, for example to `window-resizer-screenshot-v0.1.1-beta.1.zip` (see `Cline_WORKFLOW.md` for the naming rules).
+
+### E2E tests (automated tests)
+
+The extension is loaded into a real browser with Playwright and Chrome for Testing. The tests cover resizing (presets, custom sizes, offsets), input validation, screenshots (visible area / full page), the options page, and a permission check of the distributed `manifest.json`.
+
+- **CI (GitHub Actions)**: `.github/workflows/e2e-beta.yml` runs **every day at 03:00 (JST)** against the **Beta** channel of Chrome (manual runs: "Run workflow" in the Actions tab). On failure it opens a GitHub issue (label `e2e-failure`; it comments on the existing open issue if there is one) and sends a Slack message.
+  - Slack notifications require the repository secret `SLACK_WEBHOOK_URL` (a Slack Incoming Webhook URL).
+  - Scheduled runs only work for the workflow on the default branch (`main`).
+- **Local (to reproduce and check problems found in CI)**:
+
+  ```powershell
+  npm run build                 # tests load build/chrome-mv3-prod
+  npm run test:install-browser  # download Chrome for Testing (Stable by default)
+  npm run test:e2e              # run (a real browser window opens)
+  ```
+
+  To reproduce on Beta, run `$env:CHROME_CHANNEL = "beta"; npm run test:install-browser`. The browser is stored in `.chrome-for-testing/` (not tracked by Git).
+- **Notes**: the product only requests `activeTab`, which is granted only by a real user action (clicking the toolbar icon). The tests therefore load a temporary copy of the build with `host_permissions` added (the distributed build is not modified). The browser UI language is fixed to English.
 
 ## Specifications and limitations
 

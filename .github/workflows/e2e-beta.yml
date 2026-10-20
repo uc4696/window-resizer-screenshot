@@ -1,0 +1,117 @@
+name: E2E (Chrome Beta)
+
+# Chrome for Testing の Beta チャンネルで拡張機能の E2E テストを毎日実行する。
+# 失敗時は Issue の作成（または既存 Issue へのコメント追記）と Slack 通知を行う。
+on:
+  schedule:
+    # 毎日 03:00 JST（18:00 UTC）
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-beta
+  cancel-in-progress: false
+
+jobs:
+  e2e:
+    name: E2E test (Chrome Beta)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      chrome_version: ${{ steps.chrome.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: 依存関係をインストール
+        run: npm ci
+
+      - name: 拡張機能をビルド
+        run: npm run build
+
+      - name: Chrome for Testing (Beta) を取得
+        id: chrome
+        env:
+          CHROME_CHANNEL: beta
+        run: |
+          npm run test:install-browser
+          CHROME_BIN="$(cat .chrome-for-testing/executable-path.txt)"
+          echo "version=$("$CHROME_BIN" --version)" >> "$GITHUB_OUTPUT"
+
+      - name: E2E テストを実行
+        env:
+          CI: "true"
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" npm run test:e2e
+
+      - name: テストレポートを保存
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  notify-failure:
+    name: 失敗通知（Issue / Slack）
+    needs: e2e
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      CHROME_VERSION: ${{ needs.e2e.outputs.chrome_version }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      LABEL: e2e-failure
+    steps:
+      - name: Issue を作成（未クローズの Issue があればコメントを追記）
+        run: |
+          gh label create "$LABEL" --repo "$GITHUB_REPOSITORY" \
+            --color B60205 --description "E2Eテストの失敗" 2>/dev/null || true
+
+          BODY="E2Eテスト（Chrome Beta）が失敗しました。
+
+          - 実行結果: ${RUN_URL}
+          - Chrome バージョン: ${CHROME_VERSION:-不明}
+          - 実行日時(UTC): $(date -u '+%Y-%m-%d %H:%M')
+
+          実行結果ページの Artifacts（e2e-report）から、レポート・スクリーンショット・trace を確認できます。
+          ローカルでの再現手順は README の「E2Eテスト」を参照してください。"
+
+          EXISTING="$(gh issue list --repo "$GITHUB_REPOSITORY" --label "$LABEL" \
+            --state open --json number --jq '.[0].number // empty')"
+
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --label "$LABEL" \
+              --title "E2Eテスト（Chrome Beta）が失敗しました" --body "$BODY"
+          fi
+
+      - name: Slack に通知
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL が未設定のため Slack 通知をスキップします。"
+            exit 0
+          fi
+          PAYLOAD="$(jq -n \
+            --arg text ":x: *E2Eテスト（Chrome Beta）が失敗しました*
+          リポジトリ: ${GITHUB_REPOSITORY}
+          Chrome: ${CHROME_VERSION:-不明}
+          実行結果: ${RUN_URL}" \
+            '{text: $text}')"
+          curl --fail --silent --show-error -X POST \
+            -H 'Content-type: application/json' \
+            --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"

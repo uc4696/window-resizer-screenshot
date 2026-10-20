@@ -33,6 +33,7 @@
 - TypeScript / React
 - `@plasmohq/storage`
 - Chrome Extension Manifest V3
+- E2Eテスト: [Playwright](https://playwright.dev/) + Chrome for Testing（CIはBetaチャンネル）
 
 ### ディレクトリ構成
 
@@ -48,7 +49,11 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 │   ├── icon.svg                    # 旧仮アイコン（参考用）
 │   └── buymeacoffee-button.png     # サポートリンク用の画像
 ├── scripts/
-│   └── generate-icon.js            # icon-source.png から各サイズのアイコンを生成（sharp使用）
+│   ├── generate-icon.js            # icon-source.png から各サイズのアイコンを生成（sharp使用）
+│   └── install-chrome.mjs          # E2Eテスト用の Chrome for Testing を取得（CHROME_CHANNEL で指定）
+├── tests/e2e/                      # E2Eテスト（Playwright）と共通フィクスチャ・テスト用サーバー
+├── playwright.config.ts            # Playwright設定
+├── .github/workflows/e2e-beta.yml  # 毎日のE2Eテスト（Chrome Beta）と失敗通知
 ├── src/
 │   ├── popup.tsx                   # ポップアップ本体（テンプレート選択・カスタムサイズ・スクショボタン）
 │   ├── style.css                   # ポップアップ用スタイル（ダークモード対応）
@@ -126,6 +131,24 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
   ```
 
   `build/chrome-mv3-prod.zip` が生成されます。ベータ版として配布する場合は、`window-resizer-screenshot-v0.1.1-beta.1.zip` のようにファイル名を変更してください（命名規則は `Cline_WORKFLOW.md` を参照）。
+
+### E2Eテスト（自動テスト）
+
+Playwright と Chrome for Testing で、拡張機能を実ブラウザに読み込んで動作確認します。テスト内容は、リサイズ（プリセット・カスタムサイズ・オフセット）、入力チェック、スクリーンショット（表示範囲・フルページ）、設定画面、配布物 `manifest.json` の権限チェックです。
+
+- **CI（GitHub Actions）**: `.github/workflows/e2e-beta.yml` が **毎日 03:00（JST）** に Chrome の **Beta** チャンネルで実行します（手動実行は Actions タブの「Run workflow」）。失敗すると、GitHub の Issue（`e2e-failure` ラベル。未クローズの Issue があればコメント追記）と Slack に通知します。
+  - Slack 通知には、リポジトリの Secrets に `SLACK_WEBHOOK_URL`（Slack の Incoming Webhook URL）の登録が必要です。
+  - 定期実行（`schedule`）はデフォルトブランチ（`main`）上のワークフローだけが対象です。
+- **ローカル（CIで失敗したときの再現・確認用）**:
+
+  ```powershell
+  npm run build                 # テストは build/chrome-mv3-prod を読み込みます
+  npm run test:install-browser  # Chrome for Testing を取得（既定は Stable）
+  npm run test:e2e              # 実行（ブラウザのウィンドウが実際に開きます）
+  ```
+
+  Beta で再現したい場合は、`$env:CHROME_CHANNEL = "beta"; npm run test:install-browser` を実行してください。取得したブラウザは `.chrome-for-testing/` に保存されます（Git管理対象外）。
+- **テスト時の注意**: 製品の権限は `activeTab` のみで、ツールバーアイコンのクリック（実ユーザー操作）でしか付与されません。そのためテストでは、ビルド成果物を一時フォルダに複製して `host_permissions` を足したものを読み込みます（配布物は変更しません）。ブラウザのUI言語は英語に固定しています。
 
 ## リサイズ・スクリーンショットの仕様と制約事項
 
