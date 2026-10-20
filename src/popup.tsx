@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { CaptureSection } from "~components/CaptureSection"
 import { CustomSizeList } from "~components/CustomSizeList"
 import { CustomSizeManager } from "~components/CustomSizeManager"
+import { Icon } from "~components/Icon"
 import { PresetGrid } from "~components/PresetGrid"
 import { ShareButton } from "~components/ShareButton"
 import { SupportLink } from "~components/SupportLink"
@@ -19,7 +20,9 @@ import {
   addCustomSize,
   getCustomSizes,
   getPresetOffsets,
-  removeCustomSize
+  getSizeMode,
+  removeCustomSize,
+  setSizeMode
 } from "~lib/storage"
 import type {
   CustomSize,
@@ -55,7 +58,16 @@ function PopupContent() {
     getCurrentDisplayBounds().then(setDisplay)
     getCustomSizes().then(setCustomSizes)
     getPresetOffsets().then(setPresetOffsets)
+    // 最後に選択したサイズ基準を復元する
+    getSizeMode().then(setMode)
   }, [])
+
+  /** サイズ基準を切り替え、次回のポップアップ表示でも復元できるよう保存する。 */
+  function changeMode(next: SizeMode) {
+    setMode(next)
+    setEditingCustomSizeId(null)
+    void setSizeMode(next)
+  }
 
   async function applySize(preset: SizePreset | CustomSize) {
     setBusy(true)
@@ -126,18 +138,12 @@ function PopupContent() {
       <div className="mode-toggle">
         <button
           className={`mode-button ${mode === "window" ? "active" : ""}`}
-          onClick={() => {
-            setMode("window")
-            setEditingCustomSizeId(null)
-          }}>
+          onClick={() => changeMode("window")}>
           {t("modeWindow")}
         </button>
         <button
           className={`mode-button ${mode === "viewport" ? "active" : ""}`}
-          onClick={() => {
-            setMode("viewport")
-            setEditingCustomSizeId(null)
-          }}>
+          onClick={() => changeMode("viewport")}>
           {t("modeViewport")}
         </button>
       </div>
@@ -177,8 +183,12 @@ function PopupContent() {
       </p>
 
       <div className="popup-footer-row">
-        <button className="options-link" onClick={() => chrome.runtime.openOptionsPage()}>
-          ⚙ {t("openSettings")}
+        <button
+          type="button"
+          className="footer-button options-link"
+          onClick={() => chrome.runtime.openOptionsPage()}>
+          <Icon name="settings" size={12} />
+          <span>{t("openSettings")}</span>
         </button>
         <ShareButton />
       </div>

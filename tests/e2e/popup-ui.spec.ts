@@ -65,6 +65,89 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     expect(text).toContain("#ChromeExtension")
   })
 
+  test("設定ボタンと共有ボタンは同じデザインで、中央に寄せて間隔が狭く、アイコンがSVGで表示される", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+    const buttons = popup.locator(".popup-footer-row .footer-button")
+    await expect(buttons).toHaveCount(2)
+
+    const styles = await buttons.evaluateAll((els) =>
+      els.map((el) => {
+        const s = getComputedStyle(el)
+        const r = el.getBoundingClientRect()
+        return {
+          borderRadius: s.borderRadius,
+          borderColor: s.borderTopColor,
+          fontSize: s.fontSize,
+          color: s.color,
+          svgCount: el.querySelectorAll("svg").length,
+          left: r.left,
+          right: r.right
+        }
+      })
+    )
+    expect(styles[0].borderRadius).toBe(styles[1].borderRadius)
+    expect(styles[0].borderColor).toBe(styles[1].borderColor)
+    expect(styles[0].fontSize).toBe(styles[1].fontSize)
+    expect(styles[0].color).toBe(styles[1].color)
+    expect(styles[0].svgCount).toBe(1)
+    expect(styles[1].svgCount).toBe(1)
+    // 2つのボタンの間隔は十分狭い（12px以下）
+    expect(styles[1].left - styles[0].right).toBeLessThanOrEqual(12)
+  })
+
+  test("アイコンは枠からはみ出さず、SVGに viewBox がある（縮小されて枠に収まる）", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+    // 行頭アイコン2 + ダウンロード/コピー4 + 設定・X共有2
+    await expect(popup.locator(".ui-icon")).toHaveCount(8)
+
+    const results = await popup.locator(".ui-icon").evaluateAll((icons) =>
+      icons.map((icon) => {
+        const svg = icon.querySelector("svg") as SVGSVGElement
+        const svgRect = svg.getBoundingClientRect()
+        const iconRect = icon.getBoundingClientRect()
+        // 親ボタン（なければ行頭アイコンのラッパー）の枠
+        const frame = (icon.closest("button, a, .capture-scope") ?? icon).getBoundingClientRect()
+        const tolerance = 0.5
+        return {
+          hasViewBox: svg.getAttribute("viewBox") === "0 0 24 24",
+          sizeMatches:
+            Math.abs(svgRect.width - iconRect.width) <= tolerance &&
+            Math.abs(svgRect.height - iconRect.height) <= tolerance,
+          insideFrame:
+            svgRect.left >= frame.left - tolerance &&
+            svgRect.top >= frame.top - tolerance &&
+            svgRect.right <= frame.right + tolerance &&
+            svgRect.bottom <= frame.bottom + tolerance
+        }
+      })
+    )
+    for (const r of results) {
+      expect(r.hasViewBox).toBe(true)
+      expect(r.sizeMatches).toBe(true)
+      expect(r.insideFrame).toBe(true)
+    }
+  })
+
+  test("最後に選択したサイズ基準（Viewport-based）がポップアップを開き直しても維持される", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const target = await openTarget("/")
+    const first = await openPopup(target)
+    await first.locator(".mode-button", { hasText: "Viewport-based" }).click()
+    await expect(first.locator(".mode-button.active")).toContainText("Viewport-based")
+    await first.close()
+
+    const second = await openPopup(target)
+    await expect(second.locator(".mode-button.active")).toContainText("Viewport-based")
+  })
+
   test("言語を日本語にすると、共有の投稿文が日本語のハッシュタグ付きになる", async ({
     context,
     extensionId,

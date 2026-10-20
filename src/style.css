@@ -422,15 +422,20 @@ body {
   gap: 6px;
 }
 
-.icon {
+.ui-icon {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  line-height: 0;
   color: inherit;
 }
 
-.icon svg {
-  width: 100%;
-  height: 100%;
+.ui-icon svg {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: visible;
 }
 
 .icon-button {
@@ -458,7 +463,7 @@ body {
 }
 
 .icon-button:focus-visible,
-.share-button:focus-visible {
+.footer-button:focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
 }
@@ -483,37 +488,29 @@ body {
 .popup-footer-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
 }
 
-.options-link {
-  padding: 4px 6px;
-  font-size: 11px;
-  border: none;
-  background: none;
-  color: var(--subtitle-color);
-  cursor: pointer;
-}
-
-.options-link:hover {
-  color: var(--accent-color);
-}
-
-.share-button {
+/* 設定ボタンと X 共有ボタンで共通のデザイン */
+.footer-button {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
+  font-family: inherit;
   font-size: 11px;
   font-weight: 600;
+  line-height: 1.4;
   text-decoration: none;
+  background: transparent;
   border: 1px solid var(--accent-color);
   border-radius: 999px;
   color: var(--accent-color);
+  cursor: pointer;
 }
 
-.share-button:hover {
+.footer-button:hover {
   background-color: var(--accent-color);
   color: var(--button-text);
 }

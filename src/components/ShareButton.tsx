@@ -9,13 +9,13 @@ export function ShareButton() {
   const url = buildShareUrl(buildShareText(t("shareText"), STORE_URL, t("shareHashtags")))
   return (
     <a
-      className="share-button"
+      className="footer-button share-button"
       href={url}
       target="_blank"
       rel="noopener noreferrer"
       title={t("shareOnXTitle")}
       aria-label={t("shareOnXTitle")}>
-      <Icon name="brand-x" size={14} />
+      <Icon name="brand-x" size={12} />
       <span>{t("shareOnX")}</span>
     </a>
   )

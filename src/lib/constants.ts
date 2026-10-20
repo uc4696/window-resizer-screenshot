@@ -61,7 +61,8 @@ export const MAX_SIZE_FALLBACK = 4096
 export const STORAGE_KEYS = {
   customSizes: "custom-sizes",
   settings: "settings",
-  presetOffsets: "preset-offsets"
+  presetOffsets: "preset-offsets",
+  sizeMode: "size-mode"
 } as const
 
 /** 既定の設定値 */

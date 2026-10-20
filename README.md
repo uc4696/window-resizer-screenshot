@@ -2,7 +2,7 @@
 
 **日本語** | [English](README.en.md)
 
-> **現在のバージョン: `0.2.0`（ベータ版 `0.2.0-beta.1`）**
+> **現在のバージョン: `0.2.1`（ベータ版 `0.2.1-beta.1`）**
 
 ウィンドウサイズ／ビューポートサイズを指定テンプレートやカスタムサイズにリサイズし、表示部分・ページ全体のスクリーンショットを撮影してダウンロードできるChrome拡張機能（Manifest V3 / Plasmoフレームワーク）です。
 
@@ -84,7 +84,6 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 │       └── i18n/                   # 多言語対応（messages.en.ts / messages.ja.ts / index.ts / useI18n.tsx）
 ├── package.json                    # 依存関係・manifest設定（permissions等）
 ├── tsconfig.json                   # TypeScript設定（~* -> ./src/* のエイリアス）
-├── Cline_WORKFLOW.md               # アプリ固有の開発ルール
 ├── README.md / README.en.md        # ドキュメント（日本語 / English）
 └── .prettierrc / .gitignore
 ```
@@ -137,7 +136,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
   npm run package
   ```
 
-  `build/chrome-mv3-prod.zip` が生成されます。ベータ版として配布する場合は、`window-resizer-screenshot-v0.2.0-beta.1.zip` のようにファイル名を変更してください（命名規則は `Cline_WORKFLOW.md` を参照）。
+  `build/chrome-mv3-prod.zip` が生成されます。ベータ版として配布する場合は、`window-resizer-screenshot-v0.2.1-beta.1.zip` のように `-v<バージョン>-beta.<番号>` を付けたファイル名に変更してください。
 
 ### E2Eテスト（自動テスト）
 
@@ -188,10 +187,11 @@ Playwright と Chrome for Testing で、拡張機能を実ブラウザに読み�
 
 ## バージョン管理・変更履歴（Changelog）
 
-`package.json` の `version` フィールドは、Plasmoの制約によりドット区切り3桁の整数（MAJOR.MINOR.PATCH）のみで管理しています（現在: `0.2.0`）。ベータ版であることは、配布用ZIPのファイル名・README・Gitタグで表記します（例: `window-resizer-screenshot-v0.2.0-beta.1.zip`）。
+`package.json` の `version` フィールドは、Plasmoの制約によりドット区切り3桁の整数（MAJOR.MINOR.PATCH）のみで管理しています（現在: `0.2.1`）。ベータ版であることは、配布用ZIPのファイル名・README・Gitタグで表記します（例: `window-resizer-screenshot-v0.2.1-beta.1.zip`）。
 
 | バージョン | リリース日 | 内容 |
 |---|---|---|
+| 0.2.1（beta.1） | 2026-10-20 | スクリーンショット・設定・X共有ボタンのアイコンが枠からはみ出して見切れる表示不具合を修正。最後に選択したサイズ基準（ウィンドウ基準／ビューポート基準）を記憶し、ポップアップを開き直しても維持するように変更。「設定を開く」と「Xで共有」ボタンのデザインを統一し、中央寄せ・間隔を縮小。「設定を開く」のアイコンを Tabler Icons の歯車に変更 |
 | 0.2.0（beta.1） | 2026-10-20 | スクリーンショットの保存形式に PNG / WebP を追加（既定は PNG、設定画面で変更可。JPEG も選択可能）。クリップボードへのコピー（PNG）を追加。スクリーンショット欄を Tabler Icons のアイコンボタン（表示部分・ページ全体の2行 × ダウンロード／コピー）に刷新し、コピー成功時は1.5秒だけ check 表示。Xへの共有ボタンを追加。ポップアップの余白を詰めて縦の長さを短縮。設定画面に Tabler Icons（MIT License）のクレジットを表記 |
 | 0.1.1（beta.1） | 2026-10-04 | 権限を最小化。`host_permissions`（`<all_urls>`）、`tabs`、`system.display` を削除し、`activeTab`・`scripting`・`storage`・`downloads` のみで動作するように変更。解像度の上限チェックは `window.screen` を参照するように変更 |
 | 0.1.0（beta.1） | 2026-10-03 | 0.1.0 ベータ版の初回リリース。ウィンドウ／ビューポートのリサイズ（16:9・4:3の解像度テンプレート、テンプレートごとのオフセット設定、カスタムサイズの追加・編集・削除）、表示部分／ページ全体（スクロール分割撮影＋結合）のスクリーンショット撮影と `Captures` フォルダへのJPG保存、local/syncストレージの切り替え、ファクトリーリセット、多言語対応（日本語 / English）、ダークモード対応を搭載 |

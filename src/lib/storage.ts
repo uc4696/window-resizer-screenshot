@@ -53,6 +53,19 @@ export async function setSettings(settings: Settings): Promise<void> {
   await settingsStorage.set(STORAGE_KEYS.settings, settings)
 }
 
+/**
+ * 最後に選択したサイズ基準（Window / Viewport）を取得する。
+ * 未設定・不正値は "window" に正規化する。常に local に保存される。
+ */
+export async function getSizeMode(): Promise<SizeMode> {
+  const raw = await settingsStorage.get<string>(STORAGE_KEYS.sizeMode)
+  return raw === "viewport" ? "viewport" : "window"
+}
+
+export async function setSizeMode(mode: SizeMode): Promise<void> {
+  await settingsStorage.set(STORAGE_KEYS.sizeMode, mode)
+}
+
 export async function getCustomSizes(): Promise<CustomSize[]> {
   const settings = await getSettings()
   const storage = getDataStorage(settings.storageArea)
@@ -134,7 +147,11 @@ export async function removePresetOffset(
  * 既定値を再書き込みする。
  */
 export async function resetAllSettings(): Promise<void> {
-  await settingsStorage.removeMany([STORAGE_KEYS.settings, STORAGE_KEYS.presetOffsets])
+  await settingsStorage.removeMany([
+    STORAGE_KEYS.settings,
+    STORAGE_KEYS.presetOffsets,
+    STORAGE_KEYS.sizeMode
+  ])
 
   const localStorage = getDataStorage("local")
   const syncStorage = getDataStorage("sync")
