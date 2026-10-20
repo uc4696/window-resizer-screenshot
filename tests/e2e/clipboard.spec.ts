@@ -1,5 +1,9 @@
 import { expect, test } from "./fixtures"
-import { selectImageFormat } from "./helpers"
+import {
+  getDownloadRequests,
+  recordDownloadRequests,
+  selectImageFormat
+} from "./helpers"
 
 const COPY_VISIBLE = "Copy screenshot of visible area to clipboard"
 const COPY_FULL = "Copy screenshot of full page to clipboard"
@@ -10,13 +14,15 @@ test.describe("クリップボードへのコピー", () => {
     await context.grantPermissions(["clipboard-read", "clipboard-write"])
   })
 
-  test("表示範囲のコピー: PNG画像がクリップボードに入り、アイコンが1.5秒だけ check に切り替わる", async ({
+  test("表示範囲のコピー: PNG画像がクリップボードに入り、アイコンが1.5秒だけ check に切り替わる（ダウンロードはされない）", async ({
     openTarget,
-    openPopup
+    openPopup,
+    serviceWorker
   }) => {
     const target = await openTarget("/")
     const popup = await openPopup(target)
     await target.bringToFront()
+    await recordDownloadRequests(serviceWorker)
 
     const button = popup.getByRole("button", { name: COPY_VISIBLE })
     const normalIcon = await button.innerHTML()
@@ -24,9 +30,9 @@ test.describe("クリップボードへのコピー", () => {
 
     await expect(popup.locator(".status-text")).toHaveText("Copied to clipboard.")
     await expect(button).toHaveClass(/copied/)
-    // check アイコンに切り替わっている（元のコピーアイコンとは異なる）
+    // check アイコンに切り替わっている（元のコピーアイコンとは異なる SVG になる）
+    // ※ SVG 内の class は Icon.tsx で除去されるため、class 名には依存しない
     expect(await button.innerHTML()).not.toBe(normalIcon)
-    expect(await button.innerHTML()).toContain("icon-tabler-check")
 
     // 1.5秒後に元のアイコンへ戻る
     await expect(button).not.toHaveClass(/copied/, { timeout: 5_000 })
@@ -40,6 +46,9 @@ test.describe("クリップボードへのコピー", () => {
     expect(type.types).toContain("image/png")
     expect(type.mime).toBe("image/png")
     expect(type.size).toBeGreaterThan(0)
+
+    // コピー操作ではファイルをダウンロードしない
+    expect(await getDownloadRequests(serviceWorker)).toEqual([])
   })
 
   test("保存形式が WebP でも、コピーは常にPNGになる", async ({
@@ -65,13 +74,15 @@ test.describe("クリップボードへのコピー", () => {
     expect(types).toEqual(["image/png"])
   })
 
-  test("ページ全体のコピー: 縦長ページでもPNGがクリップボードに入る", async ({
+  test("ページ全体のコピー: 縦長ページでもPNGがクリップボードに入り、ダウンロードはされない", async ({
     openTarget,
-    openPopup
+    openPopup,
+    serviceWorker
   }) => {
     const target = await openTarget("/long")
     const popup = await openPopup(target)
     await target.bringToFront()
+    await recordDownloadRequests(serviceWorker)
 
     await popup.getByRole("button", { name: COPY_FULL }).click()
     await expect(popup.locator(".status-text")).toHaveText("Copied to clipboard.", {
@@ -84,5 +95,8 @@ test.describe("クリップボードへのコピー", () => {
       return { width: bitmap.width, height: bitmap.height }
     })
     expect(size.height).toBeGreaterThan(size.width / 10)
+
+    // コピー操作ではファイルをダウンロードしない
+    expect(await getDownloadRequests(serviceWorker)).toEqual([])
   })
 })
