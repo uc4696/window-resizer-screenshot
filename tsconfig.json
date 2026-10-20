@@ -3,7 +3,6 @@
     "paths": {
       "~*": ["./src/*"]
     },
-    "baseUrl": ".",
     "target": "ES6",
     "lib": ["DOM", "ESNext"],
     "jsx": "react-jsx",
