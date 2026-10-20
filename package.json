@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
+    "postbuild": "node scripts/copy-license.mjs",
+    "prepackage": "node scripts/copy-license.mjs",
     "package": "plasmo package",
     "icon": "node scripts/generate-icon.js",
     "test:install-browser": "node scripts/install-chrome.mjs",

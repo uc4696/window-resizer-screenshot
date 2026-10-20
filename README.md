@@ -2,7 +2,7 @@
 
 **日本語** | [English](README.en.md)
 
-> **現在のバージョン: `0.2.1`（ベータ版 `0.2.1-beta.1`）**
+> **現在のバージョン: `0.2.1`（ベータ版 `0.2.1-beta.2`）**
 
 ウィンドウサイズ／ビューポートサイズを指定テンプレートやカスタムサイズにリサイズし、表示部分・ページ全体のスクリーンショットを撮影してダウンロードできるChrome拡張機能（Manifest V3 / Plasmoフレームワーク）です。
 
@@ -53,6 +53,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 │   └── buymeacoffee-button.png     # サポートリンク用の画像
 ├── scripts/
 │   ├── generate-icon.js            # icon-source.png から各サイズのアイコンを生成（sharp使用）
+│   ├── copy-license.mjs            # Tabler Icons のライセンスをビルド成果物（ZIP）へコピー（build/package 時に自動実行）
 │   └── install-chrome.mjs          # E2Eテスト用の Chrome for Testing を取得（CHROME_CHANNEL で指定）
 ├── tests/e2e/                      # E2Eテスト（Playwright）と共通フィクスチャ・テスト用サーバー
 ├── playwright.config.ts            # Playwright設定
@@ -136,7 +137,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
   npm run package
   ```
 
-  `build/chrome-mv3-prod.zip` が生成されます。ベータ版として配布する場合は、`window-resizer-screenshot-v0.2.1-beta.1.zip` のように `-v<バージョン>-beta.<番号>` を付けたファイル名に変更してください。
+  `build/chrome-mv3-prod.zip` が生成されます。ベータ版として配布する場合は、`window-resizer-screenshot-v0.2.1-beta.2.zip` のように `-v<バージョン>-beta.<番号>` を付けたファイル名に変更してください。
 
 ### E2Eテスト（自動テスト）
 
@@ -187,10 +188,11 @@ Playwright と Chrome for Testing で、拡張機能を実ブラウザに読み�
 
 ## バージョン管理・変更履歴（Changelog）
 
-`package.json` の `version` フィールドは、Plasmoの制約によりドット区切り3桁の整数（MAJOR.MINOR.PATCH）のみで管理しています（現在: `0.2.1`）。ベータ版であることは、配布用ZIPのファイル名・README・Gitタグで表記します（例: `window-resizer-screenshot-v0.2.1-beta.1.zip`）。
+`package.json` の `version` フィールドは、Plasmoの制約によりドット区切り3桁の整数（MAJOR.MINOR.PATCH）のみで管理しています（現在: `0.2.1`）。ベータ版であることは、配布用ZIPのファイル名・README・Gitタグで表記します（例: `window-resizer-screenshot-v0.2.1-beta.2.zip`）。
 
 | バージョン | リリース日 | 内容 |
 |---|---|---|
+| 0.2.1（beta.2） | 2026-10-21 | 配布用ZIPに Tabler Icons の MIT ライセンス（`licenses/LICENSE-tabler.txt`）を同梱するように変更。ビルド・パッケージ時に自動でコピーする `scripts/copy-license.mjs` を追加 |
 | 0.2.1（beta.1） | 2026-10-20 | スクリーンショット・設定・X共有ボタンのアイコンが枠からはみ出して見切れる表示不具合を修正。最後に選択したサイズ基準（ウィンドウ基準／ビューポート基準）を記憶し、ポップアップを開き直しても維持するように変更。「設定を開く」と「Xで共有」ボタンのデザインを統一し、中央寄せ・間隔を縮小。「設定を開く」のアイコンを Tabler Icons の歯車に変更 |
 | 0.2.0（beta.1） | 2026-10-20 | スクリーンショットの保存形式に PNG / WebP を追加（既定は PNG、設定画面で変更可。JPEG も選択可能）。クリップボードへのコピー（PNG）を追加。スクリーンショット欄を Tabler Icons のアイコンボタン（表示部分・ページ全体の2行 × ダウンロード／コピー）に刷新し、コピー成功時は1.5秒だけ check 表示。Xへの共有ボタンを追加。ポップアップの余白を詰めて縦の長さを短縮。設定画面に Tabler Icons（MIT License）のクレジットを表記 |
 | 0.1.1（beta.1） | 2026-10-04 | 権限を最小化。`host_permissions`（`<all_urls>`）、`tabs`、`system.display` を削除し、`activeTab`・`scripting`・`storage`・`downloads` のみで動作するように変更。解像度の上限チェックは `window.screen` を参照するように変更 |
@@ -210,7 +212,7 @@ Playwright と Chrome for Testing で、拡張機能を実ブラウザに読み�
 
 ## サードパーティ
 
-- アイコン: [Tabler Icons](https://tabler.io/icons)（MIT License）。必要な SVG のみ `icons/` に同梱し、ライセンス全文は `licenses/LICENSE-tabler.txt` に収録しています。
+- アイコン: [Tabler Icons](https://tabler.io/icons)（MIT License）。必要な SVG のみ `icons/` に同梱し、ライセンス全文は `licenses/LICENSE-tabler.txt` に収録しており、ビルド時に `scripts/copy-license.mjs` が成果物へコピーするため、配布用ZIP内にも `licenses/LICENSE-tabler.txt` として同梱されます。
 
 ---
 
