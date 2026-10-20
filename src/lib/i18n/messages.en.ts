@@ -11,9 +11,20 @@ export const en = {
   modeWindow: "Window-based",
   modeViewport: "Viewport-based",
   screenshotTitle: "Screenshot",
-  captureVisible: "Capture visible area",
-  captureFullPage: "Capture full page",
-  openSettings: "⚙ Open settings",
+  captureVisibleLabel: "Visible area",
+  captureFullPageLabel: "Full page",
+  captureVisibleDownload: "Download screenshot of visible area",
+  captureVisibleCopy: "Copy screenshot of visible area to clipboard",
+  captureFullPageDownload: "Download screenshot of full page",
+  captureFullPageCopy: "Copy screenshot of full page to clipboard",
+  statusCopied: "Copied to clipboard.",
+  errClipboard: "Failed to copy to the clipboard.",
+  openSettings: "Open settings",
+  shareOnX: "Share on X",
+  shareOnXTitle: "Share this extension on X (opens the post screen)",
+  shareText:
+    "Check how your page looks at any size, instantly.\nResize the window/viewport and capture full-page screenshots, all in one extension 📸",
+  shareHashtags: "#ChromeExtension #WebDev",
   statusResized: "Resized to {width} x {height}.",
   statusError: "Error: {message}",
   statusCapturingFullPage: "Capturing full page...",
@@ -64,6 +75,9 @@ export const en = {
   captureDirLabel: "Screenshot save folder name",
   captureDirHint:
     "Name of the folder created under your Downloads folder (e.g. Downloads/Captures/...).",
+  imageFormatLabel: "Default screenshot format",
+  imageFormatHint:
+    "Format used when downloading screenshots. Copying to the clipboard always uses PNG.",
   storageLabel: "Storage area (where custom sizes are saved)",
   storageHint:
     "local: saved on this device only. sync: tied to your Google account and synced across devices.",
@@ -78,7 +92,7 @@ export const en = {
   clear: "Clear",
   resetLabel: "Factory reset (initialize settings)",
   resetHint:
-    "Restores the save folder name, storage area, language, custom sizes and preset offsets to their defaults.",
+    "Restores the save folder name, screenshot format, storage area, language, custom sizes and preset offsets to their defaults.",
   resetButton: "Reset settings",
   resetDone: "Settings have been reset.",
   resetConfirm:

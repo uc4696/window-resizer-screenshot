@@ -1,0 +1,188 @@
+import { expect, test } from "./fixtures"
+
+test.describe("ポップアップのUI（アイコンボタン・共有・高さ）", () => {
+  test("スクリーンショット欄は「表示部分」「ページ全体」の2行で、各行にダウンロードとコピーのボタンがある", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+
+    const rows = popup.locator(".capture-row")
+    await expect(rows).toHaveCount(2)
+    await expect(rows.nth(0)).toContainText("Visible area")
+    await expect(rows.nth(1)).toContainText("Full page")
+    for (let i = 0; i < 2; i++) {
+      await expect(rows.nth(i).locator("button.icon-button")).toHaveCount(2)
+      // 範囲アイコン（左）+ ボタン2つ（右）
+      await expect(rows.nth(i).locator(".capture-scope svg")).toHaveCount(1)
+    }
+  })
+
+  test("すべてのアイコンボタン・共有ボタンに title と aria-label があり、色は currentColor で指定される", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+
+    const targets = popup.locator("button.icon-button, a.share-button")
+    // 描画完了を待ってから数える（アイコンボタン4つ + 共有ボタン1つ）
+    await expect(targets).toHaveCount(5)
+    for (const el of await targets.all()) {
+      const title = await el.getAttribute("title")
+      const label = await el.getAttribute("aria-label")
+      expect(title).toBeTruthy()
+      expect(label).toBeTruthy()
+    }
+
+    // SVG はインライン展開され、stroke は currentColor（CSS の color で着色）
+    await expect(popup.locator(".capture-row svg")).toHaveCount(6)
+    const strokes = await popup
+      .locator(".capture-row svg")
+      .evaluateAll((svgs) => svgs.map((s) => s.getAttribute("stroke")))
+    expect(strokes.length).toBe(6)
+    expect(new Set(strokes)).toEqual(new Set(["currentColor"]))
+  })
+
+  test("Xで共有ボタン: 共有であると分かる表示で、投稿画面（intent）のURLに本文が含まれる", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+    const share = popup.locator("a.share-button")
+
+    await expect(share).toContainText("Share on X")
+    await expect(share).toHaveAttribute("target", "_blank")
+    await expect(share).toHaveAttribute("rel", /noopener/)
+
+    const href = (await share.getAttribute("href")) ?? ""
+    const url = new URL(href)
+    expect(url.origin + url.pathname).toBe("https://x.com/intent/post")
+    const text = url.searchParams.get("text") ?? ""
+    expect(text).toContain("Window & Viewport Resizer")
+    expect(text).toContain(
+      "https://chromewebstore.google.com/detail/kaikockbajglbkgoeepfbamdknadhiji"
+    )
+    expect(text).toContain("#ChromeExtension")
+  })
+
+  test("設定ボタンと共有ボタンは同じデザインで、中央に寄せて間隔が狭く、アイコンがSVGで表示される", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+    const buttons = popup.locator(".popup-footer-row .footer-button")
+    await expect(buttons).toHaveCount(2)
+
+    const styles = await buttons.evaluateAll((els) =>
+      els.map((el) => {
+        const s = getComputedStyle(el)
+        const r = el.getBoundingClientRect()
+        return {
+          borderRadius: s.borderRadius,
+          borderColor: s.borderTopColor,
+          fontSize: s.fontSize,
+          color: s.color,
+          svgCount: el.querySelectorAll("svg").length,
+          left: r.left,
+          right: r.right
+        }
+      })
+    )
+    expect(styles[0].borderRadius).toBe(styles[1].borderRadius)
+    expect(styles[0].borderColor).toBe(styles[1].borderColor)
+    expect(styles[0].fontSize).toBe(styles[1].fontSize)
+    expect(styles[0].color).toBe(styles[1].color)
+    expect(styles[0].svgCount).toBe(1)
+    expect(styles[1].svgCount).toBe(1)
+    // 2つのボタンの間隔は十分狭い（12px以下）
+    expect(styles[1].left - styles[0].right).toBeLessThanOrEqual(12)
+  })
+
+  test("アイコンは枠からはみ出さず、SVGに viewBox がある（縮小されて枠に収まる）", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+    // 行頭アイコン2 + ダウンロード/コピー4 + 設定・X共有2
+    await expect(popup.locator(".ui-icon")).toHaveCount(8)
+
+    const results = await popup.locator(".ui-icon").evaluateAll((icons) =>
+      icons.map((icon) => {
+        const svg = icon.querySelector("svg") as SVGSVGElement
+        const svgRect = svg.getBoundingClientRect()
+        const iconRect = icon.getBoundingClientRect()
+        // 親ボタン（なければ行頭アイコンのラッパー）の枠
+        const frame = (icon.closest("button, a, .capture-scope") ?? icon).getBoundingClientRect()
+        const tolerance = 0.5
+        return {
+          hasViewBox: svg.getAttribute("viewBox") === "0 0 24 24",
+          sizeMatches:
+            Math.abs(svgRect.width - iconRect.width) <= tolerance &&
+            Math.abs(svgRect.height - iconRect.height) <= tolerance,
+          insideFrame:
+            svgRect.left >= frame.left - tolerance &&
+            svgRect.top >= frame.top - tolerance &&
+            svgRect.right <= frame.right + tolerance &&
+            svgRect.bottom <= frame.bottom + tolerance
+        }
+      })
+    )
+    for (const r of results) {
+      expect(r.hasViewBox).toBe(true)
+      expect(r.sizeMatches).toBe(true)
+      expect(r.insideFrame).toBe(true)
+    }
+  })
+
+  test("最後に選択したサイズ基準（Viewport-based）がポップアップを開き直しても維持される", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const target = await openTarget("/")
+    const first = await openPopup(target)
+    await first.locator(".mode-button", { hasText: "Viewport-based" }).click()
+    await expect(first.locator(".mode-button.active")).toContainText("Viewport-based")
+    await first.close()
+
+    const second = await openPopup(target)
+    await expect(second.locator(".mode-button.active")).toContainText("Viewport-based")
+  })
+
+  test("言語を日本語にすると、共有の投稿文が日本語のハッシュタグ付きになる", async ({
+    context,
+    extensionId,
+    openTarget,
+    openPopup
+  }) => {
+    const options = await context.newPage()
+    await options.goto(`chrome-extension://${extensionId}/options.html`)
+    await options.locator("#language").selectOption("ja")
+    await expect(options.getByText("設定を保存しました。")).toBeVisible()
+
+    const popup = await openPopup(await openTarget("/"))
+    const href =
+      (await popup.locator("a.share-button").getAttribute("href")) ?? ""
+    const text = new URL(href).searchParams.get("text") ?? ""
+    expect(text).toContain("#Chrome拡張機能 #Web制作")
+    expect(text).toContain("このサイズだとどう見える")
+  })
+
+  test("初期状態ではスクロールなしで全体が表示される（スクロール自体は無効化していない）", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+    // Chrome のポップアップと同じ幅・高さ上限（幅は拡張機能側の300px、高さ上限600px）
+    await popup.setViewportSize({ width: 320, height: 600 })
+
+    const metrics = await popup.locator(".popup-root").evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+      overflowY: getComputedStyle(el).overflowY
+    }))
+    expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight)
+    expect(metrics.clientHeight).toBeLessThanOrEqual(600)
+    // 狭い環境・高さが足りない環境でスクロールできるよう、overflow は auto のまま
+    expect(metrics.overflowY).toBe("auto")
+  })
+})

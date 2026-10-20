@@ -43,7 +43,7 @@ export async function waitForFinalStatus(
  * 拡張機能が chrome.downloads.download に渡した filename（保存先の相対パス）を記録し始める。
  *
  * Playwright はダウンロードを横取りして一時フォルダへ保存するため、chrome.downloads が返す
- * 最終パスでは「Captures/screenshot_*.jpg」という保存先指定を検証できない。
+ * 最終パスでは「Captures/screenshot_*.png」という保存先指定を検証できない。
  * そのため Service Worker 内で download() 呼び出しの引数を記録して検証する。
  * （撮影を行う前に呼び出すこと）
  */
@@ -127,4 +127,44 @@ export function readJpegSize(filePath: string): {
     offset += 2 + buf.readUInt16BE(offset + 2)
   }
   throw new Error("JPEG のサイズ情報（SOF マーカー）が見つかりません")
+}
+
+/** PNG ファイルのシグネチャを検証し、画像サイズ（px）を返す。PNG でなければ例外を投げる。 */
+export function readPngSize(filePath: string): { width: number; height: number } {
+  const buf = readFileSync(filePath)
+  const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+  if (!signature.every((byte, i) => buf[i] === byte)) {
+    throw new Error("PNG ファイルではありません（シグネチャが一致しません）")
+  }
+  // IHDR チャンク: 幅(offset 16) / 高さ(offset 20)
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) }
+}
+
+/** WebP ファイル（RIFF/WEBP, VP8/VP8L/VP8X）を検証し、画像サイズ（px）を返す。 */
+export function readWebpSize(filePath: string): { width: number; height: number } {
+  const buf = readFileSync(filePath)
+  if (buf.toString("ascii", 0, 4) !== "RIFF" || buf.toString("ascii", 8, 12) !== "WEBP") {
+    throw new Error("WebP ファイルではありません（RIFF/WEBP ヘッダーがありません）")
+  }
+  const chunk = buf.toString("ascii", 12, 16)
+  if (chunk === "VP8X") {
+    return { width: buf.readUIntLE(24, 3) + 1, height: buf.readUIntLE(27, 3) + 1 }
+  }
+  if (chunk === "VP8L") {
+    const bits = buf.readUInt32LE(21)
+    return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 }
+  }
+  if (chunk === "VP8 ") {
+    return { width: buf.readUInt16LE(26) & 0x3fff, height: buf.readUInt16LE(28) & 0x3fff }
+  }
+  throw new Error(`未対応の WebP チャンクです: ${chunk}`)
+}
+
+/** 設定画面で画像形式を選択する（選択時点で保存される）。 */
+export async function selectImageFormat(
+  options: Page,
+  format: "PNG" | "WebP" | "JPEG"
+): Promise<void> {
+  await options.getByRole("radio", { name: format, exact: true }).check()
+  await expect(options.getByText("Settings saved.")).toBeVisible()
 }

@@ -1,8 +1,9 @@
 import { Storage } from "@plasmohq/storage"
 
-import { DEFAULT_SETTINGS, STORAGE_KEYS } from "./constants"
+import { DEFAULT_SETTINGS, IMAGE_FORMATS, STORAGE_KEYS } from "./constants"
 import type {
   CustomSize,
+  ImageFormat,
   LanguageSetting,
   PresetModeOffsets,
   PresetOffset,
@@ -13,6 +14,7 @@ export interface Settings {
   captureDirName: string
   storageArea: "local" | "sync"
   language: LanguageSetting
+  imageFormat: ImageFormat
 }
 
 /**
@@ -39,12 +41,29 @@ export async function getSettings(): Promise<Settings> {
   return {
     captureDirName: raw?.captureDirName || DEFAULT_SETTINGS.captureDirName,
     storageArea: raw?.storageArea || DEFAULT_SETTINGS.storageArea,
-    language: raw?.language || DEFAULT_SETTINGS.language
+    language: raw?.language || DEFAULT_SETTINGS.language,
+    // 未設定・不正値は既定（png）に正規化する
+    imageFormat: IMAGE_FORMATS.includes(raw?.imageFormat as ImageFormat)
+      ? (raw?.imageFormat as ImageFormat)
+      : DEFAULT_SETTINGS.imageFormat
   }
 }
 
 export async function setSettings(settings: Settings): Promise<void> {
   await settingsStorage.set(STORAGE_KEYS.settings, settings)
+}
+
+/**
+ * 最後に選択したサイズ基準（Window / Viewport）を取得する。
+ * 未設定・不正値は "window" に正規化する。常に local に保存される。
+ */
+export async function getSizeMode(): Promise<SizeMode> {
+  const raw = await settingsStorage.get<string>(STORAGE_KEYS.sizeMode)
+  return raw === "viewport" ? "viewport" : "window"
+}
+
+export async function setSizeMode(mode: SizeMode): Promise<void> {
+  await settingsStorage.set(STORAGE_KEYS.sizeMode, mode)
 }
 
 export async function getCustomSizes(): Promise<CustomSize[]> {
@@ -128,7 +147,11 @@ export async function removePresetOffset(
  * 既定値を再書き込みする。
  */
 export async function resetAllSettings(): Promise<void> {
-  await settingsStorage.removeMany([STORAGE_KEYS.settings, STORAGE_KEYS.presetOffsets])
+  await settingsStorage.removeMany([
+    STORAGE_KEYS.settings,
+    STORAGE_KEYS.presetOffsets,
+    STORAGE_KEYS.sizeMode
+  ])
 
   const localStorage = getDataStorage("local")
   const syncStorage = getDataStorage("sync")

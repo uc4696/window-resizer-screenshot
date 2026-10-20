@@ -27,12 +27,12 @@ test.describe("設定画面（正常系）", () => {
     const popup = await openPopup(target)
     await target.bringToFront()
     await recordDownloadRequests(serviceWorker)
-    await popup.getByRole("button", { name: "Capture visible area" }).click()
+    await popup.getByRole("button", { name: "Download screenshot of visible area" }).click()
     await waitForFinalStatus(popup)
 
     const requests = await getDownloadRequests(serviceWorker)
     expect(requests).toHaveLength(1)
-    expect(requests[0]).toMatch(/^E2ECaptures\/screenshot_\d{8}_\d{6}\.jpg$/)
+    expect(requests[0]).toMatch(/^E2ECaptures\/screenshot_\d{8}_\d{6}\.png$/)
   })
 
   test("言語を日本語に切り替えると、画面文言が日本語になり、設定が保持される", async ({
@@ -72,6 +72,44 @@ test.describe("設定画面（正常系）", () => {
     await expect(
       presetButton(popup, 800, 600).locator(".preset-offset-badge")
     ).toBeVisible()
+  })
+
+  test("画像形式の既定は PNG で、WebP に変更すると再読み込み後も保持される", async ({
+    context,
+    extensionId
+  }) => {
+    const options = await context.newPage()
+    await options.goto(`chrome-extension://${extensionId}/options.html`)
+    await expect(options.getByRole("radio", { name: "PNG", exact: true })).toBeChecked()
+
+    await options.getByRole("radio", { name: "WebP", exact: true }).check()
+    await expect(options.getByText("Settings saved.")).toBeVisible()
+
+    await options.reload()
+    await expect(options.getByRole("radio", { name: "WebP", exact: true })).toBeChecked()
+  })
+
+  test("画像形式の変更は、設定の初期化で PNG に戻る", async ({ context, extensionId }) => {
+    const options = await context.newPage()
+    options.on("dialog", (dialog) => dialog.accept())
+    await options.goto(`chrome-extension://${extensionId}/options.html`)
+    await options.getByRole("radio", { name: "JPEG", exact: true }).check()
+    await expect(options.getByText("Settings saved.")).toBeVisible()
+
+    await options.getByRole("button", { name: "Reset settings" }).click()
+    await expect(options.getByText("Settings have been reset.")).toBeVisible()
+    await expect(options.getByRole("radio", { name: "PNG", exact: true })).toBeChecked()
+  })
+
+  test("設定画面の隅に Tabler Icons のクレジット（MIT License）が表示される", async ({
+    context,
+    extensionId
+  }) => {
+    const options = await context.newPage()
+    await options.goto(`chrome-extension://${extensionId}/options.html`)
+    await expect(options.locator(".options-credit")).toHaveText(
+      "Icons: Tabler Icons (MIT License)"
+    )
   })
 
   test("設定の初期化で、言語・カスタムサイズが既定値に戻る", async ({
