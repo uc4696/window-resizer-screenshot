@@ -2,7 +2,7 @@
 
 [日本語](README.md) | **English**
 
-> **Current version: `0.2.1` (beta `0.2.1-beta.1`)**
+> **Current version: `0.2.1` (beta `0.2.1-beta.2`)**
 
 A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or viewport to a preset or custom size, and captures screenshots of the visible area or the full page and downloads them.
 
@@ -53,6 +53,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │   └── buymeacoffee-button.png     # Image for the support link
 ├── scripts/
 │   ├── generate-icon.js            # Generates icons of each size from icon-source.png (uses sharp)
+│   ├── copy-license.mjs            # Copies the Tabler Icons license into the build output (ZIP); runs automatically on build / package
 │   └── install-chrome.mjs          # Downloads Chrome for Testing for E2E tests (set CHROME_CHANNEL)
 ├── tests/e2e/                      # E2E tests (Playwright), shared fixtures and a test server
 ├── playwright.config.ts            # Playwright configuration
@@ -136,7 +137,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
   npm run package
   ```
 
-  This generates `build/chrome-mv3-prod.zip`. When distributing a beta version, rename the file by adding `-v<version>-beta.<number>`, for example `window-resizer-screenshot-v0.2.1-beta.1.zip`.
+  This generates `build/chrome-mv3-prod.zip`. When distributing a beta version, rename the file by adding `-v<version>-beta.<number>`, for example `window-resizer-screenshot-v0.2.1-beta.2.zip`.
 
 ### E2E tests (automated tests)
 
@@ -187,10 +188,11 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 
 ## Versioning and changelog
 
-Because of a Plasmo constraint, the `version` field of `package.json` is managed strictly as three dot-separated integers (MAJOR.MINOR.PATCH) (current: `0.2.1`). Beta status is expressed in the distributable ZIP file name, the README and Git tags (for example, `window-resizer-screenshot-v0.2.1-beta.1.zip`).
+Because of a Plasmo constraint, the `version` field of `package.json` is managed strictly as three dot-separated integers (MAJOR.MINOR.PATCH) (current: `0.2.1`). Beta status is expressed in the distributable ZIP file name, the README and Git tags (for example, `window-resizer-screenshot-v0.2.1-beta.2.zip`).
 
 | Version | Release date | Summary |
 |---|---|---|
+| 0.2.1 (beta.2) | 2026-10-21 | The distribution ZIP now includes the Tabler Icons MIT license (`licenses/LICENSE-tabler.txt`). Added `scripts/copy-license.mjs`, which copies it automatically on build / package |
 | 0.2.1 (beta.1) | 2026-10-20 | Fixed a display issue where the icons on the screenshot, settings and Share on X buttons overflowed their frames and were clipped. The last selected size basis (Window-based / Viewport-based) is now remembered when the popup is reopened. The Open settings and Share on X buttons now share the same design, are centered and sit closer together. The Open settings icon is now a Tabler Icons gear |
 | 0.2.0 (beta.1) | 2026-10-20 | Added PNG and WebP screenshot formats (PNG is the default and can be changed in the settings; JPEG is still available). Added copying to the clipboard (PNG). Redesigned the screenshot section with Tabler Icons buttons (Visible area / Full page rows x Download / Copy), showing a check icon for 1.5 seconds after copying. Added a Share on X button. Tightened the popup spacing to reduce its height. Added the Tabler Icons (MIT License) credit to the settings page |
 | 0.1.1 (beta.1) | 2026-10-04 | Minimized permissions. Removed `host_permissions` (`<all_urls>`), `tabs` and `system.display`; the extension now works with only `activeTab`, `scripting`, `storage` and `downloads`. The upper-limit check for sizes now uses `window.screen` |
@@ -210,7 +212,7 @@ Because of a Plasmo constraint, the `version` field of `package.json` is managed
 
 ## Third-party
 
-- Icons: [Tabler Icons](https://tabler.io/icons) (MIT License). Only the required SVGs are bundled in `icons/`; the full license text is in `licenses/LICENSE-tabler.txt`.
+- Icons: [Tabler Icons](https://tabler.io/icons) (MIT License). Only the required SVGs are bundled in `icons/`; the full license text is in `licenses/LICENSE-tabler.txt`, and `scripts/copy-license.mjs` copies it into the build output at build time, so it is also included in the distribution ZIP as `licenses/LICENSE-tabler.txt`.
 
 ---
 

@@ -42,8 +42,8 @@ test.describe("manifest.json（配布物の回帰チェック）", () => {
     expect(manifest.permissions).not.toContain("clipboardWrite")
   })
 
-  test("Tabler Icons の MIT ライセンス（licenses/LICENSE-tabler.txt）がリポジトリに同梱されている", () => {
-    const license = path.resolve(BUILD_PATH, "../../licenses/LICENSE-tabler.txt")
+  test("Tabler Icons の MIT ライセンス（licenses/LICENSE-tabler.txt）が配布物に同梱されている", () => {
+    const license = path.join(BUILD_PATH, "licenses/LICENSE-tabler.txt")
     expect(existsSync(license)).toBe(true)
     expect(readFileSync(license, "utf8")).toContain("MIT License")
   })
