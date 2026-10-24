@@ -144,7 +144,8 @@ export async function resizeViewport(width: number, height: number) {
     throw new Error(
       t("errViewportFailed", {
         message: e instanceof Error ? e.message : String(e)
-      })
+      }),
+      { cause: e }
     )
   }
 

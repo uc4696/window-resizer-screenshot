@@ -54,7 +54,10 @@ function PopupContent() {
   }
 
   useEffect(() => {
-    refreshSizes()
+    Promise.all([getCurrentWindowSize(), getCurrentViewportSize()]).then(([w, v]) => {
+      setWindowSize(w)
+      setViewportSize(v)
+    })
     getCurrentDisplayBounds().then(setDisplay)
     getCustomSizes().then(setCustomSizes)
     getPresetOffsets().then(setPresetOffsets)
