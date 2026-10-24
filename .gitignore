@@ -33,11 +33,6 @@ Thumbs.db
 tree.txt
 tree_claude.txt
 
-# AI Workflow
-.clinerules
-Cline_WORKFLOW.md
-PROJECT_SPEC.md
-
 # Claude Code (personal)
 CLAUDE.local.md
 .claude/settings.local.json

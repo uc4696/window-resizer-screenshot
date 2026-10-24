@@ -58,6 +58,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 ├── tests/e2e/                      # E2E tests (Playwright), shared fixtures and a test server
 ├── playwright.config.ts            # Playwright configuration
 ├── .github/workflows/e2e-beta.yml  # Daily E2E run (Chrome Beta) and failure notifications
+├── .github/funding.yml             # Support link settings (Buy Me a Coffee)
 ├── src/
 │   ├── popup.tsx                   # Popup UI (template selection, custom sizes, screenshot buttons)
 │   ├── style.css                   # Popup styles (dark mode supported)
@@ -86,6 +87,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 ├── package.json                    # Dependencies and manifest settings (permissions, etc.)
 ├── tsconfig.json                   # TypeScript settings (alias ~* -> ./src/*)
 ├── README.md / README.en.md        # Documentation (Japanese / English)
+├── eslint.config.mjs               # ESLint settings (flat config)
 └── .prettierrc / .gitignore
 ```
 
@@ -138,6 +140,15 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
   ```
 
   This generates `build/chrome-mv3-prod.zip`. When distributing a beta version, rename the file by adding `-v<version>-beta.<number>`, for example `window-resizer-screenshot-v0.2.1-beta.2.zip`.
+
+- Format and lint the code:
+
+  ```powershell
+  npm run format
+  npm run lint
+  ```
+
+  `npm run format` formats the source code in `src`, `tests`, `scripts`, etc. with Prettier (Markdown is excluded). `npm run lint` runs static analysis with ESLint.
 
 ### E2E tests (automated tests)
 

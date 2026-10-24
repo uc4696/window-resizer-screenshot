@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 言語
 
-- ユーザーへの報告、コード内コメント、README、コミットメッセージ、PR・Issue の文面はすべて日本語で書く。
+- コード内コメント、README、コミットメッセージ、PR・Issue の文面はすべて日本語で書く。
 - ブランチ名だけは英語（`feature/...` / `fix/...` / `test/...`）。
 
 ## Git 運用
 
 - セッション開始時は `git status` と `git log -n 5 --oneline` で現在のブランチと文脈を確認する。
 - `main` 上でコード変更を頼まれたら、書き換える前に新しいブランチを作るか確認する。勝手に `main` や無関係なブランチへ切り替えない。
-- 変更は PR 経由で `main` にマージする運用。
+- 変更は PR 経由で `main` にマージする運用。ただし CLAUDE.md などの開発用ドキュメントの整理は、履歴を公開する意味が薄いので `main` で直接行う。
 
 ## コマンドと注意点
 
@@ -26,10 +26,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - 権限（`package.json` の `manifest.permissions`）は最小限に保つ。現在は `activeTab` / `storage` / `downloads` / `scripting` のみで、`host_permissions`・`tabs`・`clipboardWrite` は意図的に使っていない。追加が必要なら事前に相談する。E2E はビルド成果物の複製に `host_permissions` を足して読み込んでいるだけで、配布物は変更しない。
 - Manifest V3 の現行仕様に沿い、非推奨 API や古いライブラリを持ち込まない。API キー等をハードコードしない。
-- Plasmo のビルドで SVG の `viewBox` が除去されるため、`src/components/Icon.tsx` で `viewBox` を補い width/height を書き換えている。アイコンは `icons/*.svg`（Tabler Icons、MIT）を `data-text:` でインライン展開する。
-- 絵文字はビルドで壊れるため、ソースに直書きせず `String.fromCodePoint` を使う。
+- 絵文字はビルドで壊れるため、ソースに直書きせず `String.fromCodePoint` を使う（i18n 辞書内は `\uXXXX` 表記になっても可）。
 - UI 文言は `en` / `ja` の両方の辞書に追加し、`t()` / `useI18n()` 経由で使う。拡張機能名・説明は `assets/_locales/{en,ja}/messages.json`。
-- ポップアップの `.popup-root` の `max-height: 560px` / `overflow-y: auto` は外さない。
+
+## 機能別の仕様
+
+新機能の追加や仕様変更をしたら、この節の該当項目を更新・追記する。
+
+- **保存形式**: PNG（既定）/ WebP / JPEG を設定画面で選択（選択した時点で保存）。タイル撮影は常に PNG で行い、最終出力時だけ形式を変換する（`src/lib/screenshot.ts`）。`Settings.imageFormat` の不正値は `png` に正規化する。
+- **クリップボード**: 保存形式によらず常に PNG。`clipboardWrite` 権限は使わず、popup 側で `ClipboardItem` に Promise を渡す（`src/components/CaptureSection.tsx`）。成功時は1.5秒だけ check アイコンを出す。
+- **X 共有**: `https://x.com/intent/post?text=...` を新規タブで開く（権限不要）。本文は `src/lib/share.ts` で組み立て、文言とハッシュタグは i18n（ja: `#Chrome拡張機能 #Web制作` / en: `#ChromeExtension #WebDev`）。
+- **アイコン**: Tabler Icons（MIT）の `icons/*.svg` を `data-text:` でインライン展開する（`src/components/Icon.tsx`）。
+  - Plasmo のビルドで SVG の `viewBox` が除去され、width/height を変えても縮小されず見切れる。そのため Icon.tsx で `viewBox="0 0 24 24"` を補い、width/height を `size` に書き換える。SVG 内の class（`icon ...`）は読み込み時に除去し、ラッパーのクラスは `.ui-icon`。
+  - 線画（outline）: screenshot / viewport-tall / download / copy / check / settings。brand-x だけは細線だと小サイズで欠けるため塗りつぶし（filled）。
+  - サイズは既定 16px、フッターボタン内は 12px。
+  - ライセンスは `licenses/LICENSE-tabler.txt`。設定画面に「Icons: Tabler Icons (MIT License)」と表記する。
+- **サイズ基準の記憶**: 最後に選んだサイズ基準（window / viewport）を local ストレージのキー `size-mode` に保存し、ポップアップ表示時に復元する（`src/lib/storage.ts` の `getSizeMode` / `setSizeMode`、`src/popup.tsx` の `changeMode`）。不正値・未設定は window に正規化し、ファクトリーリセットで削除する。
+- **フッターボタン**: 「設定を開く」と「X で共有」は共通クラス `.footer-button`（枠線付きの pill 型、アイコン + 文字）で同じデザインにする。`.popup-footer-row` で中央寄せ、間隔は 6px。
+- **ポップアップの高さ**: 初期状態でスクロールが出ないよう余白を詰めるが、`.popup-root` の `max-height: 560px` / `overflow-y: auto` は外さない。
 
 ## バージョン・リリース
 

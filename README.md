@@ -58,6 +58,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 ├── tests/e2e/                      # E2Eテスト（Playwright）と共通フィクスチャ・テスト用サーバー
 ├── playwright.config.ts            # Playwright設定
 ├── .github/workflows/e2e-beta.yml  # 毎日のE2Eテスト（Chrome Beta）と失敗通知
+├── .github/funding.yml             # 開発支援リンク（Buy Me a Coffee）の設定
 ├── src/
 │   ├── popup.tsx                   # ポップアップ本体（テンプレート選択・カスタムサイズ・スクショボタン）
 │   ├── style.css                   # ポップアップ用スタイル（ダークモード対応）
@@ -86,6 +87,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 ├── package.json                    # 依存関係・manifest設定（permissions等）
 ├── tsconfig.json                   # TypeScript設定（~* -> ./src/* のエイリアス）
 ├── README.md / README.en.md        # ドキュメント（日本語 / English）
+├── eslint.config.mjs               # ESLint設定（flat config）
 └── .prettierrc / .gitignore
 ```
 
@@ -138,6 +140,15 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
   ```
 
   `build/chrome-mv3-prod.zip` が生成されます。ベータ版として配布する場合は、`window-resizer-screenshot-v0.2.1-beta.2.zip` のように `-v<バージョン>-beta.<番号>` を付けたファイル名に変更してください。
+
+- コードの整形・静的解析:
+
+  ```powershell
+  npm run format
+  npm run lint
+  ```
+
+  `npm run format` は Prettier で `src` / `tests` / `scripts` などのソースコードを整形します（Markdown は対象外）。`npm run lint` は ESLint で静的解析を行います。
 
 ### E2Eテスト（自動テスト）
 

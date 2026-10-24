@@ -18,7 +18,7 @@ disable-model-invocation: true
    - Changelog の表の最上部に1行追加（`| 0.2.1（beta.2） | YYYY-MM-DD | 内容 |`。日付は今日）。英語版は既存行の書式に合わせる。
    - 機能や仕様が変わっていれば、概要・ディレクトリ構成・仕様と制約事項も更新する。
    - インストール手順中の ZIP 名の例も新しいバージョンに合わせる。
-5. 新機能や仕様変更があれば `PROJECT_SPEC.md` の該当セクションを更新する。
+5. 新機能や仕様変更があれば CLAUDE.md の「機能別の仕様」の該当項目を更新する。
 6. `npm run build` → `npm run package` を実行する。
 7. `build/chrome-mv3-prod.zip` を `build/window-resizer-screenshot-v<version>-beta.<n>.zip` にコピーする（正式版なら `-beta.<n>` を付けない）。
 8. 変更ファイルと生成した ZIP のパスを報告する。コミットは日本語メッセージで、末尾に `（<version>-beta.<n>）` を付ける（例: `...を追加（0.2.1-beta.2）`）。コミット・プッシュはユーザーの指示があるまで行わない。
