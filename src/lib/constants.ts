@@ -72,4 +72,3 @@ export const DEFAULT_SETTINGS = {
   language: "auto" as "auto" | "ja" | "en",
   imageFormat: "png" as ImageFormat
 }
-

@@ -5,7 +5,11 @@ import { captureFullPage, captureVisibleTab } from "~lib/screenshot"
 import { getSettings } from "~lib/storage"
 
 chrome.runtime.onMessage.addListener(
-  (message: CaptureRequest, sender, sendResponse: (response: CaptureResponse) => void) => {
+  (
+    message: CaptureRequest,
+    sender,
+    sendResponse: (response: CaptureResponse) => void
+  ) => {
     if (message?.type !== "capture-screenshot") return
 
     handleCapture(message)

@@ -11,7 +11,13 @@ interface PresetGridProps {
   disabled?: boolean
 }
 
-export function PresetGrid({ groups, offsets, mode, onSelect, disabled }: PresetGridProps) {
+export function PresetGrid({
+  groups,
+  offsets,
+  mode,
+  onSelect,
+  disabled
+}: PresetGridProps) {
   const { t } = useI18n()
   return (
     <div className="preset-groups">
@@ -27,11 +33,13 @@ export function PresetGrid({ groups, offsets, mode, onSelect, disabled }: Preset
                   className="preset-button"
                   disabled={disabled}
                   onClick={() => onSelect(preset)}
-                  title={`${preset.width} x ${preset.height}`}>
+                  title={`${preset.width} x ${preset.height}`}
+                >
                   <span className="preset-label">{preset.label}</span>
                   {offset && (
                     <span className="preset-offset-badge">
-                      {t("offsetBadge")}: {formatOffset(offset.offsetWidth, offset.offsetHeight)}
+                      {t("offsetBadge")}:{" "}
+                      {formatOffset(offset.offsetWidth, offset.offsetHeight)}
                     </span>
                   )}
                 </button>
@@ -43,4 +51,3 @@ export function PresetGrid({ groups, offsets, mode, onSelect, disabled }: Preset
     </div>
   )
 }
-

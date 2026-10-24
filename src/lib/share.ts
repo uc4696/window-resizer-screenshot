@@ -10,7 +10,11 @@ const POINTING_DOWN = String.fromCodePoint(0x1f447)
  * 投稿本文を組み立てる。
  * 「メッセージ / 拡張機能名 + URL / ハッシュタグ」を改行区切りで並べる。
  */
-export function buildShareText(message: string, storeUrl: string, hashtags: string): string {
+export function buildShareText(
+  message: string,
+  storeUrl: string,
+  hashtags: string
+): string {
   return `${message}\nWindow & Viewport Resizer${POINTING_DOWN}\n${storeUrl}\n${hashtags}`
 }
 

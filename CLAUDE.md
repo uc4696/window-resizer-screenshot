@@ -1,0 +1,44 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## 言語
+
+- ユーザーへの報告、コード内コメント、README、コミットメッセージ、PR・Issue の文面はすべて日本語で書く。
+- ブランチ名だけは英語（`feature/...` / `fix/...` / `test/...`）。
+
+## Git 運用
+
+- セッション開始時は `git status` と `git log -n 5 --oneline` で現在のブランチと文脈を確認する。
+- `main` 上でコード変更を頼まれたら、書き換える前に新しいブランチを作るか確認する。勝手に `main` や無関係なブランチへ切り替えない。
+- 変更は PR 経由で `main` にマージする運用。
+
+## コマンドと注意点
+
+- Windows + npm 11 以降ではネイティブモジュールのインストールスクリプトがブロックされ、`plasmo build` が `Bindings not found.` で失敗する。`npm install` の後は毎回 `npm rebuild` を実行する。
+- 型チェック: `npx tsc --noEmit`（i18n の `messages.ja.ts` は `messages.en.ts` と同じキーを型で必須にしているので、文言の追加漏れもここで検出される）。
+- E2E は `build/chrome-mv3-prod` を読み込むので、先に `npm run build` が必要。ブラウザは `npm run test:install-browser`（`.chrome-for-testing/` に取得、Beta は `CHROME_CHANNEL=beta`）。実ウィンドウを操作するため直列実行で、実行中はブラウザが実際に開く。
+- 整形は Prettier（`printWidth` 90・セミコロンなし・ダブルクォート・末尾カンマなし・2スペース）。全体は `npm run format`。Markdown は README の表を崩さないよう対象外。Lint は `npm run lint`（ESLint flat config: `eslint.config.mjs`）。
+- `.plasmo/` と `build/` は生成物なので編集しない。
+- Plasmo のエントリファイル（`popup.tsx` / `options.tsx` / `background.ts`）は `src/` 配下に置く（`~*` → `./src/*`）。`assets/` はルートのまま。
+
+## 実装上の注意
+
+- 権限（`package.json` の `manifest.permissions`）は最小限に保つ。現在は `activeTab` / `storage` / `downloads` / `scripting` のみで、`host_permissions`・`tabs`・`clipboardWrite` は意図的に使っていない。追加が必要なら事前に相談する。E2E はビルド成果物の複製に `host_permissions` を足して読み込んでいるだけで、配布物は変更しない。
+- Manifest V3 の現行仕様に沿い、非推奨 API や古いライブラリを持ち込まない。API キー等をハードコードしない。
+- Plasmo のビルドで SVG の `viewBox` が除去されるため、`src/components/Icon.tsx` で `viewBox` を補い width/height を書き換えている。アイコンは `icons/*.svg`（Tabler Icons、MIT）を `data-text:` でインライン展開する。
+- 絵文字はビルドで壊れるため、ソースに直書きせず `String.fromCodePoint` を使う。
+- UI 文言は `en` / `ja` の両方の辞書に追加し、`t()` / `useI18n()` 経由で使う。拡張機能名・説明は `assets/_locales/{en,ja}/messages.json`。
+- ポップアップの `.popup-root` の `max-height: 560px` / `overflow-y: auto` は外さない。
+
+## バージョン・リリース
+
+- 作業中は `package.json` の `version` を変更しない。全実装と確認が終わり、完了を報告する直前に1回だけ上げる（バグ修正・微調整は PATCH、機能追加は MINOR、全面刷新・権限の大幅変更は MAJOR）。
+- `version` は必ず3桁の整数（`MAJOR.MINOR.PATCH`）。プレリリース表記や4桁は Plasmo のビルドエラーになるので禁止。ベータ版であることは ZIP 名・README・Git タグで表す（`window-resizer-screenshot-v0.2.1-beta.2.zip`）。
+- ドキュメントのみの変更ではバージョン更新もビルドも不要。
+
+## README
+
+- `README.md` と `README.en.md` は常に両方を同じ内容で更新する。公開向けの文書なので、進捗ログや ToDo を書かない。
+- 構成と順序を崩さない: 概要 → バグ報告（GitHub Issues へのリンク）→ 技術スタック/ディレクトリ構成 → インストール・開発手順 → 仕様と制約事項 → Changelog（表形式、最新を最上部に追記）→ ライセンス（商用利用・再配布・転売の禁止、個人利用は自由）。
+- 最下部の「開発を応援する」（英語版は Support development）セクションと `.github/funding.yml` は維持する。

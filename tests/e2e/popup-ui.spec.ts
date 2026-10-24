@@ -112,7 +112,9 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
         const svgRect = svg.getBoundingClientRect()
         const iconRect = icon.getBoundingClientRect()
         // 親ボタン（なければ行頭アイコンのラッパー）の枠
-        const frame = (icon.closest("button, a, .capture-scope") ?? icon).getBoundingClientRect()
+        const frame = (
+          icon.closest("button, a, .capture-scope") ?? icon
+        ).getBoundingClientRect()
         const tolerance = 0.5
         return {
           hasViewBox: svg.getAttribute("viewBox") === "0 0 24 24",
@@ -160,8 +162,7 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     await expect(options.getByText("設定を保存しました。")).toBeVisible()
 
     const popup = await openPopup(await openTarget("/"))
-    const href =
-      (await popup.locator("a.share-button").getAttribute("href")) ?? ""
+    const href = (await popup.locator("a.share-button").getAttribute("href")) ?? ""
     const text = new URL(href).searchParams.get("text") ?? ""
     expect(text).toContain("#Chrome拡張機能 #Web制作")
     expect(text).toContain("このサイズだとどう見える")

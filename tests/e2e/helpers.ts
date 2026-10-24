@@ -30,10 +30,7 @@ export async function getViewportSize(
 }
 
 /** popup のステータス表示が成功/失敗のいずれかの最終状態になるまで待ち、その文言を返す。 */
-export async function waitForFinalStatus(
-  popup: Page,
-  timeout = 30_000
-): Promise<string> {
+export async function waitForFinalStatus(popup: Page, timeout = 30_000): Promise<string> {
   const status = popup.locator(".status-text")
   await expect(status).toHaveText(/^(Saved|Resized|Error)/, { timeout })
   return status.innerText()
@@ -47,16 +44,12 @@ export async function waitForFinalStatus(
  * そのため Service Worker 内で download() 呼び出しの引数を記録して検証する。
  * （撮影を行う前に呼び出すこと）
  */
-export async function recordDownloadRequests(
-  serviceWorker: Worker
-): Promise<void> {
+export async function recordDownloadRequests(serviceWorker: Worker): Promise<void> {
   await serviceWorker.evaluate(() => {
     const g = globalThis as unknown as { __downloadRequests?: string[] }
     g.__downloadRequests = []
     const original = chrome.downloads.download.bind(chrome.downloads)
-    chrome.downloads.download = ((
-      options: chrome.downloads.DownloadOptions
-    ) => {
+    chrome.downloads.download = ((options: chrome.downloads.DownloadOptions) => {
       g.__downloadRequests?.push(options.filename ?? "")
       return original(options)
     }) as typeof chrome.downloads.download
@@ -64,20 +57,16 @@ export async function recordDownloadRequests(
 }
 
 /** recordDownloadRequests で記録した filename の一覧を返す。 */
-export async function getDownloadRequests(
-  serviceWorker: Worker
-): Promise<string[]> {
+export async function getDownloadRequests(serviceWorker: Worker): Promise<string[]> {
   return serviceWorker.evaluate(
     () =>
-      (globalThis as unknown as { __downloadRequests?: string[] })
-        .__downloadRequests ?? []
+      (globalThis as unknown as { __downloadRequests?: string[] }).__downloadRequests ??
+      []
   )
 }
 
 /** ダウンロードが完了するまで待ち、保存されたファイルのパスを返す。 */
-export async function waitForCompletedDownload(
-  serviceWorker: Worker
-): Promise<string> {
+export async function waitForCompletedDownload(serviceWorker: Worker): Promise<string> {
   await expect
     .poll(
       async () =>
@@ -114,11 +103,7 @@ export function readJpegSize(filePath: string): {
     }
     const marker = buf[offset + 1]
     // SOF0〜SOF15（DHT=C4, JPG=C8, DAC=CC を除く）にサイズ情報が入っている
-    if (
-      marker >= 0xc0 &&
-      marker <= 0xcf &&
-      ![0xc4, 0xc8, 0xcc].includes(marker)
-    ) {
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
       return {
         height: buf.readUInt16BE(offset + 5),
         width: buf.readUInt16BE(offset + 7)

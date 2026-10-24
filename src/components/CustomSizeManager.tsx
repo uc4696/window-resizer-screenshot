@@ -37,6 +37,7 @@ export function CustomSizeManager({
   const [offsetWidth, setOffsetWidth] = useState("")
   const [offsetHeight, setOffsetHeight] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [syncedSize, setSyncedSize] = useState<CustomSize | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
 
   const editingId = editingSize?.id ?? null
@@ -51,20 +52,20 @@ export function CustomSizeManager({
   }
 
   // 編集対象が変わったら（ペンアイコン押下、または編集解除）フォーム内容を同期する。
-  useEffect(() => {
-    if (editingSize) {
-      setLabel(editingSize.label)
-      setWidth(String(editingSize.width))
-      setHeight(String(editingSize.height))
-      setOffsetWidth(editingSize.offsetWidth !== undefined ? String(editingSize.offsetWidth) : "")
-      setOffsetHeight(
-        editingSize.offsetHeight !== undefined ? String(editingSize.offsetHeight) : ""
-      )
-      setError(null)
-    } else {
-      resetForm()
-    }
-  }, [editingSize])
+  // effect ではなくレンダー中に同期し、余分な再レンダーを避ける。
+  if (editingSize !== syncedSize) {
+    setSyncedSize(editingSize)
+    setLabel(editingSize?.label ?? "")
+    setWidth(editingSize ? String(editingSize.width) : "")
+    setHeight(editingSize ? String(editingSize.height) : "")
+    setOffsetWidth(
+      editingSize?.offsetWidth !== undefined ? String(editingSize.offsetWidth) : ""
+    )
+    setOffsetHeight(
+      editingSize?.offsetHeight !== undefined ? String(editingSize.offsetHeight) : ""
+    )
+    setError(null)
+  }
 
   // 編集開始でアコーディオンが開かれた際、フォームが表示範囲内に来るようスクロールする。
   useEffect(() => {
@@ -121,7 +122,8 @@ export function CustomSizeManager({
         onClick={() => {
           if (open) onCancelEdit()
           onToggle()
-        }}>
+        }}
+      >
         {open ? t("customToggleClose") : t("customToggleOpen")}
       </button>
 
@@ -191,7 +193,8 @@ export function CustomSizeManager({
                 <button
                   type="button"
                   className="secondary-cancel-button"
-                  onClick={onCancelEdit}>
+                  onClick={onCancelEdit}
+                >
                   {t("cancel")}
                 </button>
               )}

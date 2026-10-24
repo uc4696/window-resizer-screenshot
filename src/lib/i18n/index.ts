@@ -17,7 +17,7 @@ const dictionaries: Record<ResolvedLanguage, Record<MessageKey, string>> = { en,
 /** 「自動」の場合はブラウザのUI言語で判定する（日本語以外はすべて英語）。 */
 export function resolveLanguage(setting: LanguageSetting): ResolvedLanguage {
   if (setting === "ja" || setting === "en") return setting
-  let uiLanguage = ""
+  let uiLanguage: string
   try {
     uiLanguage = chrome.i18n?.getUILanguage?.() ?? navigator.language ?? ""
   } catch {

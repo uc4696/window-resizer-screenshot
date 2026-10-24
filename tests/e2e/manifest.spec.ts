@@ -11,9 +11,7 @@ import { BUILD_PATH } from "./fixtures"
  */
 const test = base
 
-const manifest = JSON.parse(
-  readFileSync(path.join(BUILD_PATH, "manifest.json"), "utf8")
-)
+const manifest = JSON.parse(readFileSync(path.join(BUILD_PATH, "manifest.json"), "utf8"))
 
 test.describe("manifest.json（配布物の回帰チェック）", () => {
   test("権限は最小限（activeTab / storage / downloads / scripting のみ）", () => {
@@ -51,14 +49,10 @@ test.describe("manifest.json（配布物の回帰チェック）", () => {
   test("popup / options / background / ロケールが成果物に含まれる", () => {
     expect(existsSync(path.join(BUILD_PATH, "popup.html"))).toBe(true)
     expect(existsSync(path.join(BUILD_PATH, "options.html"))).toBe(true)
-    expect(
-      existsSync(path.join(BUILD_PATH, manifest.background.service_worker))
-    ).toBe(true)
-    expect(existsSync(path.join(BUILD_PATH, "_locales/en/messages.json"))).toBe(
+    expect(existsSync(path.join(BUILD_PATH, manifest.background.service_worker))).toBe(
       true
     )
-    expect(existsSync(path.join(BUILD_PATH, "_locales/ja/messages.json"))).toBe(
-      true
-    )
+    expect(existsSync(path.join(BUILD_PATH, "_locales/en/messages.json"))).toBe(true)
+    expect(existsSync(path.join(BUILD_PATH, "_locales/ja/messages.json"))).toBe(true)
   })
 })

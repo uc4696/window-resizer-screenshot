@@ -16,7 +16,8 @@ export function SupportLink() {
         href={SUPPORT_URL}
         target="_blank"
         rel="noopener noreferrer"
-        title={SUPPORT_TEXT}>
+        title={SUPPORT_TEXT}
+      >
         <img className="support-image" src={buyMeACoffeeButton} alt={SUPPORT_TEXT} />
       </a>
     </section>

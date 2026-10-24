@@ -17,17 +17,16 @@ test.describe("設定画面（正常系）", () => {
     const options = await context.newPage()
     await options.goto(`chrome-extension://${extensionId}/options.html`)
     await options.locator("#captureDirName").fill("E2ECaptures")
-    await options
-      .getByRole("button", { name: "Save", exact: true })
-      .first()
-      .click()
+    await options.getByRole("button", { name: "Save", exact: true }).first().click()
     await expect(options.getByText("Settings saved.")).toBeVisible()
 
     const target = await openTarget("/")
     const popup = await openPopup(target)
     await target.bringToFront()
     await recordDownloadRequests(serviceWorker)
-    await popup.getByRole("button", { name: "Download screenshot of visible area" }).click()
+    await popup
+      .getByRole("button", { name: "Download screenshot of visible area" })
+      .click()
     await waitForFinalStatus(popup)
 
     const requests = await getDownloadRequests(serviceWorker)
@@ -89,7 +88,10 @@ test.describe("設定画面（正常系）", () => {
     await expect(options.getByRole("radio", { name: "WebP", exact: true })).toBeChecked()
   })
 
-  test("画像形式の変更は、設定の初期化で PNG に戻る", async ({ context, extensionId }) => {
+  test("画像形式の変更は、設定の初期化で PNG に戻る", async ({
+    context,
+    extensionId
+  }) => {
     const options = await context.newPage()
     options.on("dialog", (dialog) => dialog.accept())
     await options.goto(`chrome-extension://${extensionId}/options.html`)

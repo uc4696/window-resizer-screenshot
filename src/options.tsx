@@ -15,7 +15,12 @@ import {
   setSettings,
   type Settings
 } from "~lib/storage"
-import type { ImageFormat, LanguageSetting, PresetModeOffsets, SizeMode } from "~lib/types"
+import type {
+  ImageFormat,
+  LanguageSetting,
+  PresetModeOffsets,
+  SizeMode
+} from "~lib/types"
 
 import "./options.css"
 
@@ -34,8 +39,12 @@ function OptionsContent() {
   const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS)
   const [saved, setSaved] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [presetOffsets, setPresetOffsets] = useState<Record<string, PresetModeOffsets>>({})
-  const [offsetInputs, setOffsetInputs] = useState<Record<string, { w: string; h: string }>>({})
+  const [presetOffsets, setPresetOffsets] = useState<Record<string, PresetModeOffsets>>(
+    {}
+  )
+  const [offsetInputs, setOffsetInputs] = useState<
+    Record<string, { w: string; h: string }>
+  >({})
   const [offsetErrors, setOffsetErrors] = useState<Record<string, string>>({})
   const [resetDone, setResetDone] = useState(false)
 
@@ -98,11 +107,17 @@ function OptionsContent() {
     const h = Number(input.h.trim() === "" ? 0 : input.h)
     const result = validateOffset(w, h)
     if (!result.valid) {
-      setOffsetErrors((prev) => ({ ...prev, [key]: result.error ?? t("errInvalidInput") }))
+      setOffsetErrors((prev) => ({
+        ...prev,
+        [key]: result.error ?? t("errInvalidInput")
+      }))
       return
     }
 
-    const next = await setPresetOffset(presetId, mode, { offsetWidth: w, offsetHeight: h })
+    const next = await setPresetOffset(presetId, mode, {
+      offsetWidth: w,
+      offsetHeight: h
+    })
     setPresetOffsets(next)
   }
 
@@ -115,9 +130,7 @@ function OptionsContent() {
   }
 
   async function handleFactoryReset() {
-    const confirmed = window.confirm(
-      t("resetConfirm")
-    )
+    const confirmed = window.confirm(t("resetConfirm"))
     if (!confirmed) return
 
     await resetAllSettings()
@@ -152,7 +165,8 @@ function OptionsContent() {
           id="language"
           className="options-input"
           value={settings.language}
-          onChange={(e) => handleLanguageChange(e.target.value as LanguageSetting)}>
+          onChange={(e) => handleLanguageChange(e.target.value as LanguageSetting)}
+        >
           <option value="auto">{t("languageAuto")}</option>
           <option value="ja">{LANGUAGE_NATIVE_NAMES.ja}</option>
           <option value="en">{LANGUAGE_NATIVE_NAMES.en}</option>
@@ -249,7 +263,10 @@ function OptionsContent() {
                         onChange={(e) =>
                           setOffsetInputs((prev) => ({
                             ...prev,
-                            [key]: { ...(prev[key] ?? { w: "", h: "" }), w: e.target.value }
+                            [key]: {
+                              ...(prev[key] ?? { w: "", h: "" }),
+                              w: e.target.value
+                            }
                           }))
                         }
                       />
@@ -261,32 +278,39 @@ function OptionsContent() {
                         onChange={(e) =>
                           setOffsetInputs((prev) => ({
                             ...prev,
-                            [key]: { ...(prev[key] ?? { w: "", h: "" }), h: e.target.value }
+                            [key]: {
+                              ...(prev[key] ?? { w: "", h: "" }),
+                              h: e.target.value
+                            }
                           }))
                         }
                       />
                       <button
                         type="button"
                         className="offset-preset-save"
-                        onClick={() => handleSaveOffset(preset.id, mode)}>
+                        onClick={() => handleSaveOffset(preset.id, mode)}
+                      >
                         {t("save")}
                       </button>
                       {presetOffsets[preset.id]?.[mode] && (
                         <button
                           type="button"
                           className="offset-preset-clear"
-                          onClick={() => handleClearOffset(preset.id, mode)}>
+                          onClick={() => handleClearOffset(preset.id, mode)}
+                        >
                           {t("clear")}
                         </button>
                       )}
                     </div>
                   )
                 })}
-                {OFFSET_MODES.some(({ mode }) => offsetErrors[offsetKey(preset.id, mode)]) && (
+                {OFFSET_MODES.some(
+                  ({ mode }) => offsetErrors[offsetKey(preset.id, mode)]
+                ) && (
                   <p className="error-text">
-                    {OFFSET_MODES.map(({ mode }) => offsetErrors[offsetKey(preset.id, mode)]).find(
-                      Boolean
-                    )}
+                    {OFFSET_MODES.map(
+                      ({ mode }) => offsetErrors[offsetKey(preset.id, mode)]
+                    ).find(Boolean)}
                   </p>
                 )}
               </div>
