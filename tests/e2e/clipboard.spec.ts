@@ -1,9 +1,5 @@
 import { expect, test } from "./fixtures"
-import {
-  getDownloadRequests,
-  recordDownloadRequests,
-  selectImageFormat
-} from "./helpers"
+import { getDownloadRequests, recordDownloadRequests, selectImageFormat } from "./helpers"
 
 const COPY_VISIBLE = "Copy screenshot of visible area to clipboard"
 const COPY_FULL = "Copy screenshot of full page to clipboard"

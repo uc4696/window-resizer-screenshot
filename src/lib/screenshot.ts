@@ -15,7 +15,10 @@ async function captureTilePng(windowId: number): Promise<string> {
 /** キャンバスを指定形式の Blob にエンコードする。 */
 async function encodeCanvas(canvas: OffscreenCanvas, format: ImageFormat): Promise<Blob> {
   if (format === "jpeg") {
-    return canvas.convertToBlob({ type: IMAGE_MIME_TYPES.jpeg, quality: JPEG_QUALITY / 100 })
+    return canvas.convertToBlob({
+      type: IMAGE_MIME_TYPES.jpeg,
+      quality: JPEG_QUALITY / 100
+    })
   }
   if (format === "webp") {
     return canvas.convertToBlob({ type: IMAGE_MIME_TYPES.webp, quality: WEBP_QUALITY })
@@ -265,7 +268,10 @@ export async function captureFullPage(
     MAX_CANVAS_DIMENSION,
     Math.floor(MAX_CANVAS_AREA / roughWidth)
   )
-  const targetHeight = Math.min(metrics.scrollHeight, Math.floor(maxCanvasHeightRough / dpr))
+  const targetHeight = Math.min(
+    metrics.scrollHeight,
+    Math.floor(maxCanvasHeightRough / dpr)
+  )
 
   await injectCaptureStyle(tabId)
 
@@ -282,7 +288,10 @@ export async function captureFullPage(
     // 実際に撮影された画像から実DPRを算出（申告値とズレる場合があるため）
     const realDpr = firstBitmap.width / viewportWidth || dpr
     const canvasWidth = firstBitmap.width
-    const maxCanvasHeight = Math.min(MAX_CANVAS_DIMENSION, Math.floor(MAX_CANVAS_AREA / canvasWidth))
+    const maxCanvasHeight = Math.min(
+      MAX_CANVAS_DIMENSION,
+      Math.floor(MAX_CANVAS_AREA / canvasWidth)
+    )
 
     if (canvasWidth > MAX_CANVAS_DIMENSION || firstBitmap.height > maxCanvasHeight) {
       firstBitmap.close()

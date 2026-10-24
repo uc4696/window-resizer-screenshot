@@ -58,7 +58,9 @@ export function CustomSizeManager({
     setLabel(editingSize?.label ?? "")
     setWidth(editingSize ? String(editingSize.width) : "")
     setHeight(editingSize ? String(editingSize.height) : "")
-    setOffsetWidth(editingSize?.offsetWidth !== undefined ? String(editingSize.offsetWidth) : "")
+    setOffsetWidth(
+      editingSize?.offsetWidth !== undefined ? String(editingSize.offsetWidth) : ""
+    )
     setOffsetHeight(
       editingSize?.offsetHeight !== undefined ? String(editingSize.offsetHeight) : ""
     )
@@ -120,7 +122,8 @@ export function CustomSizeManager({
         onClick={() => {
           if (open) onCancelEdit()
           onToggle()
-        }}>
+        }}
+      >
         {open ? t("customToggleClose") : t("customToggleOpen")}
       </button>
 
@@ -190,7 +193,8 @@ export function CustomSizeManager({
                 <button
                   type="button"
                   className="secondary-cancel-button"
-                  onClick={onCancelEdit}>
+                  onClick={onCancelEdit}
+                >
                   {t("cancel")}
                 </button>
               )}

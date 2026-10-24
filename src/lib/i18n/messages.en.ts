@@ -70,7 +70,7 @@ export const en = {
   optionsTitle: "Window & Viewport Resizer - Settings",
   languageLabel: "Language",
   languageHint:
-    "Choose the display language. \"Auto\" follows the browser language (English if unsupported).",
+    'Choose the display language. "Auto" follows the browser language (English if unsupported).',
   languageAuto: "Auto",
   captureDirLabel: "Screenshot save folder name",
   captureDirHint:

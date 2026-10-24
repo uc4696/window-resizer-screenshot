@@ -23,10 +23,7 @@ import { startTestServer } from "./test-server"
 const ROOT = path.resolve(__dirname, "../..")
 /** `npm run build` の出力先（Plasmo の本番ビルド） */
 export const BUILD_PATH = path.resolve(ROOT, "build/chrome-mv3-prod")
-const BROWSER_PATH_FILE = path.resolve(
-  ROOT,
-  ".chrome-for-testing/executable-path.txt"
-)
+const BROWSER_PATH_FILE = path.resolve(ROOT, ".chrome-for-testing/executable-path.txt")
 
 /**
  * テストに使うChromeの実行ファイルを解決する。
@@ -54,9 +51,7 @@ function resolveChromePath(): string {
  */
 function createTestExtension(workDir: string): string {
   if (!existsSync(path.join(BUILD_PATH, "manifest.json"))) {
-    throw new Error(
-      "拡張機能のビルドがありません。`npm run build` を実行してください。"
-    )
+    throw new Error("拡張機能のビルドがありません。`npm run build` を実行してください。")
   }
   const dest = path.join(workDir, "extension")
   cpSync(BUILD_PATH, dest, { recursive: true })

@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Windows + npm 11 以降ではネイティブモジュールのインストールスクリプトがブロックされ、`plasmo build` が `Bindings not found.` で失敗する。`npm install` の後は毎回 `npm rebuild` を実行する。
 - 型チェック: `npx tsc --noEmit`（i18n の `messages.ja.ts` は `messages.en.ts` と同じキーを型で必須にしているので、文言の追加漏れもここで検出される）。
 - E2E は `build/chrome-mv3-prod` を読み込むので、先に `npm run build` が必要。ブラウザは `npm run test:install-browser`（`.chrome-for-testing/` に取得、Beta は `CHROME_CHANNEL=beta`）。実ウィンドウを操作するため直列実行で、実行中はブラウザが実際に開く。
-- 整形は Prettier（セミコロンなし・ダブルクォート・末尾カンマなし・2スペース）。`npm run format` は無いので `npx prettier --write <file>` を使う。Lint は `npm run lint`（ESLint flat config: `eslint.config.mjs`）。
+- 整形は Prettier（`printWidth` 90・セミコロンなし・ダブルクォート・末尾カンマなし・2スペース）。全体は `npm run format`。Markdown は README の表を崩さないよう対象外。Lint は `npm run lint`（ESLint flat config: `eslint.config.mjs`）。
 - `.plasmo/` と `build/` は生成物なので編集しない。
 - Plasmo のエントリファイル（`popup.tsx` / `options.tsx` / `background.ts`）は `src/` 配下に置く（`~*` → `./src/*`）。`assets/` はルートのまま。
 

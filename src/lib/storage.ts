@@ -98,7 +98,9 @@ export async function removeCustomSize(id: string): Promise<CustomSize[]> {
  * 設定自体は常に local に保存される（storageArea の対象外）。
  */
 export async function getPresetOffsets(): Promise<Record<string, PresetModeOffsets>> {
-  const raw = await settingsStorage.get<Record<string, unknown>>(STORAGE_KEYS.presetOffsets)
+  const raw = await settingsStorage.get<Record<string, unknown>>(
+    STORAGE_KEYS.presetOffsets
+  )
   const result: Record<string, PresetModeOffsets> = {}
   for (const [id, value] of Object.entries(raw || {})) {
     const v = value as Partial<PresetOffset> & PresetModeOffsets

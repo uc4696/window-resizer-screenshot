@@ -65,9 +65,7 @@ test.describe("スクリーンショット（正常系）", () => {
     const size = readPngSize(filePath)
     // 画像の高さはページ全体の高さ × DPR（誤差はタイル結合の丸め程度を許容）
     const expectedHeight = LONG_PAGE_TOTAL_HEIGHT * viewport.dpr
-    expect(Math.abs(size.height - expectedHeight)).toBeLessThanOrEqual(
-      4 * viewport.dpr
-    )
+    expect(Math.abs(size.height - expectedHeight)).toBeLessThanOrEqual(4 * viewport.dpr)
     expect(size.width).toBe(Math.round(viewport.w * viewport.dpr))
   })
 
