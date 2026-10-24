@@ -22,7 +22,10 @@ function dataUrlToPngBlob(dataUrl: string): Blob {
 }
 
 /** background に撮影を依頼する。 */
-function requestCapture(mode: CaptureMode, action: CaptureAction): Promise<CaptureResponse> {
+function requestCapture(
+  mode: CaptureMode,
+  action: CaptureAction
+): Promise<CaptureResponse> {
   return chrome.runtime.sendMessage({ type: "capture-screenshot", mode, action })
 }
 
@@ -130,7 +133,8 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
               title={row.downloadLabel}
               aria-label={row.downloadLabel}
               disabled={busy}
-              onClick={() => handleDownload(row.mode)}>
+              onClick={() => handleDownload(row.mode)}
+            >
               <Icon name="download" />
             </button>
             <button
@@ -139,7 +143,8 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
               title={row.copyLabel}
               aria-label={row.copyLabel}
               disabled={busy}
-              onClick={() => handleCopy(row.mode)}>
+              onClick={() => handleCopy(row.mode)}
+            >
               <Icon name={copiedMode === row.mode ? "check" : "copy"} />
             </button>
           </div>

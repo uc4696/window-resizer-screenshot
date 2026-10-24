@@ -45,15 +45,15 @@ export function CustomSizeList({
           return (
             <div
               className={`custom-size-row ${editingId === size.id ? "is-editing" : ""}`}
-              key={size.id}>
+              key={size.id}
+            >
               <button
                 className="custom-size-apply"
                 onClick={() => onApply(size)}
                 title={`${size.width} x ${size.height}${
-                  hasOffset
-                    ? ` (${t("offsetBadge")}: ${formatOffset(offW, offH)})`
-                    : ""
-                }`}>
+                  hasOffset ? ` (${t("offsetBadge")}: ${formatOffset(offW, offH)})` : ""
+                }`}
+              >
                 <span className="custom-size-name">{size.label}</span>
                 {hasOffset && (
                   <span className="offset-badge" title={t("offsetBadgeTitle")}>
@@ -65,14 +65,16 @@ export function CustomSizeList({
                 className="custom-size-edit"
                 aria-label={t("edit")}
                 title={t("edit")}
-                onClick={() => onEdit(size)}>
+                onClick={() => onEdit(size)}
+              >
                 ✎
               </button>
               <button
                 className="custom-size-remove"
                 aria-label={t("delete")}
                 title={t("delete")}
-                onClick={() => onRemove(size.id)}>
+                onClick={() => onRemove(size.id)}
+              >
                 ×
               </button>
             </div>

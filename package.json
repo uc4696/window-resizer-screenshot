@@ -14,7 +14,8 @@
     "icon": "node scripts/generate-icon.js",
     "test:install-browser": "node scripts/install-chrome.mjs",
     "test:e2e": "playwright test",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format": "prettier --write src tests scripts .claude/hooks *.config.ts *.config.mjs"
   },
   "dependencies": {
     "@plasmohq/storage": "1.15.0",

@@ -31,8 +31,7 @@
 body {
   margin: 0;
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .popup-root {
@@ -329,7 +328,6 @@ body {
 .secondary-cancel-button:hover {
   background: var(--panel-bg);
 }
-
 
 .text-input {
   padding: 6px 8px;

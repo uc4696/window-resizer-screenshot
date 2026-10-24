@@ -46,10 +46,6 @@ const installed = await install({
 })
 
 mkdirSync(cacheDir, { recursive: true })
-writeFileSync(
-  resolve(cacheDir, "executable-path.txt"),
-  installed.executablePath,
-  "utf8"
-)
+writeFileSync(resolve(cacheDir, "executable-path.txt"), installed.executablePath, "utf8")
 console.log(`取得完了: ${installed.executablePath}`)
 console.log(`バージョン: ${installed.buildId}`)

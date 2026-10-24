@@ -47,19 +47,14 @@ test.describe("カスタムサイズ（入力チェック）", () => {
     })
   }
 
-  test("オフセットが範囲(±500px)外ならエラー", async ({
-    openTarget,
-    openPopup
-  }) => {
+  test("オフセットが範囲(±500px)外ならエラー", async ({ openTarget, openPopup }) => {
     const popup = await openPopup(await openTarget("/"))
     await openForm(popup, "Window-based")
     await popup.getByPlaceholder("Width", { exact: true }).fill("800")
     await popup.getByPlaceholder("Height", { exact: true }).fill("600")
     await popup.getByPlaceholder("Width offset (e.g. 14)").fill("501")
     await popup.getByRole("button", { name: "Add", exact: true }).click()
-    await expect(popup.locator(".error-text")).toHaveText(
-      /between -500px and 500px/
-    )
+    await expect(popup.locator(".error-text")).toHaveText(/between -500px and 500px/)
   })
 
   test("制限ページ(chrome://)ではビューポート基準のリサイズがエラーになる", async ({

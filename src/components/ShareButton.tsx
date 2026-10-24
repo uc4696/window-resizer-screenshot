@@ -14,7 +14,8 @@ export function ShareButton() {
       target="_blank"
       rel="noopener noreferrer"
       title={t("shareOnXTitle")}
-      aria-label={t("shareOnXTitle")}>
+      aria-label={t("shareOnXTitle")}
+    >
       <Icon name="brand-x" size={12} />
       <span>{t("shareOnX")}</span>
     </a>

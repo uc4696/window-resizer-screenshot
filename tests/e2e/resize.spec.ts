@@ -7,15 +7,11 @@ import {
 } from "./helpers"
 
 test.describe("リサイズ機能（正常系）", () => {
-  test("拡張機能が読み込まれ、Service Worker が起動する", async ({
-    serviceWorker
-  }) => {
+  test("拡張機能が読み込まれ、Service Worker が起動する", async ({ serviceWorker }) => {
     expect(serviceWorker.url()).toMatch(
       /^chrome-extension:\/\/.+\/static\/background\/index\.js/
     )
-    const manifest = await serviceWorker.evaluate(() =>
-      chrome.runtime.getManifest()
-    )
+    const manifest = await serviceWorker.evaluate(() => chrome.runtime.getManifest())
     expect(manifest.manifest_version).toBe(3)
   })
 
@@ -51,9 +47,7 @@ test.describe("リサイズ機能（正常系）", () => {
     expect(await waitForFinalStatus(popup)).toBe("Resized to 1024 x 768.")
 
     await target.bringToFront()
-    await expect
-      .poll(() => getViewportSize(target))
-      .toEqual({ width: 1024, height: 768 })
+    await expect.poll(() => getViewportSize(target)).toEqual({ width: 1024, height: 768 })
   })
 
   test("ウィンドウ基準: プリセット(SVGA)でウィンドウ全体が 800x600 になる", async ({

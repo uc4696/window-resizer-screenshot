@@ -31,8 +31,7 @@ async function fillCustomForm(
   }
 }
 
-const addButton = (popup: Page) =>
-  popup.getByRole("button", { name: "Add", exact: true })
+const addButton = (popup: Page) => popup.getByRole("button", { name: "Add", exact: true })
 const customRow = (popup: Page, name: string) =>
   popup.locator("button.custom-size-apply", { hasText: name })
 
@@ -57,19 +56,14 @@ test.describe("カスタムサイズ（正常系）", () => {
     await customRow(popup, "My size").click()
     expect(await waitForFinalStatus(popup)).toBe("Resized to 700 x 500.")
     await target.bringToFront()
-    await expect
-      .poll(() => getViewportSize(target))
-      .toEqual({ width: 700, height: 500 })
+    await expect.poll(() => getViewportSize(target)).toEqual({ width: 700, height: 500 })
 
     await popup.bringToFront()
     await popup.getByRole("button", { name: "Delete" }).click()
     await expect(customRow(popup, "My size")).toHaveCount(0)
   })
 
-  test("名前を省略すると「幅x高さ」が名称になる", async ({
-    openTarget,
-    openPopup
-  }) => {
+  test("名前を省略すると「幅x高さ」が名称になる", async ({ openTarget, openPopup }) => {
     const popup = await openPopup(await openTarget("/"))
     await popup.getByRole("button", { name: "Viewport-based" }).click()
     await openCustomForm(popup)
@@ -78,10 +72,7 @@ test.describe("カスタムサイズ（正常系）", () => {
     await expect(customRow(popup, "640x360")).toBeVisible()
   })
 
-  test("編集: 既存のカスタムサイズを更新できる", async ({
-    openTarget,
-    openPopup
-  }) => {
+  test("編集: 既存のカスタムサイズを更新できる", async ({ openTarget, openPopup }) => {
     const popup = await openPopup(await openTarget("/"))
     await popup.getByRole("button", { name: "Viewport-based" }).click()
     await openCustomForm(popup)

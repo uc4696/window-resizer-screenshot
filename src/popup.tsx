@@ -41,7 +41,9 @@ function PopupContent() {
   const [viewportSize, setViewportSize] = useState<DisplayBounds>({ width: 0, height: 0 })
   const [display, setDisplay] = useState<DisplayBounds>({ width: 0, height: 0 })
   const [customSizes, setCustomSizes] = useState<CustomSize[]>([])
-  const [presetOffsets, setPresetOffsets] = useState<Record<string, PresetModeOffsets>>({})
+  const [presetOffsets, setPresetOffsets] = useState<Record<string, PresetModeOffsets>>(
+    {}
+  )
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [customSizeOpen, setCustomSizeOpen] = useState(false)
@@ -141,12 +143,14 @@ function PopupContent() {
       <div className="mode-toggle">
         <button
           className={`mode-button ${mode === "window" ? "active" : ""}`}
-          onClick={() => changeMode("window")}>
+          onClick={() => changeMode("window")}
+        >
           {t("modeWindow")}
         </button>
         <button
           className={`mode-button ${mode === "viewport" ? "active" : ""}`}
-          onClick={() => changeMode("viewport")}>
+          onClick={() => changeMode("viewport")}
+        >
           {t("modeViewport")}
         </button>
       </div>
@@ -189,7 +193,8 @@ function PopupContent() {
         <button
           type="button"
           className="footer-button options-link"
-          onClick={() => chrome.runtime.openOptionsPage()}>
+          onClick={() => chrome.runtime.openOptionsPage()}
+        >
           <Icon name="settings" size={12} />
           <span>{t("openSettings")}</span>
         </button>
@@ -210,4 +215,3 @@ function IndexPopup() {
 }
 
 export default IndexPopup
-

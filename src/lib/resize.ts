@@ -185,4 +185,3 @@ export async function getCurrentViewportSize(): Promise<DisplayBounds> {
     return { width: 0, height: 0 }
   }
 }
-
