@@ -52,11 +52,12 @@
 
 /* 3. できること */
 .wvr .features{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
-.wvr .feature{border:1px solid var(--line);border-radius:10px;padding:24px}
-.wvr .feature-ico{width:48px;height:48px;border-radius:10px;background:var(--accent-soft);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+/* 機能カード：1行目にアイコンと見出し、2行目に説明 */
+.wvr .feature{border:1px solid var(--line);border-radius:10px;padding:24px;display:grid;grid-template-columns:48px 1fr;column-gap:14px;align-items:center;align-content:start}
+.wvr .feature-ico{width:48px;height:48px;border-radius:10px;background:var(--accent-soft);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;margin-bottom:0}
 .wvr .feature-ico svg{display:block}
-.article .wvr .feature h3{margin:0 0 6px;font-size:19px}
-.article .wvr .feature p{font-size:15px;color:#555}
+.article .wvr .feature h3{margin:0;font-size:19px;line-height:1.35}
+.article .wvr .feature p{grid-column:1 / -1;margin:14px 0 0;font-size:15px;color:#555}
 
 /* 4. 基準の違い */
 .wvr .compare{display:grid;grid-template-columns:1fr 1fr;gap:32px 28px}
@@ -125,6 +126,10 @@
   .article .wvr .sec-title{font-size:22px}
   .wvr .persona{grid-template-columns:repeat(2,1fr)}
   .wvr .features,.wvr .compare,.wvr .presets,.wvr .steps,.article .wvr .minor{grid-template-columns:1fr}
+  .wvr .feature{padding:20px;grid-template-columns:40px 1fr;column-gap:12px}
+  .wvr .feature-ico{width:40px;height:40px}
+  .wvr .feature-ico svg{width:22px;height:22px}
+  .article .wvr .feature h3{font-size:17px}
   .wvr .privacy{flex-direction:column;text-align:center;gap:12px;padding:24px 20px}
   .wvr .btn{padding:14px 24px}
 }

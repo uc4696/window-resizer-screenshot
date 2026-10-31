@@ -31,7 +31,7 @@ disable-model-invocation: true
 
 ## 3. うしブロの拡張機能LP
 
-LP は本番の固定ページ **10268**（https://www.ushiblo.com/window-viewport-resizer/ ）と **10273**（英語版 https://www.ushiblo.com/en/window-viewport-resizer-en/ 、Polylang で紐づけ済み）。日英両方を同じ内容で直す。本文は WordPress のカスタム HTML ブロック1つ（`<div class="wvr">…</div>`）で、CSS はページのメタ `_custom_css`（日英で同じ）。
+LP は本番の固定ページ **10268**（https://www.ushiblo.com/window-viewport-resizer/ ）と **10273**（英語版 https://www.ushiblo.com/en/window-viewport-resizer-en/ 、Polylang で紐づけ済み）。日英両方を同じ内容で直す。本文は WordPress のカスタム HTML ブロック1つ（`<div class="wvr">…</div>`）で、CSS はページのメタ `_custom_css`（日英で同じ。正本は `store/lp/page.css`）。CSS を変えるときは Rewrite & Republish のコピーに `scripts/wp.sh prod post meta update <コピーID> _custom_css < store/lp/page.css` で入れる（Republish でメタも元のページに反映される）。PC と幅 375px で表示を確かめてから入れる。
 
 ### 本番の操作は ai-ushiblo（`F:\ai-ushiblo`）の仕組みとルールで行う
 
