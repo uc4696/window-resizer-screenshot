@@ -46,6 +46,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - ライセンスは `licenses/LICENSE-tabler.txt`。設定画面に「Icons: Tabler Icons (MIT License)」と表記する。
 - **サイズ基準の記憶**: 最後に選んだサイズ基準（window / viewport）を local ストレージのキー `size-mode` に保存し、ポップアップ表示時に復元する（`src/lib/storage.ts` の `getSizeMode` / `setSizeMode`、`src/popup.tsx` の `changeMode`）。不正値・未設定は window に正規化し、ファクトリーリセットで削除する。
 - **フッターボタン**: 「設定を開く」と「X で共有」は共通クラス `.footer-button`（枠線付きの pill 型、アイコン + 文字）で同じデザインにする。`.popup-footer-row` で中央寄せ、間隔は 6px。
+- **拡大縮小されたページのリサイズ**: popup でプリセット／カスタムサイズを押したとき、アクティブタブの拡大率（`chrome.tabs.getZoom`、tabs 権限不要）が 100% 以外なら、拡大率を 100% に戻してからリサイズする（`src/popup.tsx` の `requestApplySize`、`src/lib/resize.ts` の `getActiveTabZoom` / `resetTabZoom`）。ウィンドウ基準・ビューポート基準の両方が対象。設定 `zoomResetConfirm`（既定 true、不正値も true に正規化）が有効なら、popup 全体に重ねた確認（`.zoom-confirm-overlay`、［キャンセル］［100% に戻してリサイズ］）を出し、キャンセル時は何も変えない。`window.confirm` は popup では使わない。`setZoom(0)` はブラウザ既定の拡大率に戻るため、1 を明示する。拡大率が取得できないタブ（取得失敗）は確認なしでそのままリサイズする。
+- **ツールバーアイコンの色**: 線の色は `#7465e0`。もとの淡い色（`#8578eb` 系・16px は半透明）ではライトモードのツールバーでほぼ見えなかったため、全サイズ（`assets/icon*.png`・`icon-source.png`）を濃くし、16px は不透明度も上げている。
 - **ポップアップの高さ**: 初期状態でスクロールが出ないよう余白を詰めるが、`.popup-root` の `max-height: 560px` / `overflow-y: auto` は外さない。日本語のフォールバックフォントは行高 `normal` が大きく ja だけはみ出したため、`body` の `line-height` を 1.35 に固定している（計測値: en 546px / ja 552px）。E2E で en / ja とも初期状態でスクロールが出ないことを確認している。
 
 ## バージョン・リリース

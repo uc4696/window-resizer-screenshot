@@ -72,5 +72,7 @@ export const DEFAULT_SETTINGS = {
   language: "auto" as "auto" | "ja" | "en",
   imageFormat: "png" as ImageFormat,
   /** スクロール領域を撮るとき、外枠（最初の1画面）と領域の下の部分も含めるか。 */
-  scrollAreaIncludeFrame: false
+  scrollAreaIncludeFrame: false,
+  /** 拡大率が100%以外のページをリサイズするとき、100%に戻す前に確認するか。 */
+  zoomResetConfirm: true
 }

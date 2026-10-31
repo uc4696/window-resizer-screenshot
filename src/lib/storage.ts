@@ -16,6 +16,7 @@ export interface Settings {
   language: LanguageSetting
   imageFormat: ImageFormat
   scrollAreaIncludeFrame: boolean
+  zoomResetConfirm: boolean
 }
 
 /**
@@ -48,7 +49,9 @@ export async function getSettings(): Promise<Settings> {
       ? (raw?.imageFormat as ImageFormat)
       : DEFAULT_SETTINGS.imageFormat,
     // 未設定・不正値は既定（false）に正規化する
-    scrollAreaIncludeFrame: raw?.scrollAreaIncludeFrame === true
+    scrollAreaIncludeFrame: raw?.scrollAreaIncludeFrame === true,
+    // 未設定・不正値は既定（true: 確認する）に正規化する
+    zoomResetConfirm: raw?.zoomResetConfirm !== false
   }
 }
 

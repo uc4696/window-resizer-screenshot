@@ -34,6 +34,9 @@ export const en = {
   shareHashtags: "#ChromeExtension #WebDev",
   statusResized: "Resized to {width} x {height}.",
   statusError: "Error: {message}",
+  zoomConfirmMessage:
+    "This page is zoomed to {zoom}%. The size will not match as intended, so the zoom will be reset to 100% before resizing.",
+  zoomConfirmOk: "Reset to 100% and resize",
   statusCapturingFullPage: "Capturing full page...",
   statusCapturing: "Capturing...",
   errCaptureFailed: "Failed to capture the screenshot.",
@@ -88,6 +91,10 @@ export const en = {
   scrollAreaFrameHint:
     "On pages where only an inner area scrolls, the full-page screenshot captures just that area. When enabled, the surrounding frame of the first screen (header, sidebar, etc.) is kept and the part below the area is appended at the end. The sidebar is not extended, so it appears only for the first screen.",
   scrollAreaFrameCheckbox: "Include the surrounding frame and the part below the area",
+  zoomResetLabel: "Resizing a zoomed page",
+  zoomResetHint:
+    "When the page is not at 100% zoom, the zoom is reset to 100% before resizing so the size comes out as intended.",
+  zoomResetConfirmCheckbox: "Ask for confirmation before resetting the zoom",
   storageLabel: "Storage area (where custom sizes are saved)",
   storageHint:
     "local: saved on this device only. sync: tied to your Google account and synced across devices.",

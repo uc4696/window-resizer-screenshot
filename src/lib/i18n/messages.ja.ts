@@ -31,6 +31,9 @@ export const ja: Record<MessageKey, string> = {
   shareHashtags: "#Chrome拡張機能 #Web制作",
   statusResized: "サイズを {width} x {height} に変更しました。",
   statusError: "エラー: {message}",
+  zoomConfirmMessage:
+    "このページは {zoom}% に拡大縮小されています。意図したサイズにならないため、拡大率を 100% に戻してからリサイズします。",
+  zoomConfirmOk: "100% に戻してリサイズ",
   statusCapturingFullPage: "ページ全体を撮影中...",
   statusCapturing: "撮影中...",
   errCaptureFailed: "撮影に失敗しました。",
@@ -84,6 +87,10 @@ export const ja: Record<MessageKey, string> = {
   scrollAreaFrameHint:
     "内側の範囲だけがスクロールするページでは、ページ全体の撮影はその範囲だけを撮ります。有効にすると、最初の1画面の外枠（ヘッダー・サイドバー等）を残し、範囲の下にある部分を最後に付け足します。サイドバー等は伸びないため、最初の1画面分だけが写ります。",
   scrollAreaFrameCheckbox: "外枠と範囲の下の部分も含める",
+  zoomResetLabel: "拡大縮小されたページのリサイズ",
+  zoomResetHint:
+    "ページの拡大率が 100% 以外のときは、意図したサイズになるよう拡大率を 100% に戻してからリサイズします。",
+  zoomResetConfirmCheckbox: "拡大率を戻す前に確認メッセージを表示する",
   storageLabel: "ストレージ領域（カスタムサイズの保存先）",
   storageHint:
     "local: この端末のみに保存されます。sync: Googleアカウントに紐づき、他端末とも同期されます。",
