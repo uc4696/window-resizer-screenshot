@@ -18,7 +18,7 @@ export const ja: Record<MessageKey, string> = {
   capturePickUnavailable: "このページには選べるスクロール範囲がありません",
   pickerBanner: "撮影する範囲をクリック（Esc でキャンセル）",
   pickerContent: "内容 {height}px",
-  pickerSave: "保存",
+  pickerSave: "ダウンロード",
   pickerCopy: "コピー",
   pickerCancel: "キャンセル",
   statusCopied: "クリップボードにコピーしました。",

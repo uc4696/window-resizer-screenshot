@@ -202,6 +202,10 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
                 <Icon name="click" />
               </button>
             )}
+            {/* ページ全体の行と同じ位置にダウンロード／コピーが並ぶよう、［選択］の分を空けておく */}
+            {row.mode !== "full-page" && (
+              <span className="icon-button-spacer" aria-hidden="true" />
+            )}
           </div>
         </div>
       ))}

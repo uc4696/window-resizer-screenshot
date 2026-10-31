@@ -126,7 +126,9 @@ test.describe("範囲を選んで撮影", () => {
     const box = (await target.locator(".list").boundingBox())!
     await target.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
     await target.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
-    await expect(target.getByRole("button", { name: "Save", exact: true })).toBeVisible()
+    await expect(
+      target.getByRole("button", { name: "Download", exact: true })
+    ).toBeVisible()
   }
 
   test("選べる範囲がないページでは［選択］ボタンが無効になる", async ({
@@ -142,7 +144,7 @@ test.describe("範囲を選んで撮影", () => {
     )
   })
 
-  test("一覧を選んで保存すると、一覧の中身だけの画像になり、選択 UI と目印は残らない", async ({
+  test("一覧を選んでダウンロードすると、一覧の中身だけの画像になり、選択 UI と目印は残らない", async ({
     openTarget,
     openPopup,
     serviceWorker
@@ -158,7 +160,7 @@ test.describe("範囲を選んで撮影", () => {
     await recordDownloadRequests(serviceWorker)
 
     await pickList(target, popup)
-    await target.getByRole("button", { name: "Save", exact: true }).click()
+    await target.getByRole("button", { name: "Download", exact: true }).click()
     expect(await waitForCaptureBadge(serviceWorker, popup, target, 60_000)).toBe("OK")
 
     const size = readPngSize(await waitForCompletedDownload(serviceWorker))
@@ -219,7 +221,9 @@ test.describe("範囲を選んで撮影", () => {
     await expect(
       target.getByText("Click the area to capture (Esc to cancel)")
     ).toHaveCount(0)
-    await expect(target.getByRole("button", { name: "Save", exact: true })).toHaveCount(0)
+    await expect(
+      target.getByRole("button", { name: "Download", exact: true })
+    ).toHaveCount(0)
     expect(await getDownloadRequests(serviceWorker)).toEqual([])
   })
 })

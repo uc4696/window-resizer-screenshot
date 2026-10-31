@@ -18,6 +18,15 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
       // 範囲アイコン（左）
       await expect(rows.nth(i).locator(".capture-scope svg")).toHaveCount(1)
     }
+    // 表示部分の行は［選択］の分を空けて、ダウンロード・コピーが上下で同じ位置に並ぶ
+    const lefts = await rows.evaluateAll((els) =>
+      els.map((row) =>
+        Array.from(row.querySelectorAll("button.icon-button"))
+          .slice(0, 2)
+          .map((b) => Math.round(b.getBoundingClientRect().left))
+      )
+    )
+    expect(lefts[0]).toEqual(lefts[1])
   })
 
   test("すべてのアイコンボタン・共有ボタンに title と aria-label があり、色は currentColor で指定される", async ({

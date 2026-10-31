@@ -21,7 +21,7 @@ export const en = {
   capturePickUnavailable: "There is no scrollable area to choose on this page",
   pickerBanner: "Click the area to capture (Esc to cancel)",
   pickerContent: "content {height}px",
-  pickerSave: "Save",
+  pickerSave: "Download",
   pickerCopy: "Copy",
   pickerCancel: "Cancel",
   statusCopied: "Copied to clipboard.",

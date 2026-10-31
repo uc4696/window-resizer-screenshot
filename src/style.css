@@ -452,6 +452,13 @@ body {
   cursor: pointer;
 }
 
+/* ボタンを置かない列の幅だけを確保する（.icon-button と同じ幅） */
+.icon-button-spacer {
+  display: inline-block;
+  width: 32px;
+  flex-shrink: 0;
+}
+
 .icon-button:hover:not(:disabled) {
   background-color: var(--accent-color);
   color: var(--button-text);
