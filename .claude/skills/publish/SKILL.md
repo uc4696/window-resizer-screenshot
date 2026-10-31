@@ -20,6 +20,7 @@ disable-model-invocation: true
 1. **説明文（日英）**: `store/description.ja.txt` / `store/description.en.txt` が掲載文の正本。洗い出した変更を両方に同じ内容で追記し、ユーザーに確認してもらう。ダッシュボードには言語を切り替えてそれぞれ貼り付ける。
    - 短い説明（概要の1行）は `assets/_locales/{en,ja}/messages.json` の `extensionDescription` から自動で入る（132 文字以内）。変える場合はコード変更なので release からやり直す。
 2. **プロモ画像**: `store/images/` に置く。スクリーンショットは 1280×800（または 640×400）、最大 5 枚。小さいプロモタイル 440×280、マーキー 1400×560 は任意。新機能が見た目に関わる場合は、該当画面のスクリーンショットを差し替え・追加する。
+   - スクリーンショット（`store/images/screenshot-1〜5.png`、1280×800）も全言語共通なので英語で作る。`npm run build` の後、作業フォルダ `<work>` に LP の図解（`wvr-diagram-window.png` / `wvr-diagram-viewport.png`）を置き、`node store/screenshots/shoot-store.cjs "$PWD" <work>`（デモ用の管理画面 `demo-page.html` での範囲選択 UI・拡大率の確認・設定画面を撮影）→ `node store/screenshots/render-slides.cjs "$PWD" <work> store/images`。見出しと説明文は `store/screenshots/slides.html`。1枚目は `store/lp/images/wvr-step-2-en.png` を使うので、LP 画像を先に作る。
    - 小さいプロモタイルはダッシュボードに言語別の欄がなく全言語共通なので、英語版（`store/images/promo-tile-440x280.en.png`）を使う。ja 版は予備。タイルは `store/promo/` から作り直せる。作業用の空フォルダ `<work>` に `store/promo/tile.html` と `assets/icon128.png` をコピーし、`npm run build` の後に `node store/promo/shoot.cjs "$PWD" <work>`（本番ビルドのポップアップを ja/en・light/dark で 3 倍撮影。表示中のサイズ値は 1920 x 1080 / 1920 x 951 に差し替え）→ `node store/promo/render.cjs "$PWD" <work> store/images`（440×280 を書き出し、確認用の @2x は `<work>` に出る）。ポップアップの見た目が変わったときに作り直す。
 3. **その他の掲載項目の確認**:
    - 「プライバシーへの取り組み」の正本は `store/privacy.md`（英語を貼り付け、日本語は確認用）。権限を変えたときは権限の用途を更新する。権限が同じでも、用途が増えた場合（例: `scripting` で範囲選択 UI を注入）は追記する。

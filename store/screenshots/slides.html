@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; box-sizing: border-box }
+  html, body { width: 1280px; height: 800px; overflow: hidden }
+  body { font-family: "Segoe UI", sans-serif; background: #f5f4fc; position: relative }
+  .panel { position: absolute; left: 0; top: 0; bottom: 0; width: 400px; color: #fff; padding: 64px 40px 0 44px;
+    background: radial-gradient(circle at 20% 8%, #8f84f0 0, #6a5ce0 45%, #4b3fc4 100%) }
+  .panel::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 24px 24px }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; opacity: .9 }
+  .brand img { width: 30px; height: 30px; background: #fff; border-radius: 8px; padding: 4px }
+  .num { margin-top: 44px; font-size: 13px; font-weight: 700; letter-spacing: .12em; opacity: .75 }
+  h1 { margin-top: 10px; font-size: 36px; line-height: 1.15; font-weight: 800; letter-spacing: -.3px }
+  p { margin-top: 20px; font-size: 17px; line-height: 1.55; opacity: .95 }
+  ul { margin-top: 22px; padding: 0; list-style: none }
+  li { font-size: 16px; line-height: 1.4; margin-bottom: 12px; padding-left: 26px; position: relative }
+  li::before { content: ""; position: absolute; left: 0; top: 4px; width: 15px; height: 15px; border-radius: 50%;
+    background: rgba(255,255,255,.95); box-shadow: inset 0 0 0 4px #6a5ce0 }
+  .chips { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px }
+  .chip { font-size: 13px; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.4) }
+  .stage { position: absolute; left: 400px; top: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 28px }
+  .shot { border-radius: 12px; box-shadow: 0 18px 40px rgba(40, 30, 120, .22), 0 0 0 1px rgba(60, 50, 140, .12); display: block }
+  .fig { text-align: center }
+  .fig img { width: 380px; border-radius: 12px; box-shadow: 0 10px 26px rgba(40, 30, 120, .14) }
+  .fig b { display: block; margin-top: 14px; font-size: 18px; color: #3b2fb0 }
+  .fig span { display: block; margin-top: 4px; font-size: 14px; color: #555 }
+  .tag { position: absolute; background: #fff; color: #3b2fb0; font-weight: 800; font-size: 18px; padding: 10px 16px; border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(40, 30, 120, .18) }
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="brand"><img src="icon128.png">Window &amp; Viewport Resizer</div>
+  <div class="num" id="num"></div>
+  <h1 id="title"></h1>
+  <p id="desc"></p>
+  <div id="extra"></div>
+</div>
+<div class="stage" id="stage"></div>
+<script>
+  const n = Number(new URLSearchParams(location.search).get("n"))
+  const S = {
+    1: {
+      title: "Resize to an exact size, then capture",
+      desc: "Switch the window or the viewport to a preset or your own size in one click, then save the visible area or the whole page.",
+      extra: `<div class="chips">${["HD", "FHD", "WQHD", "4K", "VGA", "SVGA", "XGA", "UXGA", "Custom sizes"].map((c) => `<span class="chip">${c}</span>`).join("")}</div>`,
+      stage: `<img class="shot" src="wvr-step-2-en.png" style="width:820px">`
+    },
+    2: {
+      title: "Window-based or viewport-based",
+      desc: "Choose which part of the browser gets the exact size. Viewport-based is ideal when every screenshot must be the same size.",
+      extra: "",
+      stage: `<div class="fig"><img src="wvr-diagram-window.png"><b>Window-based</b><span>The whole window, toolbars included</span></div>
+              <div class="fig"><img src="wvr-diagram-viewport.png"><b>Viewport-based</b><span>Only the area where the page is shown</span></div>`
+    },
+    3: {
+      title: "Capture pages that scroll inside",
+      desc: "On web apps where only an inner area scrolls, the main area is detected automatically and captured to the end.",
+      extra: `<ul><li>Or click any scrollable area to download or copy just that part</li><li>Optionally keep the header and sidebar around it</li></ul>`,
+      stage: `<img class="shot" src="picker.png" style="width:820px">`
+    },
+    4: {
+      title: "Zoomed page? Back to 100% first",
+      desc: "When the page zoom isn't 100%, the size would come out wrong. The zoom is reset to 100% before resizing.",
+      extra: `<ul><li>Works in both window-based and viewport-based modes</li><li>The confirmation can be turned off in the settings</li></ul>`,
+      stage: `<div style="position:relative"><img class="shot" src="zoom.png" style="height:660px">
+              <div class="tag" style="left:-150px;top:120px">125% &rarr; 100%</div></div>`
+    },
+    5: {
+      title: "Save it your way",
+      desc: "",
+      extra: `<ul><li>PNG, WebP or JPEG</li><li>Copy to the clipboard as PNG</li><li>Choose the save folder name</li>
+              <li>The result appears as a badge on the toolbar icon</li><li>Dark mode, English / Japanese</li>
+              <li>Only 4 permissions. Your screenshots and settings never leave your browser</li></ul>`,
+      stage: `<img class="shot" src="options-crop.png" style="height:690px">`
+    }
+  }[n]
+  num.textContent = String(n).padStart(2, "0") + " / 05"
+  title.textContent = S.title
+  desc.textContent = S.desc
+  if (!S.desc) desc.remove()
+  extra.innerHTML = S.extra
+  stage.innerHTML = S.stage
+</script>
+</body>
+</html>
