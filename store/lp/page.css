@@ -1,0 +1,131 @@
+/* ===== Window & Viewport Resizer LP（日本語版・英語版 共通）=====
+   Cocoon の投稿編集画面「カスタムCSS」欄に貼り付ける */
+
+/* --- Cocoon のページ部品を LP 用に調整（このページだけに効く） --- */
+.main{background:transparent;padding:0;border:0;box-shadow:none}
+.entry-title,.eye-catch-wrap,.date-tags,.sns-share,.sns-follow,.author-info,.article-footer{display:none}
+
+/* --- 変数・基本 --- */
+.wvr{--accent:#8B5CF6;--accent-strong:#6D3FE0;--accent-soft:#F1EBFF;--card:#fff;--line:#E2E0DC;--muted:#6B6966;color:#333;line-height:1.8;max-width:1100px;margin:0 auto}
+.wvr *{box-sizing:border-box}
+/* Cocoon「画像の囲み効果」（.iwe-shadow-paper img の影と枠）を打ち消す */
+.article .wvr img{max-width:100%;height:auto;border:0;border-radius:0;box-shadow:none}
+.wvr .mono{font-family:Consolas,"SFMono-Regular",Menlo,monospace}
+.wvr .lang{text-align:right;font-size:14px;margin:0 0 12px}
+.wvr .lang a{color:var(--muted);text-decoration:none}
+.wvr .lang b{color:#333}
+
+/* --- Cocoon の見出し・表の装飾を打ち消す --- */
+.article .wvr h1,.article .wvr h2,.article .wvr h3{background:none;border:0;padding:0;box-shadow:none;color:inherit}
+.article .wvr p{margin:0}
+
+.wvr .sec{background:var(--card);border-radius:12px;padding:48px 40px;margin-bottom:24px}
+.article .wvr .sec-title{font-size:28px;font-weight:700;text-align:center;margin:0 0 8px;line-height:1.4}
+.wvr .sec-title::after{content:"";display:block;width:48px;height:4px;border-radius:2px;background:var(--accent);margin:14px auto 0}
+.article .wvr .sec-lead{text-align:center;color:var(--muted);margin:0 0 32px;font-size:16px}
+
+/* --- ボタン --- */
+.wvr .btn{display:inline-flex;align-items:center;gap:10px;background:var(--accent-strong);color:#fff;font-weight:700;text-decoration:none;padding:16px 32px;border-radius:999px;box-shadow:0 4px 0 #4E2AA8;transition:transform .1s}
+.wvr .btn:hover{color:#fff;transform:translateY(2px);box-shadow:0 2px 0 #4E2AA8}
+.wvr .btn-sub{display:block;font-size:13px;color:var(--muted);margin-top:10px}
+.wvr .btn-ghost{display:inline-flex;align-items:center;gap:8px;border:2px solid #333;color:#333;text-decoration:none;font-weight:700;padding:12px 24px;border-radius:999px;font-size:16px}
+.wvr .btn-ghost:hover{color:var(--accent-strong);border-color:var(--accent-strong)}
+.wvr .cta{text-align:center;margin-top:36px}
+
+/* 1. ファーストビュー */
+.wvr .hero{display:grid;grid-template-columns:1fr 1.1fr;gap:40px;align-items:center;padding:56px 48px}
+.wvr .hero-badge{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--accent-strong);background:var(--accent-soft);padding:4px 12px;border-radius:999px}
+.wvr .hero-name{display:flex;align-items:center;gap:12px;margin:18px 0 8px;font-size:18px;font-weight:700}
+.wvr .hero-name img{width:40px;height:40px;margin:0}
+.article .wvr .hero-catch{font-size:36px;font-weight:700;line-height:1.4;margin:0 0 16px}
+.wvr .nw{white-space:nowrap}
+.wvr .hero-catch em{font-style:normal;color:var(--accent-strong)}
+.article .wvr .hero-text{margin:0 0 28px;color:#555;font-size:17px}
+.wvr .hero-visual{position:relative;aspect-ratio:16/10}
+.article .wvr .hero-bg{display:block;width:100%;height:100%;object-fit:cover;border-radius:10px}
+.article .wvr .hero-popup{position:absolute;right:10%;top:50%;transform:translateY(-50%);height:94%;width:auto;border-radius:10px;box-shadow:0 12px 32px rgba(77,42,168,.22)}
+
+/* 2. こんな人に */
+.wvr .persona{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.article .wvr .persona>div{justify-self:stretch;width:auto;text-align:center;font-size:16px}
+.article .wvr .persona-img{display:block;width:100%;max-width:160px;margin:0 auto 12px}
+
+/* 3. できること */
+.wvr .features{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.wvr .feature{border:1px solid var(--line);border-radius:10px;padding:24px}
+.wvr .feature-ico{width:48px;height:48px;border-radius:10px;background:var(--accent-soft);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.wvr .feature-ico svg{display:block}
+.article .wvr .feature h3{margin:0 0 6px;font-size:19px}
+.article .wvr .feature p{font-size:15px;color:#555}
+
+/* 4. 基準の違い */
+.wvr .compare{display:grid;grid-template-columns:1fr 1fr;gap:32px 28px}
+.article .wvr .compare h3{display:table;margin:0 auto 14px;background:var(--accent-strong);color:#fff;font-size:18px;padding:4px 22px;border-radius:999px}
+.wvr .compare img{display:block;width:100%}
+.article .wvr .compare-use{margin:14px 0 4px;text-align:center;font-weight:700;color:var(--accent-strong);font-size:17px}
+.article .wvr .compare-desc{font-size:15px;color:#555}
+
+/* 5. プリセット */
+.wvr .presets{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.wvr .presets table{width:100%;border-collapse:collapse;font-size:16px;margin:0;border:0}
+.wvr .presets caption{font-weight:700;text-align:left;margin-bottom:8px}
+.wvr .presets th,.wvr .presets td{border:0;border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;background:none}
+.wvr .presets th{background:var(--accent-soft);font-size:14px}
+.article .wvr .note{font-size:14px;color:var(--muted);text-align:center;margin-top:20px}
+
+/* 6. デモ */
+.wvr .demo-video{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);box-shadow:0 8px 24px rgba(77,42,168,.12)}
+
+/* 7. 使い方 */
+.wvr .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;counter-reset:step}
+.wvr .step{counter-increment:step}
+.article .wvr .step-img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--line);margin-bottom:12px}
+.article .wvr .step h3{display:flex;align-items:center;gap:10px;margin:0 0 4px;font-size:18px}
+.wvr .step h3::before{content:counter(step);display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--accent-strong);color:#fff;font-size:16px;flex:none}
+.article .wvr .step p{font-size:15px;color:#555}
+
+/* 8. 便利機能リスト */
+.article .wvr .minor{display:grid;grid-template-columns:1fr 1fr;gap:12px 32px;list-style:none;padding:0;margin:0;font-size:16px}
+.article .wvr .minor li{display:flex;gap:10px;margin:0;padding:0;list-style:none}
+.wvr .minor li::before{content:"✓";color:var(--accent-strong);font-weight:700}
+
+/* 9. プライバシー */
+.wvr .privacy{display:flex;gap:32px;align-items:center;background:var(--accent-soft);border-radius:12px;padding:32px}
+.wvr .shield{font-size:56px;line-height:1}
+.article .wvr .privacy h3{margin:0 0 8px;font-size:20px}
+.article .wvr .privacy p{margin:0 0 12px;font-size:15px}
+.wvr .perm{display:inline-block;background:#fff;border:1px solid #C9B8F7;border-radius:6px;padding:2px 10px;margin:4px 6px 0 0;font-size:14px}
+
+/* 10. FAQ */
+.wvr details{border:1px solid var(--line);border-radius:10px;margin-bottom:12px;padding:0 20px}
+.wvr summary{cursor:pointer;font-weight:700;padding:16px 0;list-style:none;display:flex;gap:12px}
+.wvr summary::-webkit-details-marker{display:none}
+.wvr summary::before{content:"Q";color:var(--accent-strong);font-weight:700}
+.article .wvr details p{margin:0 0 16px 28px;font-size:15px;color:#555}
+
+/* 11. GitHub */
+.wvr .gh{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+/* 12. 関連記事（中身は Cocoon のブログカード） */
+.wvr .related .blogcard-wrap{margin:0 0 12px}
+
+/* 13. 最後のCTA */
+.wvr .final{background:var(--accent-strong);color:#fff;text-align:center}
+.wvr .final .sec-title::after{background:#fff}
+.article .wvr .final .sec-title{color:#fff}
+.article .wvr .final .sec-lead{color:#E8DEFF}
+.wvr .final .btn,.wvr .final .btn:hover{background:#fff;color:var(--accent-strong);box-shadow:0 4px 0 #4E2AA8}
+.wvr .final .btn-sub{color:#E8DEFF}
+
+/* スマホ */
+@media (max-width:768px){
+  .wvr .sec{padding:32px 20px}
+  .wvr .hero{grid-template-columns:1fr;padding:32px 20px;gap:24px}
+  .article .wvr .hero-catch{font-size:26px}
+  .article .wvr .sec-title{font-size:22px}
+  .wvr .persona{grid-template-columns:repeat(2,1fr)}
+  .wvr .features,.wvr .compare,.wvr .presets,.wvr .steps,.article .wvr .minor{grid-template-columns:1fr}
+  .wvr .privacy{flex-direction:column;text-align:center;gap:12px;padding:24px 20px}
+  .wvr .btn{padding:14px 24px}
+}
+
