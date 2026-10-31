@@ -4,8 +4,8 @@ import { Icon } from "~components/Icon"
 import { useI18n } from "~lib/i18n/useI18n"
 import type { CaptureAction, CaptureMode, CaptureResponse } from "~lib/messages"
 
-/** コピー成功後、アイコンを check に切り替えておく時間（ms）。 */
-export const COPIED_ICON_MS = 1500
+/** コピー成功後、check アイコンを見せてから popup を閉じるまでの時間（ms）。 */
+export const CLOSE_AFTER_COPY_MS = 800
 
 interface Props {
   busy: boolean
@@ -71,21 +71,24 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
     return mode === "full-page" ? t("statusCapturingFullPage") : t("statusCapturing")
   }
 
+  /**
+   * 保存は background に任せ、受け付けられたら popup を閉じる。
+   * 撮影・保存の結果はツールバーアイコンのバッジ（OK / !）で知らせる。
+   */
   async function handleDownload(mode: CaptureMode) {
     onBusyChange(true)
     onStatus(statusWhileCapturing(mode))
     try {
       const response = await requestCapture(mode, "download")
       if (response?.ok) {
-        onStatus(t("statusSaved", { filename: response.filename ?? "" }))
-      } else {
-        onStatus(t("statusError", { message: response?.error ?? t("errCaptureFailed") }))
+        window.close()
+        return
       }
+      onStatus(t("statusError", { message: response?.error ?? t("errCaptureFailed") }))
     } catch (e) {
       onStatus(t("statusError", { message: e instanceof Error ? e.message : String(e) }))
-    } finally {
-      onBusyChange(false)
     }
+    onBusyChange(false)
   }
 
   /**
@@ -105,10 +108,11 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
       })
       await navigator.clipboard.write([new ClipboardItem({ "image/png": blobPromise })])
 
+      // 完了を check アイコンで少し見せてから popup を閉じる
       onStatus(t("statusCopied"))
       setCopiedMode(mode)
       if (timerRef.current) clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(() => setCopiedMode(null), COPIED_ICON_MS)
+      timerRef.current = setTimeout(() => window.close(), CLOSE_AFTER_COPY_MS)
     } catch (e) {
       const message = e instanceof Error ? e.message : t("errClipboard")
       onStatus(t("statusError", { message }))

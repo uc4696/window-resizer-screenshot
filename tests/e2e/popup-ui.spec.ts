@@ -168,6 +168,28 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     expect(text).toContain("このサイズだとどう見える")
   })
 
+  test("日本語表示でも、カスタムサイズ未登録の初期状態ではスクロールが出ない", async ({
+    context,
+    extensionId,
+    openTarget,
+    openPopup
+  }) => {
+    const options = await context.newPage()
+    await options.goto(`chrome-extension://${extensionId}/options.html`)
+    await options.locator("#language").selectOption("ja")
+    await expect(options.getByText("設定を保存しました。")).toBeVisible()
+
+    const popup = await openPopup(await openTarget("/"))
+    await popup.setViewportSize({ width: 320, height: 600 })
+    await expect(popup.locator(".mode-button").first()).toHaveText("ウィンドウ基準")
+
+    const metrics = await popup.locator(".popup-root").evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight
+    }))
+    expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight)
+  })
+
   test("初期状態ではスクロールなしで全体が表示される（スクロール自体は無効化していない）", async ({
     openTarget,
     openPopup

@@ -26,7 +26,6 @@ export const ja: Record<MessageKey, string> = {
   statusError: "エラー: {message}",
   statusCapturingFullPage: "ページ全体を撮影中...",
   statusCapturing: "撮影中...",
-  statusSaved: "保存しました: {filename}",
   errCaptureFailed: "撮影に失敗しました。",
 
   // ---- preset groups / badges ----

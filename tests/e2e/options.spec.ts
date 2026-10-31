@@ -3,7 +3,7 @@ import {
   getDownloadRequests,
   presetButton,
   recordDownloadRequests,
-  waitForFinalStatus
+  waitForCaptureBadge
 } from "./helpers"
 
 test.describe("設定画面（正常系）", () => {
@@ -27,7 +27,7 @@ test.describe("設定画面（正常系）", () => {
     await popup
       .getByRole("button", { name: "Download screenshot of visible area" })
       .click()
-    await waitForFinalStatus(popup)
+    expect(await waitForCaptureBadge(serviceWorker, popup, target)).toBe("OK")
 
     const requests = await getDownloadRequests(serviceWorker)
     expect(requests).toHaveLength(1)

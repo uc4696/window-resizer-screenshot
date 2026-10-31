@@ -50,6 +50,20 @@ export async function captureVisibleTab(
   }
 }
 
+/**
+ * 内側のスクロール要素の表示領域（CSS px、ビューポート基準）。
+ * ページ自体はスクロールせず、`height: 100vh; overflow: auto` の div などが
+ * 本文をスクロールさせているレイアウトで使う。
+ */
+interface ScrollerRegion {
+  left: number
+  top: number
+  width: number
+  height: number
+  scrollHeight: number
+  scrollTop: number
+}
+
 interface PageMetrics {
   scrollWidth: number
   scrollHeight: number
@@ -59,6 +73,8 @@ interface PageMetrics {
   scrollX: number
   scrollY: number
   backgroundColor: string
+  /** ページ自体がスクロールしない場合に、代わりにスクロールする要素。なければ null。 */
+  scroller: ScrollerRegion | null
 }
 
 /** captureVisibleTab のレート制限（Chromeは概ね2回/秒程度に制限）に配慮するための待機時間 */
@@ -77,29 +93,79 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+const FIXED_ELEMENTS_STYLE_ID = "__wvr_full_page_capture_style__"
+const HIDDEN_ATTR = "data-wvr-hidden-fixed"
+/** 内側のスクロール要素に付ける目印。撮影中のスクロール・復元の対象を特定する。 */
+const SCROLLER_ATTR = "data-wvr-scroll-target"
+
 /**
  * ページの計測を行う（サイズ、DPI、現在のスクロール位置、背景色）。
  * scrollHeight は documentElement / body / scrollingElement のいずれで取得しても
  * 抜け漏れがないよう、複数の経路を比較した最大値を採用する。
+ * ページ自体がスクロールしない場合は、表示面積が最大のスクロール要素を探して目印を付ける。
  */
 async function measurePage(tabId: number): Promise<PageMetrics> {
   const [{ result }] = await chrome.scripting.executeScript({
     target: { tabId },
-    func: () => {
+    func: (scrollerAttr: string) => {
       const doc = document.documentElement
       const scrollingHeight = document.scrollingElement?.scrollHeight ?? 0
       const scrollingWidth = document.scrollingElement?.scrollWidth ?? 0
+      const scrollHeight = Math.max(doc.scrollHeight, scrollingHeight, window.innerHeight)
+
+      document.querySelectorAll(`[${scrollerAttr}]`).forEach((el) => {
+        el.removeAttribute(scrollerAttr)
+      })
+      let scroller: ScrollerRegion | null = null
+      if (scrollHeight <= window.innerHeight + 1) {
+        let best: HTMLElement | null = null
+        let bestArea = 0
+        for (const el of Array.from(document.querySelectorAll<HTMLElement>("body *"))) {
+          if (el.scrollHeight <= el.clientHeight + 1) continue
+          // ドロップダウン等の小さなスクロール領域は対象外にする
+          if (el.clientWidth < window.innerWidth * 0.3) continue
+          if (!/(auto|scroll|overlay)/.test(window.getComputedStyle(el).overflowY))
+            continue
+          const area = el.clientWidth * el.clientHeight
+          if (area > bestArea) {
+            best = el
+            bestArea = area
+          }
+        }
+        if (best) {
+          best.setAttribute(scrollerAttr, "1")
+          // スクロールバー・枠線を除いた中身の表示領域を、ビューポート内に切り詰めて使う
+          const rect = best.getBoundingClientRect()
+          const innerLeft = rect.left + best.clientLeft
+          const innerTop = rect.top + best.clientTop
+          const left = Math.max(0, innerLeft)
+          const top = Math.max(0, innerTop)
+          const right = Math.min(window.innerWidth, innerLeft + best.clientWidth)
+          const bottom = Math.min(window.innerHeight, innerTop + best.clientHeight)
+          scroller = {
+            left,
+            top,
+            width: right - left,
+            height: bottom - top,
+            scrollHeight: best.scrollHeight,
+            scrollTop: best.scrollTop
+          }
+        }
+      }
+
       return {
         scrollWidth: Math.max(doc.scrollWidth, scrollingWidth, window.innerWidth),
-        scrollHeight: Math.max(doc.scrollHeight, scrollingHeight, window.innerHeight),
+        scrollHeight,
         viewportWidth: window.innerWidth,
         viewportHeight: window.innerHeight,
         dpr: window.devicePixelRatio || 1,
         scrollX: window.scrollX,
         scrollY: window.scrollY,
-        backgroundColor: window.getComputedStyle(document.body).backgroundColor
+        backgroundColor: window.getComputedStyle(document.body).backgroundColor,
+        scroller
       }
-    }
+    },
+    args: [SCROLLER_ATTR]
   })
   if (!result) {
     throw new Error(t("errPageSize"))
@@ -107,19 +173,16 @@ async function measurePage(tabId: number): Promise<PageMetrics> {
   return result
 }
 
-const FIXED_ELEMENTS_STYLE_ID = "__wvr_full_page_capture_style__"
-const HIDDEN_ATTR = "data-wvr-hidden-fixed"
-
 /** 撮影用スタイル（スムーススクロール無効化・非表示属性のCSSルール）を一度だけ注入する。 */
 async function injectCaptureStyle(tabId: number): Promise<void> {
   await chrome.scripting.executeScript({
     target: { tabId },
-    func: (styleId: string, attr: string) => {
+    func: (styleId: string, attr: string, scrollerAttr: string) => {
       if (document.getElementById(styleId)) return
       const style = document.createElement("style")
       style.id = styleId
       style.textContent = `
-        html { scroll-behavior: auto !important; }
+        html, [${scrollerAttr}] { scroll-behavior: auto !important; }
         *[${attr}] {
           opacity: 0 !important;
           visibility: hidden !important;
@@ -129,7 +192,7 @@ async function injectCaptureStyle(tabId: number): Promise<void> {
       `
       document.head.appendChild(style)
     },
-    args: [FIXED_ELEMENTS_STYLE_ID, HIDDEN_ATTR]
+    args: [FIXED_ELEMENTS_STYLE_ID, HIDDEN_ATTR, SCROLLER_ATTR]
   })
 }
 
@@ -138,74 +201,94 @@ async function injectCaptureStyle(tabId: number): Promise<void> {
  * ページによっては「スクロールした後にJSで動的に追従要素が生成・切り替わる」ケースがあるため、
  * 撮影タイルごとに毎回タグを解除→再走査して最新のDOM状態に追従する。
  * 最初のタイル（ページ最上部）はそのままの見た目を残すため、呼び出し側で hide=false を渡す。
+ * 内側のスクロール要素を含む要素（それ自体や fixed の親）は、隠すと本文ごと消えるので対象外にする。
  */
 async function updateStickyHiding(tabId: number, hide: boolean): Promise<void> {
   await chrome.scripting.executeScript({
     target: { tabId },
-    func: (attr: string, shouldHide: boolean) => {
+    func: (attr: string, scrollerAttr: string, shouldHide: boolean) => {
       document.querySelectorAll<HTMLElement>(`[${attr}]`).forEach((el) => {
         el.removeAttribute(attr)
       })
       if (!shouldHide) return
+      const scroller = document.querySelector(`[${scrollerAttr}]`)
       document.querySelectorAll<HTMLElement>("*").forEach((el) => {
+        if (scroller && el.contains(scroller)) return
         const position = window.getComputedStyle(el).position
         if (position === "fixed" || position === "sticky") {
           el.setAttribute(attr, "1")
         }
       })
     },
-    args: [HIDDEN_ATTR, hide]
+    args: [HIDDEN_ATTR, SCROLLER_ATTR, hide]
   })
 }
 
-/** injectCaptureStyle / updateStickyHiding で行った変更を元に戻す。 */
+/** injectCaptureStyle / updateStickyHiding / measurePage で行った変更を元に戻す。 */
 async function restoreAfterCapture(
   tabId: number,
-  original: { scrollX: number; scrollY: number }
+  original: { scrollX: number; scrollY: number; scrollerTop: number }
 ): Promise<void> {
   await chrome.scripting
     .executeScript({
       target: { tabId },
-      func: (styleId: string, attr: string, x: number, y: number) => {
-        document.getElementById(styleId)?.remove()
+      func: (
+        styleId: string,
+        attr: string,
+        scrollerAttr: string,
+        x: number,
+        y: number,
+        scrollerTop: number
+      ) => {
         document.querySelectorAll<HTMLElement>(`[${attr}]`).forEach((el) => {
           el.removeAttribute(attr)
         })
-        window.scrollTo(x, y)
+        document.querySelectorAll<HTMLElement>(`[${scrollerAttr}]`).forEach((el) => {
+          el.scrollTo({ top: scrollerTop, behavior: "instant" })
+          el.removeAttribute(scrollerAttr)
+        })
+        window.scrollTo({ left: x, top: y, behavior: "instant" })
+        document.getElementById(styleId)?.remove()
       },
-      args: [FIXED_ELEMENTS_STYLE_ID, HIDDEN_ATTR, original.scrollX, original.scrollY]
+      args: [
+        FIXED_ELEMENTS_STYLE_ID,
+        HIDDEN_ATTR,
+        SCROLLER_ATTR,
+        original.scrollX,
+        original.scrollY,
+        original.scrollerTop
+      ]
     })
     .catch(() => undefined)
 }
 
 /**
- * 指定位置までスクロールし、実際に反映された scrollY と、その時点の最新の
- * scrollHeight / viewportHeight を返す（末尾はクランプされる／遅延読み込みで
- * ページ高さが変動するため、スクロールごとに再計測する）。
+ * 指定位置までスクロールし、実際に反映されたスクロール位置と、その時点の最新の
+ * viewportHeight を返す（末尾はクランプされる／ウィンドウサイズが変わる場合に備えて
+ * スクロールごとに再計測する）。useScroller の場合は内側のスクロール要素をスクロールする
+ * （viewportHeight は 0 を返し、呼び出し側は計測時の表示領域の高さを使う）。
  */
 async function scrollAndMeasure(
   tabId: number,
-  x: number,
-  y: number
-): Promise<{ appliedY: number; scrollHeight: number; viewportHeight: number }> {
+  y: number,
+  useScroller: boolean
+): Promise<{ appliedY: number; viewportHeight: number }> {
   const [{ result }] = await chrome.scripting.executeScript({
     target: { tabId },
-    func: (targetX: number, targetY: number) => {
-      window.scrollTo(targetX, targetY)
-      const scrollingHeight = document.scrollingElement?.scrollHeight ?? 0
-      return {
-        appliedY: window.scrollY,
-        scrollHeight: Math.max(
-          document.documentElement.scrollHeight,
-          scrollingHeight,
-          window.innerHeight
-        ),
-        viewportHeight: window.innerHeight
+    func: (targetY: number, scrollerAttr: string | null) => {
+      const scroller = scrollerAttr
+        ? document.querySelector<HTMLElement>(`[${scrollerAttr}]`)
+        : null
+      if (scroller) {
+        scroller.scrollTo({ top: targetY, behavior: "instant" })
+        return { appliedY: scroller.scrollTop, viewportHeight: 0 }
       }
+      window.scrollTo({ left: 0, top: targetY, behavior: "instant" })
+      return { appliedY: window.scrollY, viewportHeight: window.innerHeight }
     },
-    args: [x, y]
+    args: [y, useScroller ? SCROLLER_ATTR : null]
   })
-  return result ?? { appliedY: y, scrollHeight: 0, viewportHeight: 0 }
+  return result ?? { appliedY: y, viewportHeight: 0 }
 }
 
 function dataUrlToBlob(dataUrl: string): Blob {
@@ -243,6 +326,9 @@ async function blobToDataUrl(blob: Blob): Promise<string> {
  *   （最上部タイルのみ隠蔽しない）
  * - 実際のタイル画像から実DPR（devicePixelRatioの申告値とズレる場合がある）を算出する
  * - 最終的な描画済み高さでキャンバスをクロップする（末尾の余白防止）
+ * - ページ自体がスクロールせず内側の要素がスクロールするレイアウトでは、その要素をスクロールし、
+ *   2枚目以降はその要素の表示領域だけを切り出して縦に継ぎ足す
+ *   （サイドバー等、要素の外側は最上部タイルの分だけが写り、その下は背景色になる）
  * @param format 出力形式（既定は PNG）。タイルの撮影自体は常に PNG で行う
  * @returns 指定形式のdata URL
  */
@@ -252,15 +338,20 @@ export async function captureFullPage(
   format: ImageFormat = "png"
 ): Promise<string> {
   const metrics = await measurePage(tabId)
-  const { scrollWidth, viewportWidth, dpr, scrollX, scrollY, backgroundColor } = metrics
-  let viewportHeight = metrics.viewportHeight
+  const { scrollWidth, viewportWidth, dpr, scrollX, scrollY, backgroundColor, scroller } =
+    metrics
+  // 1回のスクロール量（ページなら viewport の高さ、内側の要素ならその表示領域の高さ）
+  let step = scroller ? scroller.height : metrics.viewportHeight
+  // スクロール位置 0 の内容がキャンバス上のどこに来るか（内側の要素なら、その上端）
+  const offsetTop = scroller ? scroller.top : 0
+  const contentHeight = scroller
+    ? scroller.top + scroller.scrollHeight
+    : metrics.scrollHeight
 
   // 概算値（実DPR判明前）での幅チェック。高さは上限まで切り詰めて撮影する。
   const roughWidth = Math.round(scrollWidth * dpr)
   if (roughWidth <= 0 || roughWidth > MAX_CANVAS_DIMENSION) {
-    throw new Error(
-      t("errPageTooLarge", { width: scrollWidth, height: metrics.scrollHeight })
-    )
+    throw new Error(t("errPageTooLarge", { width: scrollWidth, height: contentHeight }))
   }
 
   // 撮影開始時の高さで固定（撮影中に伸びた分は追わない）。キャンバス上限も考慮して切り詰める。
@@ -268,18 +359,15 @@ export async function captureFullPage(
     MAX_CANVAS_DIMENSION,
     Math.floor(MAX_CANVAS_AREA / roughWidth)
   )
-  const targetHeight = Math.min(
-    metrics.scrollHeight,
-    Math.floor(maxCanvasHeightRough / dpr)
-  )
+  const targetHeight = Math.min(contentHeight, Math.floor(maxCanvasHeightRough / dpr))
 
   await injectCaptureStyle(tabId)
 
   try {
     // 最上部タイル：追従要素はまだ非表示にしない（自然な見た目のヘッダーを残す）
     await updateStickyHiding(tabId, false)
-    const first = await scrollAndMeasure(tabId, 0, 0)
-    viewportHeight = first.viewportHeight || viewportHeight
+    const first = await scrollAndMeasure(tabId, 0, !!scroller)
+    if (!scroller && first.viewportHeight > 0) step = first.viewportHeight
     await wait(SCROLL_SETTLE_MS)
 
     const firstTileDataUrl = await captureTilePng(windowId)
@@ -295,9 +383,7 @@ export async function captureFullPage(
 
     if (canvasWidth > MAX_CANVAS_DIMENSION || firstBitmap.height > maxCanvasHeight) {
       firstBitmap.close()
-      throw new Error(
-        t("errPageTooLarge", { width: scrollWidth, height: metrics.scrollHeight })
-      )
+      throw new Error(t("errPageTooLarge", { width: scrollWidth, height: contentHeight }))
     }
 
     const canvasHeight = Math.max(
@@ -318,24 +404,34 @@ export async function captureFullPage(
     let maxBottom = Math.min(firstBitmap.height, canvasHeight)
     firstBitmap.close()
 
+    // 2枚目以降で切り出す範囲（実ピクセル）。ページ全体のときはタイル全体を使う。
+    const crop = scroller
+      ? {
+          x: Math.round(scroller.left * realDpr),
+          y: Math.round(scroller.top * realDpr),
+          width: Math.round(scroller.width * realDpr),
+          height: Math.round(scroller.height * realDpr)
+        }
+      : null
+
     await wait(CAPTURE_INTERVAL_MS)
 
     let lastAppliedY = 0
-    let currentY = viewportHeight
+    let currentY = step
     let tileCount = 1
 
-    while (currentY < targetHeight && tileCount < MAX_TILES) {
+    while (offsetTop + currentY < targetHeight && tileCount < MAX_TILES) {
       // 1. 次の撮影位置へスクロールする
       const { appliedY, viewportHeight: latestViewportHeight } = await scrollAndMeasure(
         tabId,
-        0,
-        currentY
+        currentY,
+        !!scroller
       )
       if (appliedY === lastAppliedY) {
         break // これ以上スクロールできない（下端に到達）
       }
       lastAppliedY = appliedY
-      if (latestViewportHeight > 0) viewportHeight = latestViewportHeight
+      if (!scroller && latestViewportHeight > 0) step = latestViewportHeight
 
       // 2. スクロールに反応してJSが追従ヘッダー等を切り替える時間を待つ
       await wait(SCROLL_SETTLE_MS)
@@ -349,23 +445,41 @@ export async function captureFullPage(
       const tileBitmap = await createImageBitmap(dataUrlToBlob(tileDataUrl))
       tileCount++
 
-      const destY = Math.round(appliedY * realDpr)
+      const destY = Math.round((offsetTop + appliedY) * realDpr)
       if (destY >= canvas.height) {
         tileBitmap.close()
         break
       }
       // キャンバス外にはみ出す部分は描画時に自動でクリップされる
-      ctx.drawImage(tileBitmap, 0, destY)
-      maxBottom = Math.max(maxBottom, Math.min(destY + tileBitmap.height, canvas.height))
+      if (crop) {
+        ctx.drawImage(
+          tileBitmap,
+          crop.x,
+          crop.y,
+          crop.width,
+          crop.height,
+          crop.x,
+          destY,
+          crop.width,
+          crop.height
+        )
+        maxBottom = Math.max(maxBottom, Math.min(destY + crop.height, canvas.height))
+      } else {
+        ctx.drawImage(tileBitmap, 0, destY)
+        maxBottom = Math.max(
+          maxBottom,
+          Math.min(destY + tileBitmap.height, canvas.height)
+        )
+      }
       tileBitmap.close()
 
       // レート制限の待機
       await wait(CAPTURE_INTERVAL_MS)
 
-      if (appliedY + viewportHeight >= targetHeight) {
+      if (offsetTop + appliedY + step >= targetHeight) {
         break
       }
-      currentY = appliedY + viewportHeight
+      currentY = appliedY + step
     }
 
     // 撮影範囲より手前で終了した場合等、末尾の余白を除去する
@@ -380,6 +494,10 @@ export async function captureFullPage(
 
     return await blobToDataUrl(await encodeCanvas(canvas, format))
   } finally {
-    await restoreAfterCapture(tabId, { scrollX, scrollY })
+    await restoreAfterCapture(tabId, {
+      scrollX,
+      scrollY,
+      scrollerTop: scroller?.scrollTop ?? 0
+    })
   }
 }

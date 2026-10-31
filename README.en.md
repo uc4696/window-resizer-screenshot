@@ -185,6 +185,8 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 ### 3. What the screenshots capture
 - Both screenshot features ("Visible area" and "Full page") capture **only the web page content inside the tab (the viewport area)**.
 - A "whole window screenshot" that includes the OS title bar, browser toolbar and window frame cannot be taken with Chrome's standard capture APIs, so please use an external capture tool.
+- "Full page" also works on layouts where the page itself does not scroll and only an inner area does (common in business systems and admin dashboards). In that case the largest scrollable area is captured to the end and stitched vertically. Anything outside that area (such as a sidebar) appears only for the first screen, and the rest is filled with the background color.
+- When you press a download button, the popup closes right away and the result is shown as a badge on the toolbar icon (`...` while capturing, `OK` on success, `!` on failure). For copy, the popup closes after the image has been written to the clipboard.
 
 ### 4. Permissions
 

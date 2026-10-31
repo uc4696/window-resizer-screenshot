@@ -1,6 +1,9 @@
 export type CaptureMode = "visible" | "full-page"
 
-/** download: 設定の形式で保存 / copy: クリップボード用に PNG の data URL を返す。 */
+/**
+ * download: 設定の形式で保存（受け付けた時点で応答し、結果はツールバーのバッジで知らせる）
+ * copy: クリップボード用に PNG の data URL を返す。
+ */
 export type CaptureAction = "download" | "copy"
 
 export interface CaptureRequest {

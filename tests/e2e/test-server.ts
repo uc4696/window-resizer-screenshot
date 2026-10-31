@@ -21,13 +21,39 @@ const LONG_PAGE = `<!doctype html>
 </style></head>
 <body><header>sticky header</header><div class="tall"></div></body></html>`
 
+/** 内側スクロールのページで、スクロール要素の上にある固定ヘッダーの高さ（px）。 */
+export const INNER_SCROLL_TOP = 48
+/** 内側スクロールのページで、スクロール要素の中身の高さ（px）。sticky 見出し + 本体。 */
+export const INNER_SCROLL_CONTENT_HEIGHT = LONG_PAGE_HEIGHT + HEADER_HEIGHT
+
+/**
+ * ページ自体はスクロールせず、内側の div だけがスクロールする業務システム風のレイアウト。
+ * 上部に固定のトップバー、左にサイドバーがあり、右下の領域だけが縦にスクロールする。
+ */
+const INNER_SCROLL_PAGE = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>E2E inner scroll page</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #fff; }
+  .topbar { position: fixed; top: 0; left: 0; right: 0; height: ${INNER_SCROLL_TOP}px; background: #333; }
+  .sidebar { position: fixed; top: ${INNER_SCROLL_TOP}px; left: 0; bottom: 0; width: 84px; background: #ccc; }
+  .main { position: absolute; top: ${INNER_SCROLL_TOP}px; left: 84px; right: 0; bottom: 0; overflow-y: auto; scroll-behavior: smooth; }
+  .main header { position: sticky; top: 0; height: ${HEADER_HEIGHT}px; background: #036; color: #fff; }
+  .main .tall { height: ${LONG_PAGE_HEIGHT}px; background: linear-gradient(#fff, #9cf); }
+</style></head>
+<body><div class="topbar"></div><nav class="sidebar"></nav>
+<div class="main"><header>sticky header</header><div class="tall"></div></div></body></html>`
+
 /** テスト用のローカルHTTPサーバーを起動する（空きポートを自動割り当て）。 */
 export async function startTestServer(): Promise<{
   baseUrl: string
   close: () => Promise<void>
 }> {
   const server = http.createServer((req, res) => {
-    const body = req.url?.startsWith("/long") ? LONG_PAGE : SHORT_PAGE
+    const body = req.url?.startsWith("/long")
+      ? LONG_PAGE
+      : req.url?.startsWith("/inner-scroll")
+        ? INNER_SCROLL_PAGE
+        : SHORT_PAGE
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" })
     res.end(body)
   })

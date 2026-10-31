@@ -29,7 +29,6 @@ export const en = {
   statusError: "Error: {message}",
   statusCapturingFullPage: "Capturing full page...",
   statusCapturing: "Capturing...",
-  statusSaved: "Saved: {filename}",
   errCaptureFailed: "Failed to capture the screenshot.",
 
   // ---- preset groups / badges ----

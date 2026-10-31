@@ -33,8 +33,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 新機能の追加や仕様変更をしたら、この節の該当項目を更新・追記する。
 
+- **ページ全体の撮影**: 通常は window をスクロールして撮る。ページ自体がスクロールしない（`scrollHeight <= innerHeight`）ときは、表示面積が最大で幅がビューポートの30%以上のスクロール要素に目印 `data-wvr-scroll-target` を付け、その要素をスクロールする。2枚目以降はその要素の表示領域だけを切り出して `top + scrollTop` の位置に描く（`src/lib/screenshot.ts`）。fixed/sticky を隠すときは、スクロール要素を含む要素（自身・fixed の親）は対象外にする。スクロールはページ側の `scroll-behavior: smooth` に負けないよう `behavior: "instant"` で行い、撮影後は元の位置に戻して目印を外す。実例は des.jointfb.com（`div.h-screen.overflow-x-hidden` が本文をスクロールする）。
 - **保存形式**: PNG（既定）/ WebP / JPEG を設定画面で選択（選択した時点で保存）。タイル撮影は常に PNG で行い、最終出力時だけ形式を変換する（`src/lib/screenshot.ts`）。`Settings.imageFormat` の不正値は `png` に正規化する。
-- **クリップボード**: 保存形式によらず常に PNG。`clipboardWrite` 権限は使わず、popup 側で `ClipboardItem` に Promise を渡す（`src/components/CaptureSection.tsx`）。成功時は1.5秒だけ check アイコンを出す。
+- **保存（ダウンロード）**: 押下すると background が受け付けた時点で応答し、popup はすぐ閉じる。撮影・保存は background で続行し、結果は対象タブのツールバーアイコンのバッジで知らせる（撮影中 `...`・成功 `OK`・失敗 `!`、結果は3秒で消える。`src/background.ts`）。受け付け自体に失敗したときだけ popup を閉じずにエラーを表示する。
+- **クリップボード**: 保存形式によらず常に PNG。`clipboardWrite` 権限は使わず、popup 側で `ClipboardItem` に Promise を渡す（`src/components/CaptureSection.tsx`）。そのためコピー完了までは popup を閉じない。成功時は check アイコンを出し、0.8秒後に popup を閉じる。失敗時は閉じずにエラーを表示する。
 - **X 共有**: `https://x.com/intent/post?text=...` を新規タブで開く（権限不要）。本文は `src/lib/share.ts` で組み立て、文言とハッシュタグは i18n（ja: `#Chrome拡張機能 #Web制作` / en: `#ChromeExtension #WebDev`）。
 - **アイコン**: Tabler Icons（MIT）の `icons/*.svg` を `data-text:` でインライン展開する（`src/components/Icon.tsx`）。
   - Plasmo のビルドで SVG の `viewBox` が除去され、width/height を変えても縮小されず見切れる。そのため Icon.tsx で `viewBox="0 0 24 24"` を補い、width/height を `size` に書き換える。SVG 内の class（`icon ...`）は読み込み時に除去し、ラッパーのクラスは `.ui-icon`。
@@ -43,7 +45,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - ライセンスは `licenses/LICENSE-tabler.txt`。設定画面に「Icons: Tabler Icons (MIT License)」と表記する。
 - **サイズ基準の記憶**: 最後に選んだサイズ基準（window / viewport）を local ストレージのキー `size-mode` に保存し、ポップアップ表示時に復元する（`src/lib/storage.ts` の `getSizeMode` / `setSizeMode`、`src/popup.tsx` の `changeMode`）。不正値・未設定は window に正規化し、ファクトリーリセットで削除する。
 - **フッターボタン**: 「設定を開く」と「X で共有」は共通クラス `.footer-button`（枠線付きの pill 型、アイコン + 文字）で同じデザインにする。`.popup-footer-row` で中央寄せ、間隔は 6px。
-- **ポップアップの高さ**: 初期状態でスクロールが出ないよう余白を詰めるが、`.popup-root` の `max-height: 560px` / `overflow-y: auto` は外さない。
+- **ポップアップの高さ**: 初期状態でスクロールが出ないよう余白を詰めるが、`.popup-root` の `max-height: 560px` / `overflow-y: auto` は外さない。日本語のフォールバックフォントは行高 `normal` が大きく ja だけはみ出したため、`body` の `line-height` を 1.35 に固定している（計測値: en 546px / ja 552px）。E2E で en / ja とも初期状態でスクロールが出ないことを確認している。
 
 ## バージョン・リリース
 
