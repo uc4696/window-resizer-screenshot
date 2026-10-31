@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { Icon } from "~components/Icon"
 import { useI18n } from "~lib/i18n/useI18n"
 import type { CaptureAction, CaptureMode, CaptureResponse } from "~lib/messages"
+import { countPickCandidates, startPicker } from "~lib/picker"
 
 /** コピー成功後、check アイコンを見せてから popup を閉じるまでの時間（ms）。 */
 export const CLOSE_AFTER_COPY_MS = 800
@@ -32,10 +33,13 @@ function requestCapture(
 /**
  * スクリーンショット欄。「表示部分」「ページ全体」の2行で、
  * 左に範囲アイコン、右にダウンロード／コピーのアイコンボタンを並べる。
+ * 「ページ全体」の行には、スクロール範囲を選んで撮る［選択］ボタンも置く
+ * （選べる範囲があるページでだけ押せる）。
  */
 export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
   const { t } = useI18n()
   const [copiedMode, setCopiedMode] = useState<CaptureMode | null>(null)
+  const [pickTabId, setPickTabId] = useState<number | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -43,6 +47,39 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
   }, [])
+
+  // 対象タブに選べるスクロール範囲があるか調べ、あれば［選択］を有効にする
+  useEffect(() => {
+    let cancelled = false
+    chrome.tabs
+      .query({ active: true, currentWindow: true })
+      .then(async ([tab]) => {
+        if (tab?.id === undefined) return
+        const count = await countPickCandidates(tab.id)
+        if (!cancelled && count > 0) setPickTabId(tab.id)
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  /** ページ上で範囲を選ぶ UI を開始し、popup を閉じる（以降はページ側で保存／コピーを選ぶ）。 */
+  async function handlePick() {
+    if (pickTabId === null) return
+    try {
+      await startPicker(pickTabId, {
+        banner: t("pickerBanner"),
+        content: t("pickerContent"),
+        save: t("pickerSave"),
+        copy: t("pickerCopy"),
+        cancel: t("pickerCancel")
+      })
+      window.close()
+    } catch (e) {
+      onStatus(t("statusError", { message: e instanceof Error ? e.message : String(e) }))
+    }
+  }
 
   const rows: {
     mode: CaptureMode
@@ -151,6 +188,20 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
             >
               <Icon name={copiedMode === row.mode ? "check" : "copy"} />
             </button>
+            {row.mode === "full-page" && (
+              <button
+                type="button"
+                className="icon-button"
+                title={
+                  pickTabId !== null ? t("capturePick") : t("capturePickUnavailable")
+                }
+                aria-label={t("capturePick")}
+                disabled={busy || pickTabId === null}
+                onClick={handlePick}
+              >
+                <Icon name="click" />
+              </button>
+            )}
           </div>
         </div>
       ))}

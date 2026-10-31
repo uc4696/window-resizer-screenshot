@@ -1,7 +1,7 @@
 import { expect, test } from "./fixtures"
 
 test.describe("ポップアップのUI（アイコンボタン・共有・高さ）", () => {
-  test("スクリーンショット欄は「表示部分」「ページ全体」の2行で、各行にダウンロードとコピーのボタンがある", async ({
+  test("スクリーンショット欄は「表示部分」「ページ全体」の2行で、各行にダウンロードとコピー、ページ全体の行には範囲選択のボタンもある", async ({
     openTarget,
     openPopup
   }) => {
@@ -11,9 +11,11 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     await expect(rows).toHaveCount(2)
     await expect(rows.nth(0)).toContainText("Visible area")
     await expect(rows.nth(1)).toContainText("Full page")
+    // 表示部分: ダウンロード・コピー / ページ全体: ダウンロード・コピー・範囲選択
+    await expect(rows.nth(0).locator("button.icon-button")).toHaveCount(2)
+    await expect(rows.nth(1).locator("button.icon-button")).toHaveCount(3)
     for (let i = 0; i < 2; i++) {
-      await expect(rows.nth(i).locator("button.icon-button")).toHaveCount(2)
-      // 範囲アイコン（左）+ ボタン2つ（右）
+      // 範囲アイコン（左）
       await expect(rows.nth(i).locator(".capture-scope svg")).toHaveCount(1)
     }
   })
@@ -25,8 +27,8 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     const popup = await openPopup(await openTarget("/"))
 
     const targets = popup.locator("button.icon-button, a.share-button")
-    // 描画完了を待ってから数える（アイコンボタン4つ + 共有ボタン1つ）
-    await expect(targets).toHaveCount(5)
+    // 描画完了を待ってから数える（アイコンボタン5つ + 共有ボタン1つ）
+    await expect(targets).toHaveCount(6)
     for (const el of await targets.all()) {
       const title = await el.getAttribute("title")
       const label = await el.getAttribute("aria-label")
@@ -35,11 +37,11 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     }
 
     // SVG はインライン展開され、stroke は currentColor（CSS の color で着色）
-    await expect(popup.locator(".capture-row svg")).toHaveCount(6)
+    await expect(popup.locator(".capture-row svg")).toHaveCount(7)
     const strokes = await popup
       .locator(".capture-row svg")
       .evaluateAll((svgs) => svgs.map((s) => s.getAttribute("stroke")))
-    expect(strokes.length).toBe(6)
+    expect(strokes.length).toBe(7)
     expect(new Set(strokes)).toEqual(new Set(["currentColor"]))
   })
 
@@ -103,8 +105,8 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     openPopup
   }) => {
     const popup = await openPopup(await openTarget("/"))
-    // 行頭アイコン2 + ダウンロード/コピー4 + 設定・X共有2
-    await expect(popup.locator(".ui-icon")).toHaveCount(8)
+    // 行頭アイコン2 + ダウンロード/コピー4 + 範囲選択1 + 設定・X共有2
+    await expect(popup.locator(".ui-icon")).toHaveCount(9)
 
     const results = await popup.locator(".ui-icon").evaluateAll((icons) =>
       icons.map((icon) => {

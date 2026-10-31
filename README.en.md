@@ -16,7 +16,8 @@ A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or v
 - Screenshots of the visible tab or the full page (scrolling capture + stitching)
 - Saved into the `Captures` folder under Downloads (the folder name can be changed). The format is selectable in the settings: PNG (default) / WebP / JPEG
 - Copy screenshots to the clipboard (PNG only)
-- Icon-button UI with Tabler Icons (Visible area / Full page rows x Download / Copy)
+- Icon-button UI with Tabler Icons (Visible area / Full page rows x Download / Copy, plus area selection on the Full page row)
+- Choose a scrollable area on the page to capture (candidates are highlighted, and the clicked area can be saved or copied)
 - Share button for X (opens the post screen)
 - Local / sync storage switching via `@plasmohq/storage`
 - Factory reset that restores settings, custom sizes and preset offsets to their defaults
@@ -185,7 +186,8 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 ### 3. What the screenshots capture
 - Both screenshot features ("Visible area" and "Full page") capture **only the web page content inside the tab (the viewport area)**.
 - A "whole window screenshot" that includes the OS title bar, browser toolbar and window frame cannot be taken with Chrome's standard capture APIs, so please use an external capture tool.
-- "Full page" also works on layouts where the page itself does not scroll and only an inner area does (common in business systems and admin dashboards). In that case the largest scrollable area is captured to the end and stitched vertically. Anything outside that area (such as a sidebar) appears only for the first screen, and the rest is filled with the background color.
+- "Full page" also works on layouts where the page itself does not scroll and only an inner area does (common in business systems and admin dashboards). If a scrollable area covers at least 70% of the viewport, only its content is captured to the end and stitched vertically (if there are only smaller areas, nothing is extended and you get one screen of the visible area). When "Include the surrounding frame and the part below the area" is enabled in the settings, the frame of the first screen (header, sidebar, etc.) is kept and the part below the area is appended at the end. The sidebar is not extended, so it appears only for the first screen.
+- The select button on the Full page row (enabled only on pages with a scrollable area) highlights the scrollable areas on the page, and you can save or copy the one you click. Press Esc to cancel. Copy is not offered on pages where the clipboard is unavailable, such as http pages. Areas inside cross-origin iframes and areas scrolled by custom JavaScript cannot be chosen.
 - When you press a download button, the popup closes right away and the result is shown as a badge on the toolbar icon (`...` while capturing, `OK` on success, `!` on failure). For copy, the popup closes after the image has been written to the clipboard.
 
 ### 4. Permissions

@@ -9,11 +9,7 @@ import {
   waitForCaptureBadge,
   waitForCompletedDownload
 } from "./helpers"
-import {
-  INNER_SCROLL_CONTENT_HEIGHT,
-  INNER_SCROLL_TOP,
-  LONG_PAGE_TOTAL_HEIGHT
-} from "./test-server"
+import { LONG_PAGE_TOTAL_HEIGHT } from "./test-server"
 
 const DOWNLOAD_VISIBLE = "Download screenshot of visible area"
 const DOWNLOAD_FULL = "Download screenshot of full page"
@@ -69,47 +65,6 @@ test.describe("スクリーンショット（正常系）", () => {
     const expectedHeight = LONG_PAGE_TOTAL_HEIGHT * viewport.dpr
     expect(Math.abs(size.height - expectedHeight)).toBeLessThanOrEqual(4 * viewport.dpr)
     expect(size.width).toBe(Math.round(viewport.w * viewport.dpr))
-  })
-
-  test("フルページ撮影: ページ自体がスクロールせず内側の要素がスクロールするレイアウトでも、中身の最後まで撮影し、元のスクロール位置に戻す", async ({
-    openTarget,
-    openPopup,
-    serviceWorker
-  }) => {
-    const target = await openTarget("/inner-scroll")
-    // 途中までスクロールした状態から撮影する（smooth 指定のページなので instant で即時に動かす）
-    await target.evaluate(() => {
-      document
-        .querySelector<HTMLElement>(".main")!
-        .scrollTo({ top: 500, behavior: "instant" })
-    })
-    const viewport = await target.evaluate(() => ({
-      w: window.innerWidth,
-      h: window.innerHeight,
-      dpr: window.devicePixelRatio,
-      pageScrollHeight: document.documentElement.scrollHeight
-    }))
-    // ページ自体はスクロールしないこと、内側の中身がビューポートより長いことが前提
-    expect(viewport.pageScrollHeight).toBeLessThanOrEqual(viewport.h)
-    expect(INNER_SCROLL_CONTENT_HEIGHT).toBeGreaterThan(viewport.h)
-
-    const popup = await openPopup(target)
-    await target.bringToFront()
-    await popup.getByRole("button", { name: DOWNLOAD_FULL }).click()
-    expect(await waitForCaptureBadge(serviceWorker, popup, target, 60_000)).toBe("OK")
-
-    const size = readPngSize(await waitForCompletedDownload(serviceWorker))
-    // 画像の高さは「トップバー + 内側の中身の高さ」× DPR
-    const expectedHeight = (INNER_SCROLL_TOP + INNER_SCROLL_CONTENT_HEIGHT) * viewport.dpr
-    expect(Math.abs(size.height - expectedHeight)).toBeLessThanOrEqual(4 * viewport.dpr)
-    expect(size.width).toBe(Math.round(viewport.w * viewport.dpr))
-
-    // 撮影後は元のスクロール位置に戻り、目印の属性も残らない
-    const after = await target.evaluate(() => ({
-      scrollTop: document.querySelector<HTMLElement>(".main")!.scrollTop,
-      marked: document.querySelectorAll("[data-wvr-scroll-target]").length
-    }))
-    expect(after).toEqual({ scrollTop: 500, marked: 0 })
   })
 
   test("設定で WebP を選ぶと、表示範囲・フルページとも .webp の有効なWebPで保存される", async ({

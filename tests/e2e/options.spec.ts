@@ -103,6 +103,26 @@ test.describe("設定画面（正常系）", () => {
     await expect(options.getByRole("radio", { name: "PNG", exact: true })).toBeChecked()
   })
 
+  test("スクロール範囲の撮影設定（外枠を含める）は既定で無効、有効にすると再読み込み後も保持され、初期化で無効に戻る", async ({
+    context,
+    extensionId
+  }) => {
+    const options = await context.newPage()
+    options.on("dialog", (dialog) => dialog.accept())
+    await options.goto(`chrome-extension://${extensionId}/options.html`)
+    const checkbox = options.locator("#scrollAreaIncludeFrame")
+    await expect(checkbox).not.toBeChecked()
+
+    await checkbox.check()
+    await expect(options.getByText("Settings saved.")).toBeVisible()
+    await options.reload()
+    await expect(checkbox).toBeChecked()
+
+    await options.getByRole("button", { name: "Reset settings" }).click()
+    await expect(options.getByText("Settings have been reset.")).toBeVisible()
+    await expect(checkbox).not.toBeChecked()
+  })
+
   test("設定画面の隅に Tabler Icons のクレジット（MIT License）が表示される", async ({
     context,
     extensionId

@@ -14,6 +14,13 @@ export const ja: Record<MessageKey, string> = {
   captureVisibleCopy: "表示部分のスクリーンショットをクリップボードにコピー",
   captureFullPageDownload: "ページ全体のスクリーンショットをダウンロード",
   captureFullPageCopy: "ページ全体のスクリーンショットをクリップボードにコピー",
+  capturePick: "スクロールする範囲を選んで撮影",
+  capturePickUnavailable: "このページには選べるスクロール範囲がありません",
+  pickerBanner: "撮影する範囲をクリック（Esc でキャンセル）",
+  pickerContent: "内容 {height}px",
+  pickerSave: "保存",
+  pickerCopy: "コピー",
+  pickerCancel: "キャンセル",
   statusCopied: "クリップボードにコピーしました。",
   errClipboard: "クリップボードへのコピーに失敗しました。",
   openSettings: "設定を開く",
@@ -73,6 +80,10 @@ export const ja: Record<MessageKey, string> = {
   imageFormatLabel: "スクリーンショットの既定形式",
   imageFormatHint:
     "ダウンロード保存時の形式です。クリップボードへのコピーは常にPNG形式になります。",
+  scrollAreaFrameLabel: "スクロール範囲の撮影",
+  scrollAreaFrameHint:
+    "内側の範囲だけがスクロールするページでは、ページ全体の撮影はその範囲だけを撮ります。有効にすると、最初の1画面の外枠（ヘッダー・サイドバー等）を残し、範囲の下にある部分を最後に付け足します。サイドバー等は伸びないため、最初の1画面分だけが写ります。",
+  scrollAreaFrameCheckbox: "外枠と範囲の下の部分も含める",
   storageLabel: "ストレージ領域（カスタムサイズの保存先）",
   storageHint:
     "local: この端末のみに保存されます。sync: Googleアカウントに紐づき、他端末とも同期されます。",
@@ -87,7 +98,7 @@ export const ja: Record<MessageKey, string> = {
   clear: "クリア",
   resetLabel: "ファクトリーリセット（設定の初期化）",
   resetHint:
-    "保存先フォルダ名・スクリーンショット形式・ストレージ領域・言語・カスタムサイズ・プリセットのオフセットをすべて初期状態に戻します。",
+    "保存先フォルダ名・スクリーンショット形式・スクロール範囲の撮影設定・ストレージ領域・言語・カスタムサイズ・プリセットのオフセットをすべて初期状態に戻します。",
   resetButton: "設定を初期化する",
   resetDone: "設定を初期化しました。",
   resetConfirm:
@@ -113,5 +124,6 @@ export const ja: Record<MessageKey, string> = {
   errPageSize: "ページサイズの取得に失敗しました。",
   errPageTooLarge:
     "ページが大きすぎるため、ページ全体のスクリーンショットを生成できませんでした（{width}x{height}）。",
-  errCanvas: "キャンバスコンテキストの作成に失敗しました。"
+  errCanvas: "キャンバスコンテキストの作成に失敗しました。",
+  errPickedAreaMissing: "選んだ範囲が見つかりませんでした。もう一度選んでください。"
 }

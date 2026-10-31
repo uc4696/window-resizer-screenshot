@@ -1,4 +1,5 @@
-export type CaptureMode = "visible" | "full-page"
+/** picked: ページ上でユーザーが選んだスクロール範囲（目印付きの要素）を撮る。 */
+export type CaptureMode = "visible" | "full-page" | "picked"
 
 /**
  * download: 設定の形式で保存（受け付けた時点で応答し、結果はツールバーのバッジで知らせる）
@@ -22,4 +23,12 @@ export interface CaptureResponse {
   dataUrl?: string
 }
 
-export type ExtensionMessage = CaptureRequest
+export type BadgeKind = "busy" | "ok" | "error"
+
+/** 送信元タブのツールバーアイコンにバッジを出す（範囲選択からのコピー結果の通知に使う）。 */
+export interface BadgeRequest {
+  type: "capture-badge"
+  kind: BadgeKind
+}
+
+export type ExtensionMessage = CaptureRequest | BadgeRequest

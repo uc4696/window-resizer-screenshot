@@ -1,5 +1,6 @@
 import brandX from "data-text:../../icons/brand-x.svg"
 import check from "data-text:../../icons/check.svg"
+import click from "data-text:../../icons/click.svg"
 import copy from "data-text:../../icons/copy.svg"
 import download from "data-text:../../icons/download.svg"
 import screenshot from "data-text:../../icons/screenshot.svg"
@@ -19,6 +20,7 @@ const ICONS = {
   download: stripClass(download),
   copy: stripClass(copy),
   check: stripClass(check),
+  click: stripClass(click),
   "brand-x": stripClass(brandX),
   settings: stripClass(settings)
 } as const

@@ -15,6 +15,7 @@ export interface Settings {
   storageArea: "local" | "sync"
   language: LanguageSetting
   imageFormat: ImageFormat
+  scrollAreaIncludeFrame: boolean
 }
 
 /**
@@ -45,7 +46,9 @@ export async function getSettings(): Promise<Settings> {
     // 未設定・不正値は既定（png）に正規化する
     imageFormat: IMAGE_FORMATS.includes(raw?.imageFormat as ImageFormat)
       ? (raw?.imageFormat as ImageFormat)
-      : DEFAULT_SETTINGS.imageFormat
+      : DEFAULT_SETTINGS.imageFormat,
+    // 未設定・不正値は既定（false）に正規化する
+    scrollAreaIncludeFrame: raw?.scrollAreaIncludeFrame === true
   }
 }
 

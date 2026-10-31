@@ -17,6 +17,13 @@ export const en = {
   captureVisibleCopy: "Copy screenshot of visible area to clipboard",
   captureFullPageDownload: "Download screenshot of full page",
   captureFullPageCopy: "Copy screenshot of full page to clipboard",
+  capturePick: "Choose a scrollable area to capture",
+  capturePickUnavailable: "There is no scrollable area to choose on this page",
+  pickerBanner: "Click the area to capture (Esc to cancel)",
+  pickerContent: "content {height}px",
+  pickerSave: "Save",
+  pickerCopy: "Copy",
+  pickerCancel: "Cancel",
   statusCopied: "Copied to clipboard.",
   errClipboard: "Failed to copy to the clipboard.",
   openSettings: "Open settings",
@@ -77,6 +84,10 @@ export const en = {
   imageFormatLabel: "Default screenshot format",
   imageFormatHint:
     "Format used when downloading screenshots. Copying to the clipboard always uses PNG.",
+  scrollAreaFrameLabel: "Capturing a scrollable area",
+  scrollAreaFrameHint:
+    "On pages where only an inner area scrolls, the full-page screenshot captures just that area. When enabled, the surrounding frame of the first screen (header, sidebar, etc.) is kept and the part below the area is appended at the end. The sidebar is not extended, so it appears only for the first screen.",
+  scrollAreaFrameCheckbox: "Include the surrounding frame and the part below the area",
   storageLabel: "Storage area (where custom sizes are saved)",
   storageHint:
     "local: saved on this device only. sync: tied to your Google account and synced across devices.",
@@ -91,7 +102,7 @@ export const en = {
   clear: "Clear",
   resetLabel: "Factory reset (initialize settings)",
   resetHint:
-    "Restores the save folder name, screenshot format, storage area, language, custom sizes and preset offsets to their defaults.",
+    "Restores the save folder name, screenshot format, scrollable area capture setting, storage area, language, custom sizes and preset offsets to their defaults.",
   resetButton: "Reset settings",
   resetDone: "Settings have been reset.",
   resetConfirm:
@@ -117,7 +128,8 @@ export const en = {
   errPageSize: "Failed to get the page size.",
   errPageTooLarge:
     "The page is too large to generate a full-page screenshot ({width}x{height}).",
-  errCanvas: "Failed to create the canvas context."
+  errCanvas: "Failed to create the canvas context.",
+  errPickedAreaMissing: "The selected area was not found. Please choose it again."
 }
 
 export type MessageKey = keyof typeof en
