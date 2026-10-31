@@ -4,7 +4,7 @@ description: release でバージョン更新・ZIP 作成を終えたあと、C
 disable-model-invocation: true
 ---
 
-前提: `/release` が完了し、`main` にマージ済みであること。ストアのダッシュボードとブログ管理画面はユーザーのログインが必要なので、アップロード・送信・公開ボタンはユーザーが押す（Claude は資料の作成と差分の洗い出しまで）。
+前提: `/release` が完了し、`main` にマージ済みであること。ストアのダッシュボードはユーザーのログインが必要なので、アップロードと審査への送信はユーザーが行う（Claude は資料の作成まで）。LP は Claude が ai-ushiblo の仕組みで本番に修正版の下書き（Rewrite & Republish のコピー）を作るところまで行い、確認と再公開はユーザーが行う。
 
 ## 1. アップロード用アーカイブの確認
 
@@ -31,11 +31,29 @@ disable-model-invocation: true
 
 ## 3. うしブロの拡張機能LP
 
-LP: https://www.ushiblo.com/window-viewport-resizer/ （英語版 https://www.ushiblo.com/en/window-viewport-resizer-en/ ）。日英両方を同じ内容で直す。
+LP は本番の固定ページ **10268**（https://www.ushiblo.com/window-viewport-resizer/ ）と **10273**（英語版 https://www.ushiblo.com/en/window-viewport-resizer-en/ 、Polylang で紐づけ済み）。日英両方を同じ内容で直す。本文は WordPress のカスタム HTML ブロック1つ（`<div class="wvr">…</div>`）で、CSS はページのメタ `_custom_css`（日英で同じ）。
 
-1. LP の現在の本文を取得し、手順 1 の変更一覧と突き合わせて、変更すべき箇所（機能一覧・スクリーンショット・バージョン／更新日・使い方の手順・注意事項・ストアへのリンク）を一覧にしてユーザーに渡す。
-2. 修正文案を `store/lp/<version>.md` に日英で書く（場所 → 操作 → 文案。前回分の `store/lp/*.md` を書式の手本にする）。ポップアップやアイコンの見た目が変わったときは、`store/lp/shoot-lp.cjs` → `store/lp/render-lp.cjs` で LP と同じファイル名の差し替え画像（冒頭のポップアップ・ステップ2・3、日英）を `store/lp/images/` に作って渡す。ステップ画像は LP の旧画像のポップアップ部分を覆って作るので、旧画像を LP からダウンロードして作業フォルダに置く。手順の詳細は直近の `store/lp/<version>.md` の「画像」節。
-3. 説明は `store/description.*.txt` と表現をそろえる。「最新バージョン」の行を毎回更新する。
+### 本番の操作は ai-ushiblo（`F:\ai-ushiblo`）の仕組みとルールで行う
+
+- サイトの運用ルールの正本は `F:\ai-ushiblo\CLAUDE.md`（接続は `docs/environment.md`、Rewrite & Republish・Polylang は `docs/plugins.md`）。作業前に読み、そのとおりに行う。ここに書いた手順と食い違ったら ai-ushiblo を優先する。
+- コマンドは `cd /f/ai-ushiblo && scripts/wp.sh prod …` のように ai-ushiblo のスクリプトを使う（SSH 接続名 `coreserver-wp`。接続を拒否されたら自宅 IP の変更を疑い、ユーザーに伝える）。
+- サーバーで何かを変えたら、ai-ushiblo の `logs/YYYY-MM.md` の末尾に同じ書式で追記し、人の確認待ちは `docs/status.md` に書いて、ai-ushiblo でコミットする（同リポジトリの Git のルールに従う。プッシュは指示があってから）。
+- 公開・再公開はユーザーの指示があるときだけ。パスワード類はどこにも書かない。
+
+### 手順
+
+1. **本文の取り込み**: `scripts/wp.sh prod post get <ID> --field=post_content` で日英の現行版を取得し、`store/lp/page.ja.html` / `page.en.html`（LP の正本）と比べる。差分があれば人がエディタで直したものなので、取得した版で上書きしてコミットしてから作業する。
+2. **変更点の洗い出しと文案**: 手順 1 の変更一覧と突き合わせ、変える箇所を `store/lp/<version>.md` に日英でまとめる（場所 → 操作 → 文案。前回分を書式の手本にする）。ユーザーに確認してもらう。
+3. **画像**: ポップアップやアイコンの見た目が変わったときは、`store/lp/shoot-lp.cjs` → `store/lp/render-lp.cjs` で差し替え画像（冒頭のポップアップ・ステップ2・3、日英）を `store/lp/images/` に作る。ステップ画像は LP の旧画像のポップアップ部分を覆って作るので、旧画像を LP からダウンロードして作業フォルダに置く（詳細は直近の `store/lp/<version>.md` の「画像」節）。
+4. **本文の修正**: 文案を `store/lp/page.*.html` に反映する。差し替え画像の URL は取り込み後の名前（`…/images/<年>/<月>/<名前>-<版>.webp`）にする。「最新バージョン」の行を更新する。説明は `store/description.*.txt` と表現をそろえる。機能カードは2列、ペルソナは4列の前提の CSS。
+5. **本番での下書き作成**（ai-ushiblo の「公開済みの記事の修正」と「画像の取り込みと差し込み」の手順）:
+   1. 既存の Rewrite & Republish のコピーがないか確かめる（あれば人が作業中かもしれないので、触る前にユーザーに確認）
+   2. `scripts/snapshot-post.sh prod 10268`・`… 10273`、`scripts/backup-db.sh prod`
+   3. 画像を版付きの名前（例 `wvr-step-2-040.png`）で `scp` → `~/tmp/img-import/`、`scripts/wp.sh prod media import /home/ushiblo/tmp/img-import/<ファイル> --title=… --alt=… --porcelain`（`--post_id` は付けない。ushiblo WebP が `.webp` に変える）。`wp post get <添付ID> --field=guid` などで URL を確かめ、本文の URL と合わせる。サーバーの `~/tmp/img-import/` の取り込んだファイルは消す
+   4. コピーを作る（`docs/plugins.md` の `create_duplicate_for_rewrite_and_republish`）。`post_author` が元と同じか確かめる
+   5. `scripts/wp.sh prod post update <コピーID> - < store/lp/page.<lang>.html`。`parse_blocks` でブロック数（html 1・paragraph 1 と空ブロック）を確かめる
+   6. ai-ushiblo のログ・status に書いてコミット。ユーザーにコピーの ID と編集画面の URL（`https://www.ushiblo.com/wp-admin/post.php?post=<コピーID>&action=edit`）を渡す
+6. **ユーザー**: エディタのプレビューで確認し、「Republish」で反映。反映後、Claude は ai-ushiblo のログに完了を書き、status から消す。`store/lp/page.*.html` と本番の本文が一致するか確かめる。
 
 ## 4. 後片付け
 
