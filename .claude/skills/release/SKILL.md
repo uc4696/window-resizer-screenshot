@@ -14,11 +14,12 @@ disable-model-invocation: true
    - 決めたバージョンとベータ番号をユーザーに確認してから進める。
 3. `package.json` の `version` を更新する（`package-lock.json` のルートの `version` も合わせる）。
 4. `README.md` と `README.en.md` の両方を更新する。
-   - 冒頭の「現在のバージョン」表記と、Changelog 節の説明文中の現在バージョン・ZIP 名の例。
+   - 冒頭の「現在のバージョン」表記（5行目。見落としやすいので必ず確認）と、Changelog 節の説明文中の現在バージョン・ZIP 名の例。
    - Changelog の表の最上部に1行追加（`| 0.2.1（beta.2） | YYYY-MM-DD | 内容 |`。日付は今日）。英語版は既存行の書式に合わせる。
    - 機能や仕様が変わっていれば、概要・ディレクトリ構成・仕様と制約事項も更新する。
    - インストール手順中の ZIP 名の例も新しいバージョンに合わせる。
 5. 新機能や仕様変更があれば CLAUDE.md の「機能別の仕様」の該当項目を更新する。
 6. `npm run build` → `npm run package` を実行する。
-7. `build/chrome-mv3-prod.zip` を `build/window-resizer-screenshot-v<version>-beta.<n>.zip` にコピーする（正式版なら `-beta.<n>` を付けない）。
+7. `unzip -p build/chrome-mv3-prod.zip manifest.json` で ZIP 内の `version` が新バージョンになっていることを確認してから、`build/chrome-mv3-prod.zip` を `build/window-resizer-screenshot-v<version>-beta.<n>.zip` にコピーする（正式版なら `-beta.<n>` を付けない）。
 8. 変更ファイルと生成した ZIP のパスを報告する。コミットは日本語メッセージで、末尾に `（<version>-beta.<n>）` を付ける（例: `...を追加（0.2.1-beta.2）`）。コミット・プッシュはユーザーの指示があるまで行わない。
+9. マージ後のストア更新・LP 更新は `/publish` で行う。

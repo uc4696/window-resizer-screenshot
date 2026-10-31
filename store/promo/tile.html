@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{margin:0;box-sizing:border-box}
+html,body{width:440px;height:280px;overflow:hidden}
+body{font-family:"Segoe UI","Yu Gothic UI","Meiryo",sans-serif;
+ background:radial-gradient(circle at 15% 10%,#8f84f0 0,#6a5ce0 45%,#4b3fc4 100%);color:#fff;position:relative}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:22px 22px}
+.left{position:absolute;left:26px;top:30px;width:210px}
+.icon{width:52px;height:52px;border-radius:13px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.icon img{width:40px;height:40px}
+h1{margin-top:14px;font-size:23px;line-height:1.12;font-weight:800;letter-spacing:-.2px}
+p{margin-top:12px;font-size:13.5px;line-height:1.5;font-weight:600;opacity:.95}
+.chips{margin-top:14px;display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35)}
+.shot{position:absolute;left:252px;top:26px;width:170px;border-radius:10px;overflow:hidden;
+ box-shadow:0 14px 30px rgba(20,10,80,.45),0 0 0 1px rgba(255,255,255,.4);transform:rotate(3deg);transform-origin:top left}
+.shot img{display:block;width:170px}
+</style></head><body><div class="grid"></div>
+<div class="left"><div class="icon"><img src="icon128.png"></div>
+<h1>Window &amp;<br>Viewport Resizer</h1><p id="copy"></p><div class="chips" id="chips"></div></div>
+<div class="shot"><img id="pop"></div>
+<script>
+const lang=new URLSearchParams(location.search).get("lang")
+const T={ja:{copy:"指定サイズにリサイズして、<br>そのままスクリーンショット",chips:["ページ全体","範囲選択","PNG / WebP / JPEG"]},
+ en:{copy:"Resize to an exact size,<br>then capture the page.",chips:["Full page","Pick an area","PNG / WebP / JPEG"]}}[lang]
+copy.innerHTML=T.copy;chips.innerHTML=T.chips.map(c=>`<span class="chip">${c}</span>`).join("")
+pop.src=`popup-${lang}-light.png`
+</script></body></html>

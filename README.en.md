@@ -2,7 +2,7 @@
 
 [日本語](README.md) | **English**
 
-> **Current version: `0.2.1` (beta `0.2.1-beta.2`)**
+> **Current version: `0.4.0` (beta `0.4.0-beta.1`)**
 
 A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or viewport to a preset or custom size, and captures screenshots of the visible area or the full page and downloads them.
 

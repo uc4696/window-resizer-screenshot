@@ -1,0 +1,41 @@
+Window & Viewport Resizer is an extension designed to capture screenshots at specified dimensions.
+With a single click, you can switch the screen (window/viewport) to your target resolution and save or copy captures of the visible area or full page. It is useful for creating blog posts, manuals, and documentation.
+
+[Key Features]
+◆ Resizing (Window & Viewport Support)
+- Built-in resolution presets for 16:9 (HD / FHD / WQHD / 4K) and 4:3 (VGA / SVGA / XGA / UXGA).
+- Customizable offset (margin) values for each preset, in both Window and Viewport modes.
+- Remembers your last selected size mode (Window / Viewport) and restores it the next time you open the popup.
+- When the page is zoomed (not 100%), the zoom is reset to 100% before resizing so the size comes out as intended (the confirmation message can be turned on or off in the settings).
+
+◆ Custom Size Management
+- Register your preferred dimensions (e.g., 1280x720, 1024x768). Add, edit, and delete are all supported.
+- Access saved custom sizes directly from the popup.
+
+◆ Screenshot Capture
+- Supports both "Visible Area" and "Full Page" capture modes.
+- Full Page mode automatically scrolls and merges content into a single image.
+- On pages where the page itself does not scroll and only an inner area does (such as web app dashboards), the main scrollable area is detected automatically and captured to the end.
+- You can also click a scrollable area on the page to download or copy just that area.
+- Choose whether to include the surrounding frame (header, sidebar, etc.) when capturing a scrollable area.
+- Choose the save format: PNG (default), WebP, or JPEG.
+- Copy captures to the clipboard (PNG format).
+- Customizable save directory name.
+- Simple icon buttons let you download or copy with a single click.
+- The popup closes as soon as you press download, and the result is shown as a badge on the toolbar icon ("..." while capturing / "OK" on success / "!" on failure).
+
+◆ Option Settings
+- Dark mode supported popup UI.
+- Reset feature to restore settings and custom sizes to default states.
+- Multilingual support (English / Japanese) with automatic browser language detection.
+
+◆ Privacy & Permissions
+- Works with only the minimum required permissions (activeTab / scripting / storage / downloads).
+- Your captures and settings are never sent to any external server.
+
+[Notes]
+- Screenshots cover the web page content inside the tab only. The full window, including the browser toolbar and OS title bar, cannot be captured.
+- Due to Chrome's security restrictions, Viewport-based resizing and capture may not work on special pages such as chrome:// pages or the Chrome Web Store.
+- Depending on OS display scaling and window borders, the measured window size may differ from the specified size by a few pixels. You can compensate with the offset setting for custom sizes.
+
+*Please note: This extension is currently provided as a beta version.
