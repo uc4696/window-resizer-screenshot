@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0 }
+  html, body { width: 1200px; height: 750px; overflow: hidden }
+  .layer { position: absolute; inset: 0 }
+  #frame { position: absolute; background: #fff; border: 1px solid #c9c9c9; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); box-sizing: border-box }
+  #popup { position: absolute }
+  #tip { position: absolute; background: #202020; color: #fff; font: 15px "Segoe UI", sans-serif; padding: 3px 9px; display: none }
+  #iconBg { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #dedbdd }
+  #icon { position: absolute; width: 18px; height: 18px }
+  svg { position: absolute; inset: 0 }
+</style>
+</head>
+<body>
+<img class="layer" id="bg">
+<div id="frame"></div>
+<img id="popup">
+<div id="tip">1920 x 1080</div>
+<div id="iconBg"></div>
+<img id="icon" src="icon32.png">
+<svg width="1200" height="750">
+  <defs><filter id="soft"><feGaussianBlur stdDeviation="0.9" /></filter></defs>
+  <path id="mark" fill="none" stroke="rgba(122,110,240,.92)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft)" />
+</svg>
+<script>
+  // 旧画像のポップアップ部分を新しいポップアップで覆い、手描き風の注釈を描き直す。
+  // 位置は旧画像（1200×750）から実測した値。
+  const q = new URLSearchParams(location.search)
+  const lang = q.get("lang"), step = q.get("step")
+  const boxes = JSON.parse(q.get("boxes"))
+  const b = boxes[`${lang}-step${step}`]
+  // frame: 旧ポップアップを覆う枠 [x, y, w, h] / popup: 新ポップアップの左上 / icon: ツールバーアイコンの中心 / tip: ツールチップの左上
+  const S = {
+    "ja-2": { bg: "wvr-step-2.png", frame: [717, 59, 363, 676], popup: [719, 61], scale: 1.2, icon: [1059.5, 37.5], tip: [1060, 276] },
+    "en-2": { bg: "wvr-step-2-en.png", frame: [706, 70, 358, 657], popup: [709, 73], scale: 1.18, icon: [1043, 51], tip: [1052, 285] },
+    "ja-3": { bg: "wvr-step-3.png", frame: [81, 33, 361, 671], popup: [83, 36], scale: 1.19, icon: [420.5, 13.5] },
+    "en-3": { bg: "wvr-step-3-en.png", frame: [70, 42, 366, 672], popup: [73, 45], scale: 1.2, icon: [414.5, 22.5] }
+  }[`${lang}-${step}`]
+  bg.src = S.bg
+  Object.assign(frame.style, { left: S.frame[0] + "px", top: S.frame[1] + "px", width: S.frame[2] + "px", height: S.frame[3] + "px" })
+  Object.assign(popup.style, { left: S.popup[0] + "px", top: S.popup[1] + "px", width: b.root.w * S.scale + "px" })
+  popup.src = `popup-${lang}-step${step}.png`
+  // 0.4.0 で濃くしたツールバーアイコンに差し替える（ホバー中の円の色で旧アイコンを消してから重ねる）
+  Object.assign(iconBg.style, { left: S.icon[0] - 11 + "px", top: S.icon[1] - 11 + "px" })
+  Object.assign(icon.style, { left: S.icon[0] - 9 + "px", top: S.icon[1] - 9 + "px" })
+  const at = (box) => ({
+    x: S.popup[0] + box.x * S.scale, y: S.popup[1] + box.y * S.scale,
+    w: box.w * S.scale, h: box.h * S.scale
+  })
+  if (step === "2") {
+    // FHD ボタンを囲む楕円（右下から始まり一周して少し行き過ぎる）
+    const f = at(b.fhd), cx = f.x + f.w / 2 - 6, cy = f.y + f.h / 2 + 2
+    const rx = 132, ry = 42
+    const pts = []
+    for (let t = 0.25; t <= 2 * Math.PI + 0.75; t += 0.05) {
+      const a = -0.09, x = rx * Math.cos(t) * (1 + 0.04 * Math.sin(3 * t)), y = ry * Math.sin(t)
+      pts.push([cx + x * Math.cos(a) - y * Math.sin(a), cy + x * Math.sin(a) + y * Math.cos(a)])
+    }
+    mark.setAttribute("d", "M" + pts.map((p) => p.map((v) => v.toFixed(1)).join(" ")).join(" L"))
+    Object.assign(tip.style, { display: "block", left: S.tip[0] + "px", top: S.tip[1] + "px" })
+  } else {
+    // 表示部分のダウンロードボタンを囲み、そのまま右のエクスプローラーへ矢印を伸ばす
+    const d = at(b.visibleDownload), cx = d.x + d.w / 2 + 1, cy = d.y + d.h / 2 + 3
+    const rx = 48, ry = 30, pts = []
+    for (let t = -0.6; t <= 2 * Math.PI - 0.9; t += 0.05) {
+      const a = -0.12, x = rx * Math.cos(t), y = ry * Math.sin(t)
+      pts.push([cx + x * Math.cos(a) - y * Math.sin(a), cy + x * Math.sin(a) + y * Math.cos(a)])
+    }
+    // 旧画像に残る矢印の軸（ポップアップの外、x=436〜584）を実測した中心線。
+    // この上を同じ太さでなぞり直し、楕円から一本の線としてつなげる（矢じりは旧画像のまま）。
+    const shaft = [[436, 450.5], [448, 445], [460, 441], [472, 438.5], [484, 435.5], [496, 434.5],
+      [508, 433.5], [520, 433.5], [544, 432.5], [568, 433.5], [584, 434.5]]
+    const last = pts[pts.length - 1], [s0, s1] = shaft
+    const tx = s1[0] - s0[0], ty = s1[1] - s0[1], tl = Math.hypot(tx, ty)
+    const c1 = [last[0] + 28, last[1] - 6]
+    const c2 = [s0[0] - (tx / tl) * 32, s0[1] - (ty / tl) * 32]
+    const smooth = shaft.slice(1).map((p, i) => {
+      const prev = shaft[i], mid = [(prev[0] + p[0]) / 2, (prev[1] + p[1]) / 2]
+      return `Q ${prev[0]} ${prev[1]} ${mid[0]} ${mid[1]}`
+    }).join(" ")
+    mark.setAttribute(
+      "d",
+      "M" + pts.map((p) => p.map((v) => v.toFixed(1)).join(" ")).join(" L") +
+        ` C ${c1.join(" ")} ${c2.join(" ")} ${s0.join(" ")} ${smooth} L ${shaft[shaft.length - 1].join(" ")}`
+    )
+    mark.setAttribute("stroke", "rgb(124, 114, 238)")
+    mark.setAttribute("stroke-width", "11")
+  }
+</script>
+</body>
+</html>

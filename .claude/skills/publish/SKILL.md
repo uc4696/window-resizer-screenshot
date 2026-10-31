@@ -33,7 +33,7 @@ disable-model-invocation: true
 LP: https://www.ushiblo.com/window-viewport-resizer/ （英語版 https://www.ushiblo.com/en/window-viewport-resizer-en/ ）。日英両方を同じ内容で直す。
 
 1. LP の現在の本文を取得し、手順 1 の変更一覧と突き合わせて、変更すべき箇所（機能一覧・スクリーンショット・バージョン／更新日・使い方の手順・注意事項・ストアへのリンク）を一覧にしてユーザーに渡す。
-2. 修正文案を `store/lp/<version>.md` に日英で書く（場所 → 操作 → 文案。前回分の `store/lp/*.md` を書式の手本にする）。ポップアップの見た目が変わったときは、`store/promo/shoot.cjs` で撮った画像を `store/lp/images/` に置いて差し替え用に渡す。
+2. 修正文案を `store/lp/<version>.md` に日英で書く（場所 → 操作 → 文案。前回分の `store/lp/*.md` を書式の手本にする）。ポップアップやアイコンの見た目が変わったときは、`store/lp/shoot-lp.cjs` → `store/lp/render-lp.cjs` で LP と同じファイル名の差し替え画像（冒頭のポップアップ・ステップ2・3、日英）を `store/lp/images/` に作って渡す。ステップ画像は LP の旧画像のポップアップ部分を覆って作るので、旧画像を LP からダウンロードして作業フォルダに置く。手順の詳細は直近の `store/lp/<version>.md` の「画像」節。
 3. 説明は `store/description.*.txt` と表現をそろえる。「最新バージョン」の行を毎回更新する。
 
 ## 4. 後片付け
