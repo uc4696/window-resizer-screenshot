@@ -1,7 +1,7 @@
 import { expect, test } from "./fixtures"
 
 test.describe("ポップアップのUI（アイコンボタン・共有・高さ）", () => {
-  test("スクリーンショット欄は「表示部分」「ページ全体」の2行で、各行にダウンロードとコピーのボタンがある", async ({
+  test("スクリーンショット欄は「表示部分」「ページ全体」の2行で、各行にダウンロードとコピー、ページ全体の行には範囲選択のボタンもある", async ({
     openTarget,
     openPopup
   }) => {
@@ -11,11 +11,22 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     await expect(rows).toHaveCount(2)
     await expect(rows.nth(0)).toContainText("Visible area")
     await expect(rows.nth(1)).toContainText("Full page")
+    // 表示部分: ダウンロード・コピー / ページ全体: ダウンロード・コピー・範囲選択
+    await expect(rows.nth(0).locator("button.icon-button")).toHaveCount(2)
+    await expect(rows.nth(1).locator("button.icon-button")).toHaveCount(3)
     for (let i = 0; i < 2; i++) {
-      await expect(rows.nth(i).locator("button.icon-button")).toHaveCount(2)
-      // 範囲アイコン（左）+ ボタン2つ（右）
+      // 範囲アイコン（左）
       await expect(rows.nth(i).locator(".capture-scope svg")).toHaveCount(1)
     }
+    // 表示部分の行は［選択］の分を空けて、ダウンロード・コピーが上下で同じ位置に並ぶ
+    const lefts = await rows.evaluateAll((els) =>
+      els.map((row) =>
+        Array.from(row.querySelectorAll("button.icon-button"))
+          .slice(0, 2)
+          .map((b) => Math.round(b.getBoundingClientRect().left))
+      )
+    )
+    expect(lefts[0]).toEqual(lefts[1])
   })
 
   test("すべてのアイコンボタン・共有ボタンに title と aria-label があり、色は currentColor で指定される", async ({
@@ -25,8 +36,8 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     const popup = await openPopup(await openTarget("/"))
 
     const targets = popup.locator("button.icon-button, a.share-button")
-    // 描画完了を待ってから数える（アイコンボタン4つ + 共有ボタン1つ）
-    await expect(targets).toHaveCount(5)
+    // 描画完了を待ってから数える（アイコンボタン5つ + 共有ボタン1つ）
+    await expect(targets).toHaveCount(6)
     for (const el of await targets.all()) {
       const title = await el.getAttribute("title")
       const label = await el.getAttribute("aria-label")
@@ -35,11 +46,11 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     }
 
     // SVG はインライン展開され、stroke は currentColor（CSS の color で着色）
-    await expect(popup.locator(".capture-row svg")).toHaveCount(6)
+    await expect(popup.locator(".capture-row svg")).toHaveCount(7)
     const strokes = await popup
       .locator(".capture-row svg")
       .evaluateAll((svgs) => svgs.map((s) => s.getAttribute("stroke")))
-    expect(strokes.length).toBe(6)
+    expect(strokes.length).toBe(7)
     expect(new Set(strokes)).toEqual(new Set(["currentColor"]))
   })
 
@@ -103,8 +114,8 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     openPopup
   }) => {
     const popup = await openPopup(await openTarget("/"))
-    // 行頭アイコン2 + ダウンロード/コピー4 + 設定・X共有2
-    await expect(popup.locator(".ui-icon")).toHaveCount(8)
+    // 行頭アイコン2 + ダウンロード/コピー4 + 範囲選択1 + 設定・X共有2
+    await expect(popup.locator(".ui-icon")).toHaveCount(9)
 
     const results = await popup.locator(".ui-icon").evaluateAll((icons) =>
       icons.map((icon) => {
@@ -166,6 +177,28 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     const text = new URL(href).searchParams.get("text") ?? ""
     expect(text).toContain("#Chrome拡張機能 #Web制作")
     expect(text).toContain("このサイズだとどう見える")
+  })
+
+  test("日本語表示でも、カスタムサイズ未登録の初期状態ではスクロールが出ない", async ({
+    context,
+    extensionId,
+    openTarget,
+    openPopup
+  }) => {
+    const options = await context.newPage()
+    await options.goto(`chrome-extension://${extensionId}/options.html`)
+    await options.locator("#language").selectOption("ja")
+    await expect(options.getByText("設定を保存しました。")).toBeVisible()
+
+    const popup = await openPopup(await openTarget("/"))
+    await popup.setViewportSize({ width: 320, height: 600 })
+    await expect(popup.locator(".mode-button").first()).toHaveText("ウィンドウ基準")
+
+    const metrics = await popup.locator(".popup-root").evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight
+    }))
+    expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight)
   })
 
   test("初期状態ではスクロールなしで全体が表示される（スクロール自体は無効化していない）", async ({

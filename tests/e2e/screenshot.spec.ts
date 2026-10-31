@@ -6,8 +6,8 @@ import {
   readWebpSize,
   recordDownloadRequests,
   selectImageFormat,
-  waitForCompletedDownload,
-  waitForFinalStatus
+  waitForCaptureBadge,
+  waitForCompletedDownload
 } from "./helpers"
 import { LONG_PAGE_TOTAL_HEIGHT } from "./test-server"
 
@@ -15,7 +15,7 @@ const DOWNLOAD_VISIBLE = "Download screenshot of visible area"
 const DOWNLOAD_FULL = "Download screenshot of full page"
 
 test.describe("スクリーンショット（正常系）", () => {
-  test("表示範囲の撮影（既定）: Captures フォルダに screenshot_*.png が保存され、有効なPNGである", async ({
+  test("表示範囲の撮影（既定）: popup が閉じ、Captures フォルダに screenshot_*.png が保存され、バッジが OK になる", async ({
     openTarget,
     openPopup,
     serviceWorker
@@ -26,8 +26,7 @@ test.describe("スクリーンショット（正常系）", () => {
     await recordDownloadRequests(serviceWorker)
 
     await popup.getByRole("button", { name: DOWNLOAD_VISIBLE }).click()
-    const status = await waitForFinalStatus(popup)
-    expect(status).toMatch(/^Saved: screenshot_\d{8}_\d{6}\.png$/)
+    expect(await waitForCaptureBadge(serviceWorker, popup, target)).toBe("OK")
 
     // 保存先の指定は「Captures/screenshot_YYYYMMDD_HHMMSS.png」
     const requests = await getDownloadRequests(serviceWorker)
@@ -58,8 +57,7 @@ test.describe("スクリーンショット（正常系）", () => {
     expect(LONG_PAGE_TOTAL_HEIGHT).toBeGreaterThan(viewport.h)
 
     await popup.getByRole("button", { name: DOWNLOAD_FULL }).click()
-    const status = await waitForFinalStatus(popup, 60_000)
-    expect(status).toMatch(/^Saved: .*\.png$/)
+    expect(await waitForCaptureBadge(serviceWorker, popup, target, 60_000)).toBe("OK")
 
     const filePath = await waitForCompletedDownload(serviceWorker)
     const size = readPngSize(filePath)
@@ -81,20 +79,20 @@ test.describe("スクリーンショット（正常系）", () => {
     await selectImageFormat(options, "WebP")
 
     const target = await openTarget("/long")
-    const popup = await openPopup(target)
+    let popup = await openPopup(target)
     await target.bringToFront()
     await recordDownloadRequests(serviceWorker)
 
     await popup.getByRole("button", { name: DOWNLOAD_VISIBLE }).click()
-    expect(await waitForFinalStatus(popup)).toMatch(/\.webp$/)
+    expect(await waitForCaptureBadge(serviceWorker, popup, target)).toBe("OK")
     const visibleSize = readWebpSize(await waitForCompletedDownload(serviceWorker))
     expect(visibleSize.width).toBeGreaterThan(0)
 
+    // 保存すると popup が閉じるので、開き直してフルページを撮る
+    popup = await openPopup(target)
     await target.bringToFront()
     await popup.getByRole("button", { name: DOWNLOAD_FULL }).click()
-    await expect(popup.locator(".status-text")).toHaveText(/^Saved: .*\.webp$/, {
-      timeout: 60_000
-    })
+    expect(await waitForCaptureBadge(serviceWorker, popup, target, 60_000)).toBe("OK")
 
     const requests = await getDownloadRequests(serviceWorker)
     expect(requests).toHaveLength(2)
@@ -117,10 +115,12 @@ test.describe("スクリーンショット（正常系）", () => {
     const target = await openTarget("/")
     const popup = await openPopup(target)
     await target.bringToFront()
+    await recordDownloadRequests(serviceWorker)
 
     await popup.getByRole("button", { name: DOWNLOAD_VISIBLE }).click()
-    expect(await waitForFinalStatus(popup)).toMatch(
-      /^Saved: screenshot_\d{8}_\d{6}\.jpg$/
+    expect(await waitForCaptureBadge(serviceWorker, popup, target)).toBe("OK")
+    expect((await getDownloadRequests(serviceWorker))[0]).toMatch(
+      /^Captures\/screenshot_\d{8}_\d{6}\.jpg$/
     )
     const size = readJpegSize(await waitForCompletedDownload(serviceWorker))
     expect(size.width).toBeGreaterThan(0)

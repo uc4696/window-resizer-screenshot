@@ -37,6 +37,33 @@ export async function waitForFinalStatus(popup: Page, timeout = 30_000): Promise
 }
 
 /**
+ * 保存ボタン押下後の流れを待つ: popup が閉じ、対象タブのバッジが撮影結果（OK / !）になる。
+ * 結果のバッジ文言を返す（数秒で消えるため、出た時点の値を返す）。
+ */
+export async function waitForCaptureBadge(
+  serviceWorker: Worker,
+  popup: Page,
+  target: Page,
+  timeout = 30_000
+): Promise<string> {
+  if (!popup.isClosed()) await popup.waitForEvent("close")
+  let badge = ""
+  await expect
+    .poll(
+      async () => {
+        badge = await serviceWorker.evaluate(async (url) => {
+          const [tab] = await chrome.tabs.query({ url })
+          return chrome.action.getBadgeText({ tabId: tab.id })
+        }, target.url())
+        return badge
+      },
+      { timeout, intervals: [100] }
+    )
+    .toMatch(/^(OK|!)$/)
+  return badge
+}
+
+/**
  * 拡張機能が chrome.downloads.download に渡した filename（保存先の相対パス）を記録し始める。
  *
  * Playwright はダウンロードを横取りして一時フォルダへ保存するため、chrome.downloads が返す

@@ -70,5 +70,7 @@ export const DEFAULT_SETTINGS = {
   captureDirName: "Captures",
   storageArea: "local" as "local" | "sync",
   language: "auto" as "auto" | "ja" | "en",
-  imageFormat: "png" as ImageFormat
+  imageFormat: "png" as ImageFormat,
+  /** スクロール領域を撮るとき、外枠（最初の1画面）と領域の下の部分も含めるか。 */
+  scrollAreaIncludeFrame: false
 }

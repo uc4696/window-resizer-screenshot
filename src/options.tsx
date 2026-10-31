@@ -92,6 +92,13 @@ function OptionsContent() {
     await handleSave(next)
   }
 
+  /** スクロール範囲の撮影設定は切り替えた時点で保存・反映する。 */
+  async function handleIncludeFrameChange(scrollAreaIncludeFrame: boolean) {
+    const next = { ...settings, scrollAreaIncludeFrame }
+    setSettingsState(next)
+    await handleSave(next)
+  }
+
   async function handleSaveOffset(presetId: string, mode: SizeMode) {
     const key = offsetKey(presetId, mode)
     const input = offsetInputs[key] ?? { w: "", h: "" }
@@ -206,6 +213,20 @@ function OptionsContent() {
             </label>
           ))}
         </div>
+      </section>
+
+      <section className="options-section">
+        <label className="options-label">{t("scrollAreaFrameLabel")}</label>
+        <p className="options-hint">{t("scrollAreaFrameHint")}</p>
+        <label className="options-radio">
+          <input
+            id="scrollAreaIncludeFrame"
+            type="checkbox"
+            checked={settings.scrollAreaIncludeFrame}
+            onChange={(e) => handleIncludeFrameChange(e.target.checked)}
+          />
+          {t("scrollAreaFrameCheckbox")}
+        </label>
       </section>
 
       <section className="options-section">
