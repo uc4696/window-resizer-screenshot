@@ -10,9 +10,12 @@ import { SupportLink } from "~components/SupportLink"
 import { PRESET_GROUPS } from "~lib/constants"
 import { I18nProvider, useI18n } from "~lib/i18n/useI18n"
 import {
+  getActiveTabZoom,
   getCurrentDisplayBounds,
   getCurrentViewportSize,
   getCurrentWindowSize,
+  isZoomed,
+  resetTabZoom,
   resizeViewport,
   resizeWindow
 } from "~lib/resize"
@@ -20,6 +23,7 @@ import {
   addCustomSize,
   getCustomSizes,
   getPresetOffsets,
+  getSettings,
   getSizeMode,
   removeCustomSize,
   setSizeMode
@@ -48,6 +52,12 @@ function PopupContent() {
   const [busy, setBusy] = useState(false)
   const [customSizeOpen, setCustomSizeOpen] = useState(false)
   const [editingCustomSizeId, setEditingCustomSizeId] = useState<string | null>(null)
+  /** 拡大率を 100% に戻す確認を待っているリサイズ。 */
+  const [zoomConfirm, setZoomConfirm] = useState<{
+    preset: SizePreset | CustomSize
+    tabId: number
+    zoom: number
+  } | null>(null)
 
   async function refreshSizes() {
     const [w, v] = await Promise.all([getCurrentWindowSize(), getCurrentViewportSize()])
@@ -74,10 +84,37 @@ function PopupContent() {
     void setSizeMode(next)
   }
 
-  async function applySize(preset: SizePreset | CustomSize) {
+  /**
+   * プリセット・カスタムサイズの押下時。拡大率が 100% 以外のページでは
+   * 意図しないサイズになるため、100% に戻してからリサイズする（既定は確認あり）。
+   */
+  async function requestApplySize(preset: SizePreset | CustomSize) {
+    const [tabZoom, settings] = await Promise.all([getActiveTabZoom(), getSettings()])
+    if (!tabZoom || !isZoomed(tabZoom.zoom)) {
+      await applySize(preset)
+      return
+    }
+    if (settings.zoomResetConfirm) {
+      setZoomConfirm({ preset, tabId: tabZoom.tabId, zoom: tabZoom.zoom })
+      return
+    }
+    await applySize(preset, tabZoom.tabId)
+  }
+
+  async function confirmZoomReset() {
+    if (!zoomConfirm) return
+    setZoomConfirm(null)
+    await applySize(zoomConfirm.preset, zoomConfirm.tabId)
+  }
+
+  /** resetZoomTabId を渡すと、そのタブの拡大率を 100% に戻してからリサイズする。 */
+  async function applySize(preset: SizePreset | CustomSize, resetZoomTabId?: number) {
     setBusy(true)
     setStatus(null)
     try {
+      if (resetZoomTabId !== undefined) {
+        await resetTabZoom(resetZoomTabId)
+      }
       const custom = "mode" in preset ? (preset as CustomSize) : undefined
       const presetOffset = !custom ? presetOffsets[preset.id]?.[mode] : undefined
       const offW = custom?.offsetWidth ?? presetOffset?.offsetWidth ?? 0
@@ -159,7 +196,7 @@ function PopupContent() {
         groups={PRESET_GROUPS}
         offsets={presetOffsets}
         mode={mode}
-        onSelect={applySize}
+        onSelect={requestApplySize}
         disabled={busy}
       />
 
@@ -167,7 +204,7 @@ function PopupContent() {
         mode={mode}
         customSizes={customSizes}
         editingId={editingCustomSizeId}
-        onApply={applySize}
+        onApply={requestApplySize}
         onEdit={handleEditCustomSize}
         onRemove={handleRemoveCustomSize}
       />
@@ -202,6 +239,33 @@ function PopupContent() {
       </div>
 
       <SupportLink />
+
+      {zoomConfirm && (
+        <div className="zoom-confirm-overlay" role="dialog" aria-modal="true">
+          <div className="zoom-confirm">
+            <p className="zoom-confirm-message">
+              {t("zoomConfirmMessage", { zoom: Math.round(zoomConfirm.zoom * 100) })}
+            </p>
+            <div className="zoom-confirm-actions">
+              <button
+                type="button"
+                className="zoom-confirm-cancel"
+                onClick={() => setZoomConfirm(null)}
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                className="zoom-confirm-ok"
+                autoFocus
+                onClick={confirmZoomReset}
+              >
+                {t("zoomConfirmOk")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

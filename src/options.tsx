@@ -99,6 +99,13 @@ function OptionsContent() {
     await handleSave(next)
   }
 
+  /** 拡大率リセットの確認設定は切り替えた時点で保存・反映する。 */
+  async function handleZoomResetConfirmChange(zoomResetConfirm: boolean) {
+    const next = { ...settings, zoomResetConfirm }
+    setSettingsState(next)
+    await handleSave(next)
+  }
+
   async function handleSaveOffset(presetId: string, mode: SizeMode) {
     const key = offsetKey(presetId, mode)
     const input = offsetInputs[key] ?? { w: "", h: "" }
@@ -226,6 +233,20 @@ function OptionsContent() {
             onChange={(e) => handleIncludeFrameChange(e.target.checked)}
           />
           {t("scrollAreaFrameCheckbox")}
+        </label>
+      </section>
+
+      <section className="options-section">
+        <label className="options-label">{t("zoomResetLabel")}</label>
+        <p className="options-hint">{t("zoomResetHint")}</p>
+        <label className="options-radio">
+          <input
+            id="zoomResetConfirm"
+            type="checkbox"
+            checked={settings.zoomResetConfirm}
+            onChange={(e) => handleZoomResetConfirmChange(e.target.checked)}
+          />
+          {t("zoomResetConfirmCheckbox")}
         </label>
       </section>
 

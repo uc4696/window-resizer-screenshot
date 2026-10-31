@@ -163,6 +163,36 @@ export async function resizeViewport(width: number, height: number) {
   })
 }
 
+/**
+ * アクティブタブの拡大率を取得する（1 = 100%）。
+ * tabs.getZoom は tabs 権限なしで使える。取得できないときは null を返す。
+ */
+export async function getActiveTabZoom(): Promise<{
+  tabId: number
+  zoom: number
+} | null> {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+  if (!tab?.id) return null
+  try {
+    return { tabId: tab.id, zoom: await chrome.tabs.getZoom(tab.id) }
+  } catch {
+    return null
+  }
+}
+
+/** 拡大率が 100% でないか（浮動小数の誤差は無視する）。 */
+export function isZoomed(zoom: number): boolean {
+  return Math.abs(zoom - 1) > 0.001
+}
+
+/**
+ * タブの拡大率を 100% に戻す。setZoom(0) はブラウザ既定の拡大率に戻すため、
+ * 既定が 100% 以外の環境も考慮して 1 を明示する。
+ */
+export async function resetTabZoom(tabId: number): Promise<void> {
+  await chrome.tabs.setZoom(tabId, 1)
+}
+
 /** 現在のウィンドウサイズを取得する */
 export async function getCurrentWindowSize(): Promise<DisplayBounds> {
   const win = await chrome.windows.getCurrent()
