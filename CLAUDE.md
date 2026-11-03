@@ -12,6 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - セッション開始時は `git status` と `git log -n 5 --oneline` で現在のブランチと文脈を確認する。
 - `main` 上でコード変更を頼まれたら、書き換える前に新しいブランチを作るか確認する。勝手に `main` や無関係なブランチへ切り替えない。
 - 変更は PR 経由で `main` にマージする運用。ただし CLAUDE.md などの開発用ドキュメントの整理は、履歴を公開する意味が薄いので `main` で直接行う。
+- `docs/status.md`（残りの作業・人の確認待ち・定期タスク）は `F:\claude\hq\docs\status-format.md` の書き方に従う。状態が変わったらそのセッションのうちに直してコミットする。
 
 ## コマンドと注意点
 
