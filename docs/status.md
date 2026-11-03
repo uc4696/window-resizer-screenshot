@@ -4,12 +4,7 @@
 書き方は `F:\claude\hq\docs\status-format.md` に従う。
 
 ## 人の確認待ち
-- 0.4.0 のストア審査の状況を確かめる
-  - アップロードと「審査のため送信」は人が行う（`/publish` の手順2）。送信済みかどうかはリポジトリからはわからない
-  - ダッシュボード: https://chrome.google.com/webstore/devconsole （アイテム ID `kaikockbajglbkgoeepfbamdknadhiji`）
-- LP（固定ページ 10268／10273）の 0.4.0 反映を確かめて Republish する
-  - 文案は `store/lp/0.4.0.md`、本文の正本は `store/lp/page.{ja,en}.html`
-  - 反映後は本番の本文と `store/lp/page.*.html` が一致するか確かめる（`/publish` の手順3-6）
+- なし
 
 ## 作業中
 - なし
@@ -27,3 +22,4 @@
 
 ## メモ
 - 現在の版は 0.4.0（タグ `v0.4.0-beta.1`）。開いている PR・Issue はなし（2026-11-03 時点）
+- 0.4.0 のストア審査と LP（固定ページ 10268／10273）の Republish は完了（2026-11-03 にユーザーが確認）

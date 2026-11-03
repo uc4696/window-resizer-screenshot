@@ -33,10 +33,10 @@ disable-model-invocation: true
 
 LP は本番の固定ページ **10268**（https://www.ushiblo.com/window-viewport-resizer/ ）と **10273**（英語版 https://www.ushiblo.com/en/window-viewport-resizer-en/ 、Polylang で紐づけ済み）。日英両方を同じ内容で直す。本文は WordPress のカスタム HTML ブロック1つ（`<div class="wvr">…</div>`）で、CSS はページのメタ `_custom_css`（日英で同じ。正本は `store/lp/page.css`）。CSS を変えるときは Rewrite & Republish のコピーに `scripts/wp.sh prod post meta update <コピーID> _custom_css < store/lp/page.css` で入れる（Republish でメタも元のページに反映される）。PC と幅 375px で表示を確かめてから入れる。
 
-### 本番の操作は ai-ushiblo（`F:\ai-ushiblo`）の仕組みとルールで行う
+### 本番の操作は ai-ushiblo（`F:\claude\ai-ushiblo`）の仕組みとルールで行う
 
-- サイトの運用ルールの正本は `F:\ai-ushiblo\CLAUDE.md`（接続は `docs/environment.md`、Rewrite & Republish・Polylang は `docs/plugins.md`）。作業前に読み、そのとおりに行う。ここに書いた手順と食い違ったら ai-ushiblo を優先する。
-- コマンドは `cd /f/ai-ushiblo && scripts/wp.sh prod …` のように ai-ushiblo のスクリプトを使う（SSH 接続名 `coreserver-wp`。接続を拒否されたら自宅 IP の変更を疑い、ユーザーに伝える）。
+- サイトの運用ルールの正本は `F:\claude\ai-ushiblo\CLAUDE.md`（接続は `docs/environment.md`、Rewrite & Republish・Polylang は `docs/plugins.md`）。作業前に読み、そのとおりに行う。ここに書いた手順と食い違ったら ai-ushiblo を優先する。
+- コマンドは `cd /f/claude/ai-ushiblo && scripts/wp.sh prod …` のように ai-ushiblo のスクリプトを使う（SSH 接続名 `coreserver-wp`。接続を拒否されたら自宅 IP の変更を疑い、ユーザーに伝える）。
 - サーバーで何かを変えたら、ai-ushiblo の `logs/YYYY-MM.md` の末尾に同じ書式で追記し、人の確認待ちは `docs/status.md` に書いて、ai-ushiblo でコミットする（同リポジトリの Git のルールに従う。プッシュは指示があってから）。
 - 公開・再公開はユーザーの指示があるときだけ。パスワード類はどこにも書かない。
 
