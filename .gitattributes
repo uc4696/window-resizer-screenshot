@@ -1,0 +1,2 @@
+# WSL の bash で実行するので、Windows のチェックアウトでも LF のままにする
+*.sh text eol=lf

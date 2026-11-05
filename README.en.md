@@ -55,7 +55,8 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 ├── scripts/
 │   ├── generate-icon.js            # Generates icons of each size from icon-source.png (uses sharp)
 │   ├── copy-license.mjs            # Copies the Tabler Icons license into the build output (ZIP); runs automatically on build / package
-│   └── install-chrome.mjs          # Downloads Chrome for Testing for E2E tests (set CHROME_CHANNEL)
+│   ├── install-chrome.mjs          # Downloads Chrome for Testing for E2E tests (set CHROME_CHANNEL)
+│   └── e2e-wsl.sh                  # Runs E2E tests on WSL2 with xvfb
 ├── tests/e2e/                      # E2E tests (Playwright), shared fixtures and a test server
 ├── playwright.config.ts            # Playwright configuration
 ├── .github/workflows/e2e-beta.yml  # Daily E2E run (Chrome Beta) and failure notifications
@@ -158,12 +159,22 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 - **CI (GitHub Actions)**: `.github/workflows/e2e-beta.yml` runs **every day at 03:00 (JST)** against the **Beta** channel of Chrome (manual runs: "Run workflow" in the Actions tab). On failure it opens a GitHub issue (label `e2e-failure`; it comments on the existing open issue if there is one) and sends a Slack message.
   - Slack notifications require the repository secret `SLACK_WEBHOOK_URL` (a Slack Incoming Webhook URL).
   - Scheduled runs only work for the workflow on the default branch (`main`).
-- **Local (to reproduce and check problems found in CI)**:
+- **Local (WSL2, the usual way)**: runs on Ubuntu on WSL2 with xvfb, so no browser appears on the Windows screen and the clipboard does not change. Ubuntu needs Node 24 (installed with nvm), xvfb, xauth, rsync and unzip.
+
+  ```powershell
+  npm run test:e2e:wsl                                  # run everything
+  npm run test:e2e:wsl -- tests/e2e/clipboard.spec.ts   # arguments are passed to Playwright
+  npm run test:e2e:wsl -- --channel beta                # choose the Chrome channel
+  npm run test:e2e:wsl -- --update-browser              # download the latest Chrome again
+  ```
+
+  Your working files are synced to `~/e2e/resizer` on WSL, and dependencies (only when `package-lock.json` changes), the build and the Chrome download are all handled on WSL. Results come back to `test-results/` on Windows, and the exit code is the one from the tests.
+- **Local (Windows, before a release or to check Windows-only problems)**:
 
   ```powershell
   npm run build                 # tests load build/chrome-mv3-prod
   npm run test:install-browser  # download Chrome for Testing (Stable by default)
-  npm run test:e2e              # run (a real browser window opens)
+  npm run test:e2e              # run (a browser window opens on the screen)
   ```
 
   To reproduce on Beta, run `$env:CHROME_CHANNEL = "beta"; npm run test:install-browser`. The browser is stored in `.chrome-for-testing/` (not tracked by Git).
