@@ -12,7 +12,7 @@ A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or v
 - Resolution templates grouped by aspect ratio (16:9: HD/FHD/WQHD/4K, 4:3: VGA/SVGA/XGA/UXGA)
 - Per-template, per-mode (window-based / viewport-based) offset (margin) values configurable on the Options page
 - When a resize would push the window off the screen, it is moved to stay on the screen without changing the size (can be turned off in the settings)
-- Add, edit and delete custom sizes (a correction offset can be specified in window-based mode). The list is always shown right below the templates, and the "Custom size settings" accordion only contains the add/edit form
+- Add, edit and delete custom sizes (a correction offset can be specified in window-based mode). The list is always shown right below the templates, and the + next to its heading opens the add form. The name has a default value, and a button fills in the current size
 - Popup UI opened from the toolbar icon (theme selectable in the settings: light, dark or follow the browser)
 - Screenshots of the visible tab or the full page (scrolling capture + stitching)
 - Saved into the `Captures` folder under Downloads (the folder name can be changed). The format is selectable in the settings: PNG (default) / WebP / JPEG
@@ -74,7 +74,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │   ├── components/
 │   │   ├── PresetGrid.tsx          # Template size buttons
 │   │   ├── CustomSizeList.tsx      # Saved custom sizes: apply / edit / delete UI
-│   │   ├── CustomSizeManager.tsx   # Add/edit form for custom sizes (accordion)
+│   │   ├── CustomSizeManager.tsx   # Add/edit form for custom sizes
 │   │   ├── CaptureSection.tsx      # Screenshot rows (Download / Copy)
 │   │   ├── Icon.tsx                # Inline Tabler Icons SVG
 │   │   ├── ShareButton.tsx         # Share buttons for social networks

@@ -7,11 +7,13 @@ import brandLinkedin from "data-text:../../icons/brand-linkedin.svg"
 import brandReddit from "data-text:../../icons/brand-reddit.svg"
 import brandThreads from "data-text:../../icons/brand-threads.svg"
 import brandX from "data-text:../../icons/brand-x.svg"
+import camera from "data-text:../../icons/camera.svg"
 import check from "data-text:../../icons/check.svg"
 import click from "data-text:../../icons/click.svg"
 import clock from "data-text:../../icons/clock.svg"
 import copy from "data-text:../../icons/copy.svg"
 import download from "data-text:../../icons/download.svg"
+import plus from "data-text:../../icons/plus.svg"
 import ratio169 from "data-text:../../icons/ratio-16-9.svg"
 import ratio43 from "data-text:../../icons/ratio-4-3.svg"
 import screenshot from "data-text:../../icons/screenshot.svg"
@@ -19,6 +21,7 @@ import settings from "data-text:../../icons/settings.svg"
 import star from "data-text:../../icons/star.svg"
 import viewportTall from "data-text:../../icons/viewport-tall.svg"
 import viewportWide from "data-text:../../icons/viewport-wide.svg"
+import xMark from "data-text:../../icons/x.svg"
 
 /**
  * Tabler Icons（MIT License）。SVG は同梱ファイルをインライン展開する。
@@ -46,6 +49,9 @@ const ICONS = {
   settings: stripClass(settings),
   star: stripClass(star),
   "app-window": stripClass(appWindow),
+  camera: stripClass(camera),
+  plus: stripClass(plus),
+  x: stripClass(xMark),
   "viewport-wide": stripClass(viewportWide),
   "ratio-16-9": stripClass(ratio169),
   "ratio-4-3": stripClass(ratio43)

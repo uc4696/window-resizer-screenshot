@@ -45,6 +45,14 @@ initTheme()
 
 /** 今のサイズの数字。× だけ細く小さくして、数字を読みやすくする。 */
 function SizeValue({ size }: { size: DisplayBounds }) {
+  // 読み取れないページでは 0 になるので、壊れて見えないように — を出す
+  if (size.width === 0) {
+    return (
+      <span className="size-value">
+        —<span className="size-times">×</span>—
+      </span>
+    )
+  }
   return (
     <span className="size-value">
       {size.width}
@@ -181,9 +189,18 @@ function PopupContent() {
     setEditingCustomSizeId(size.id)
   }
 
+  /** ラベルの右の ＋ でフォームを開閉する。閉じるときは編集も取りやめる。 */
+  function toggleCustomForm() {
+    if (customSizeOpen) setEditingCustomSizeId(null)
+    setCustomSizeOpen(!customSizeOpen)
+  }
+
   function handleCancelEditCustomSize() {
     setEditingCustomSizeId(null)
   }
+
+  /** 今の基準での実際のサイズ（同じサイズのボタンの強調と、フォームの入力に使う）。 */
+  const currentSize = mode === "window" ? windowSize : viewportSize
 
   return (
     <main className="popup-root">
@@ -197,7 +214,12 @@ function PopupContent() {
           <Icon name="app-window" size={15} />
           <SizeValue size={windowSize} />
         </div>
-        <div className="size-item" title={t("currentViewportSize")}>
+        <div
+          className="size-item"
+          title={
+            viewportSize.width === 0 ? t("sizeUnavailable") : t("currentViewportSize")
+          }
+        >
           <Icon name="viewport-wide" size={15} />
           <SizeValue size={viewportSize} />
         </div>
@@ -228,6 +250,7 @@ function PopupContent() {
         groups={PRESET_GROUPS}
         offsets={presetOffsets}
         mode={mode}
+        currentSize={currentSize}
         onSelect={requestApplySize}
         disabled={busy}
       />
@@ -235,7 +258,10 @@ function PopupContent() {
       <CustomSizeList
         mode={mode}
         customSizes={customSizes}
+        currentSize={currentSize}
         editingId={editingCustomSizeId}
+        formOpen={customSizeOpen}
+        onToggleForm={toggleCustomForm}
         onApply={requestApplySize}
         onEdit={handleEditCustomSize}
         onRemove={handleRemoveCustomSize}
@@ -244,9 +270,10 @@ function PopupContent() {
       <CustomSizeManager
         mode={mode}
         display={display}
+        currentSize={currentSize}
+        customSizes={customSizes}
         open={customSizeOpen}
         editingSize={customSizes.find((s) => s.id === editingCustomSizeId) ?? null}
-        onToggle={() => setCustomSizeOpen((v) => !v)}
         onAdd={handleAddCustomSize}
         onCancelEdit={handleCancelEditCustomSize}
       />

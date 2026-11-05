@@ -3,6 +3,7 @@ import type { MessageKey } from "./messages.en"
 /** 日本語メッセージ辞書。英語辞書と同じキーを必須とする（追加漏れは型エラーになる）。 */
 export const ja: Record<MessageKey, string> = {
   // ---- popup ----
+  sizeUnavailable: "このページではサイズを読み取れません",
   currentWindowSize: "今のウィンドウのサイズ",
   currentViewportSize: "今のビューポートのサイズ（ページが表示される部分）",
   modeWindow: "ウィンドウ基準",
@@ -61,18 +62,20 @@ export const ja: Record<MessageKey, string> = {
   delete: "削除",
 
   // ---- custom size manager ----
-  customToggleClose: "▲ カスタムサイズの設定を閉じる",
-  customToggleOpen: "▼ カスタムサイズの設定",
+  customToggleClose: "フォームを閉じる",
+  customToggleOpen: "カスタムサイズを追加",
+  customDefaultName: "カスタム {n}",
+  useCurrentSize: "今のサイズを入れる",
   formTitleEdit: "カスタムサイズの変更",
   formTitleAdd: "カスタムサイズの追加",
   namePlaceholder: "名前（省略可）",
   widthPlaceholder: "幅",
   heightPlaceholder: "高さ",
   offsetLabel: "サイズ補正オフセット（任意・px）:",
-  offsetWidthPlaceholder: "幅補正 (例: 14)",
-  offsetHeightPlaceholder: "高さ補正 (例: 7)",
-  offsetHint: "OSやDPIで見えない境界分ズレる場合に加算する補正値",
-  displayHint: "現在のディスプレイ: {width} x {height}（この範囲内で指定）",
+  offsetWidthPlaceholder: "幅補正",
+  offsetHeightPlaceholder: "高さ補正",
+  offsetHint: "OS や DPI によるズレを補正します",
+  displayHint: "ディスプレイ: {width} x {height}（これが上限）",
   update: "更新",
   add: "追加",
   cancel: "キャンセル",

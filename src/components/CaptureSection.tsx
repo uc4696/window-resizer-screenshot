@@ -179,7 +179,10 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
 
   return (
     <section className="capture-section">
-      <p className="section-title">{t("screenshotTitle")}</p>
+      <p className="section-title">
+        <Icon name="camera" size={14} />
+        <span>{t("screenshotTitle")}</span>
+      </p>
       {rows.map((row) => (
         <div key={row.mode} className="capture-row" data-capture-mode={row.mode}>
           <span className="capture-scope" title={row.label}>

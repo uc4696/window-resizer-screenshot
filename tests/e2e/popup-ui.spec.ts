@@ -158,6 +158,30 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     expect(root.right - gear.right).toBeLessThan(20)
   })
 
+  test("今のサイズと同じプリセットとカスタムサイズを強調する", async ({
+    openTarget,
+    openPopup,
+    serviceWorker
+  }) => {
+    await serviceWorker.evaluate(() =>
+      chrome.storage.local.set({
+        "custom-sizes": JSON.stringify([
+          { id: "c1", label: "Same", width: 800, height: 600, mode: "window" },
+          { id: "c2", label: "Other", width: 900, height: 600, mode: "window" }
+        ])
+      })
+    )
+    const popup = await openPopup(await openTarget("/"))
+    await popup.getByRole("button", { name: "Window-based" }).click()
+    await popup.locator('button.preset-button[data-size="800x600"]').click()
+    const current = popup.locator('button.preset-button[aria-current="true"]')
+    await expect(current).toHaveCount(1)
+    await expect(current).toHaveAttribute("data-size", "800x600")
+    await expect(popup.locator('.custom-size-apply[aria-current="true"]')).toHaveText(
+      /Same/
+    )
+  })
+
   test("リサイズの成功はメッセージを見せないが、エラーは見せる", async ({
     openTarget,
     openPopup
@@ -245,8 +269,9 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     openPopup
   }) => {
     const popup = await openPopup(await openTarget("/"))
-    // 今のサイズ2 + 基準2 + 比率2 + タイマー1 + 行頭アイコン2 + ダウンロード/コピー4 + 範囲選択1 + 共有7 + 設定1
-    await expect(popup.locator(".ui-icon")).toHaveCount(22)
+    // 今のサイズ2 + 基準2 + 比率2 + カスタムの見出しと＋2 + 撮影の見出し1 + タイマー1 + 行頭アイコン2
+    // + ダウンロード/コピー4 + 範囲選択1 + 共有7 + 設定1
+    await expect(popup.locator(".ui-icon")).toHaveCount(25)
 
     const results = await popup.locator(".ui-icon").evaluateAll((icons) =>
       icons.map((icon) => {
@@ -255,8 +280,9 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
         const iconRect = icon.getBoundingClientRect()
         // 親ボタン（なければ行頭アイコンのラッパー）の枠
         const frame = (
-          icon.closest("button, a, .capture-scope, .size-item, .preset-group-title") ??
-          icon
+          icon.closest(
+            "button, a, .capture-scope, .size-item, .preset-group-title, .section-title"
+          ) ?? icon
         ).getBoundingClientRect()
         const tolerance = 0.5
         return {

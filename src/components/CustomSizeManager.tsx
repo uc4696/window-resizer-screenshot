@@ -7,31 +7,34 @@ import { validateOffset, validateSize } from "~lib/resize"
 interface CustomSizeManagerProps {
   mode: SizeMode
   display: DisplayBounds
+  /** 今の基準での実際のサイズ（［今のサイズを入れる］で使う）。 */
+  currentSize: DisplayBounds
+  customSizes: CustomSize[]
   open: boolean
   editingSize: CustomSize | null
-  onToggle: () => void
   onAdd: (size: CustomSize) => void
   onCancelEdit: () => void
 }
 
 /**
- * カスタムサイズの追加・変更フォーム（アコーディオン）。
- * 一覧表示・適用・削除は CustomSizeList（テンプレート直下）が担当し、
- * このコンポーネントは「追加・変更」フォームのみを扱う。
+ * カスタムサイズの追加・変更フォーム。
+ * 見出しと ＋（開閉）、一覧、適用、削除は CustomSizeList が担当する。
  * 編集開始（ペンアイコン押下）は親（popup.tsx）側で open を true にしてから
  * editingSize をセットする流れになる。
  */
 export function CustomSizeManager({
   mode,
   display,
+  currentSize,
+  customSizes,
   open,
   editingSize,
-  onToggle,
   onAdd,
   onCancelEdit
 }: CustomSizeManagerProps) {
   const { t } = useI18n()
-  const [label, setLabel] = useState("")
+  /** 名前の入力。null は未入力で、既定の名前を出す。 */
+  const [label, setLabel] = useState<string | null>(null)
   const [width, setWidth] = useState("")
   const [height, setHeight] = useState("")
   const [offsetWidth, setOffsetWidth] = useState("")
@@ -42,8 +45,17 @@ export function CustomSizeManager({
 
   const editingId = editingSize?.id ?? null
 
+  /** 使われていない最小の番号で既定の名前を作る（入力を省けるように、最初から入れておく）。 */
+  function buildDefaultName(): string {
+    const used = new Set(customSizes.map((s) => s.label))
+    let n = 1
+    while (used.has(t("customDefaultName", { n }))) n++
+    return t("customDefaultName", { n })
+  }
+  const defaultName = buildDefaultName()
+
   function resetForm() {
-    setLabel("")
+    setLabel(null)
     setWidth("")
     setHeight("")
     setOffsetWidth("")
@@ -55,7 +67,7 @@ export function CustomSizeManager({
   // effect ではなくレンダー中に同期し、余分な再レンダーを避ける。
   if (editingSize !== syncedSize) {
     setSyncedSize(editingSize)
-    setLabel(editingSize?.label ?? "")
+    setLabel(editingSize?.label ?? null)
     setWidth(editingSize ? String(editingSize.width) : "")
     setHeight(editingSize ? String(editingSize.height) : "")
     setOffsetWidth(
@@ -102,7 +114,7 @@ export function CustomSizeManager({
 
     const size: CustomSize = {
       id: editingId ?? `custom-${mode}-${Date.now()}`,
-      label: label.trim() || `${w}x${h}`,
+      label: (label ?? defaultName).trim() || defaultName,
       width: w,
       height: h,
       mode,
@@ -116,17 +128,6 @@ export function CustomSizeManager({
 
   return (
     <div className="custom-size-manager">
-      <button
-        type="button"
-        className="link-button"
-        onClick={() => {
-          if (open) onCancelEdit()
-          onToggle()
-        }}
-      >
-        {open ? t("customToggleClose") : t("customToggleOpen")}
-      </button>
-
       {open && (
         <div className="custom-size-panel" ref={panelRef}>
           <div className="custom-size-form">
@@ -136,7 +137,8 @@ export function CustomSizeManager({
             <input
               className="text-input"
               placeholder={t("namePlaceholder")}
-              value={label}
+              value={label ?? defaultName}
+              onFocus={(e) => e.target.select()}
               onChange={(e) => setLabel(e.target.value)}
             />
             <div className="wh-row">
@@ -186,18 +188,30 @@ export function CustomSizeManager({
               {t("displayHint", { width: display.width, height: display.height })}
             </p>
             <div className="form-actions">
-              <button type="button" className="primary-button" onClick={handleSubmit}>
-                {editingId ? t("update") : t("add")}
-              </button>
               {editingId && (
                 <button
                   type="button"
-                  className="secondary-cancel-button"
+                  className="form-secondary-button"
                   onClick={onCancelEdit}
                 >
                   {t("cancel")}
                 </button>
               )}
+              <button
+                type="button"
+                className="form-secondary-button"
+                disabled={currentSize.width === 0}
+                onClick={() => {
+                  setWidth(String(currentSize.width))
+                  setHeight(String(currentSize.height))
+                  setError(null)
+                }}
+              >
+                {t("useCurrentSize")}
+              </button>
+              <button type="button" className="primary-button" onClick={handleSubmit}>
+                {editingId ? t("update") : t("add")}
+              </button>
             </div>
           </div>
         </div>

@@ -227,6 +227,20 @@ body {
   outline-offset: 2px;
 }
 
+/* 今のサイズと同じもの */
+.preset-button.is-current .preset-screen rect,
+.preset-button.is-current:hover:not(:disabled) .preset-screen rect {
+  fill: var(--accent-color);
+}
+
+.preset-button.is-current .preset-screen text {
+  fill: var(--button-text);
+}
+
+.preset-button.is-current .preset-offset-badge {
+  background-color: var(--button-text);
+}
+
 /* 補正があることを示す印。値はツールチップに出す */
 .preset-offset-badge {
   position: absolute;
@@ -243,34 +257,67 @@ body {
 }
 
 .custom-size-section {
-  margin-bottom: 6px;
+  margin-bottom: 14px;
 }
 
 .custom-size-apply:hover {
   background-color: var(--accent-soft-hover);
 }
 
-.custom-size-manager {
-  margin-bottom: 14px;
+.custom-size-apply.is-current,
+.custom-size-apply.is-current:hover {
+  background-color: var(--accent-color);
+  color: var(--button-text);
 }
 
-.link-button {
-  background: none;
-  border: none;
+.custom-size-apply.is-current .custom-size-dimensions {
+  color: inherit;
+}
+
+.custom-size-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.custom-size-header .preset-group-title {
+  margin: 0;
+}
+
+.custom-size-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background-color: var(--accent-soft);
   color: var(--accent-color);
-  font-size: 11px;
   cursor: pointer;
-  padding: 2px 0;
+}
+
+.custom-size-toggle:hover {
+  background-color: var(--accent-soft-hover);
+}
+
+.custom-size-toggle:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.custom-size-manager {
+  margin: 0;
 }
 
 .custom-size-panel {
   background-color: var(--panel-bg);
   padding: 8px;
-  margin-top: 6px;
+  margin: -8px 0 14px;
 }
 
 .custom-size-list {
-  margin-bottom: 0;
+  margin-top: 3px;
 }
 
 .empty-hint {
@@ -309,19 +356,19 @@ body {
 }
 
 .custom-size-name {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.offset-badge {
-  font-size: 9px;
-  padding: 1px 4px;
-  margin-left: 4px;
-  background-color: var(--panel-bg);
-  border: 1px solid var(--border-color);
+.custom-size-dimensions {
+  flex-shrink: 0;
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
   color: var(--subtitle-color);
-  font-family: monospace;
 }
 
 .custom-size-edit {
@@ -350,9 +397,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 6px;
-  border-top: 1px solid var(--border-color);
-  padding-top: 8px;
 }
 
 .form-title {
@@ -378,21 +422,27 @@ body {
 
 .form-actions {
   display: flex;
-  gap: 6px;
+  justify-content: flex-end;
+  gap: 4px;
 }
 
-.secondary-cancel-button {
-  flex: 1;
+.form-secondary-button {
   padding: 6px 10px;
-  font-size: 12px;
-  border: 1px solid var(--border-color);
-  background: transparent;
-  color: var(--subtitle-color);
+  font-family: inherit;
+  font-size: 11px;
+  border: 0;
+  background-color: var(--accent-soft);
+  color: var(--accent-color);
   cursor: pointer;
 }
 
-.secondary-cancel-button:hover {
-  background: var(--panel-bg);
+.form-secondary-button:hover:not(:disabled) {
+  background-color: var(--accent-soft-hover);
+}
+
+.form-secondary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .text-input {
@@ -431,9 +481,10 @@ body {
 }
 
 .primary-button {
-  padding: 6px 10px;
-  font-size: 12px;
-  border: none;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 11px;
+  border: 0;
   background-color: var(--accent-color);
   color: var(--button-text);
   font-weight: 600;
@@ -449,6 +500,9 @@ body {
 }
 
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 10.5px;
   font-weight: 600;
   color: var(--subtitle-color);
@@ -463,7 +517,7 @@ body {
 }
 
 .delay-option {
-  width: 28px;
+  width: 27.5px;
   height: 26px;
   padding: 0;
   font-family: inherit;
@@ -601,11 +655,6 @@ body {
   height: 1px;
   margin: 0;
   clip-path: inset(50%);
-}
-
-.link-button:focus-visible {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 2px;
 }
 
 /* 寄付の下の行。左に共有先（これから増やせる）、右に設定 */

@@ -6,6 +6,7 @@
  */
 export const en = {
   // ---- popup ----
+  sizeUnavailable: "This size cannot be read on this page",
   currentWindowSize: "Current window size",
   currentViewportSize: "Current viewport size (the area that shows the page)",
   modeWindow: "Window-based",
@@ -64,19 +65,20 @@ export const en = {
   delete: "Delete",
 
   // ---- custom size manager ----
-  customToggleClose: "▲ Close custom size settings",
-  customToggleOpen: "▼ Custom size settings",
+  customToggleClose: "Close the form",
+  customToggleOpen: "Add a custom size",
+  customDefaultName: "Custom {n}",
+  useCurrentSize: "Use current size",
   formTitleEdit: "Edit custom size",
   formTitleAdd: "Add custom size",
   namePlaceholder: "Name (optional)",
   widthPlaceholder: "Width",
   heightPlaceholder: "Height",
   offsetLabel: "Size correction offset (optional, px):",
-  offsetWidthPlaceholder: "Width offset (e.g. 14)",
-  offsetHeightPlaceholder: "Height offset (e.g. 7)",
-  offsetHint:
-    "Correction added when the size is off because of invisible borders caused by the OS or DPI",
-  displayHint: "Current display: {width} x {height} (specify within this range)",
+  offsetWidthPlaceholder: "Width offset",
+  offsetHeightPlaceholder: "Height offset",
+  offsetHint: "Fixes gaps from invisible OS or DPI borders",
+  displayHint: "Display: {width} x {height} (the maximum)",
   update: "Update",
   add: "Add",
   cancel: "Cancel",
