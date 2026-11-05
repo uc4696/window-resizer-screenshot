@@ -300,11 +300,15 @@ export async function countPickCandidates(tabId: number): Promise<number> {
   }
 }
 
-/** 対象タブで範囲選択の UI を開始する。 */
-export async function startPicker(tabId: number, strings: PickerStrings): Promise<void> {
-  await chrome.scripting.executeScript({
+/** 対象タブで範囲選択の UI を開始し、候補の数を返す（0 なら UI は出ない）。 */
+export async function startPicker(
+  tabId: number,
+  strings: PickerStrings
+): Promise<number> {
+  const [{ result }] = await chrome.scripting.executeScript({
     target: { tabId },
     func: scrollAreaPicker,
     args: ["start", SCROLLER_ATTR, strings]
   })
+  return result ?? 0
 }

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react"
 
 import { Icon } from "~components/Icon"
+import { DELAY_SECONDS } from "~lib/commands"
 import { useI18n } from "~lib/i18n/useI18n"
 import type { CaptureAction, CaptureMode, CaptureResponse } from "~lib/messages"
 import { countPickCandidates, startPicker } from "~lib/picker"
+import { getCaptureDelay, setCaptureDelay } from "~lib/storage"
 
 /** コピー成功後、check アイコンを見せてから popup を閉じるまでの時間（ms）。 */
 export const CLOSE_AFTER_COPY_MS = 800
@@ -25,9 +27,15 @@ function dataUrlToPngBlob(dataUrl: string): Blob {
 /** background に撮影を依頼する。 */
 function requestCapture(
   mode: CaptureMode,
-  action: CaptureAction
+  action: CaptureAction,
+  delaySeconds = 0
 ): Promise<CaptureResponse> {
-  return chrome.runtime.sendMessage({ type: "capture-screenshot", mode, action })
+  return chrome.runtime.sendMessage({
+    type: "capture-screenshot",
+    mode,
+    action,
+    delaySeconds
+  })
 }
 
 /**
@@ -40,6 +48,8 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
   const { t } = useI18n()
   const [copiedMode, setCopiedMode] = useState<CaptureMode | null>(null)
   const [pickTabId, setPickTabId] = useState<number | null>(null)
+  /** 遅延撮影の秒数（0 はなし）。撮影後も選んだままにする。 */
+  const [delaySeconds, setDelaySeconds] = useState(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -47,6 +57,15 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
   }, [])
+
+  useEffect(() => {
+    getCaptureDelay().then(setDelaySeconds)
+  }, [])
+
+  function changeDelay(seconds: number) {
+    setDelaySeconds(seconds)
+    void setCaptureDelay(seconds)
+  }
 
   // 対象タブに選べるスクロール範囲があるか調べ、あれば［選択］を有効にする
   useEffect(() => {
@@ -116,7 +135,7 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
     onBusyChange(true)
     onStatus(statusWhileCapturing(mode))
     try {
-      const response = await requestCapture(mode, "download")
+      const response = await requestCapture(mode, "download", delaySeconds)
       if (response?.ok) {
         window.close()
         return
@@ -160,7 +179,10 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
 
   return (
     <section className="capture-section">
-      <p className="section-title">{t("screenshotTitle")}</p>
+      <p className="section-title">
+        <Icon name="camera" size={14} />
+        <span>{t("screenshotTitle")}</span>
+      </p>
       {rows.map((row) => (
         <div key={row.mode} className="capture-row" data-capture-mode={row.mode}>
           <span className="capture-scope" title={row.label}>
@@ -181,9 +203,9 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
             <button
               type="button"
               className={`icon-button ${copiedMode === row.mode ? "copied" : ""}`}
-              title={row.copyLabel}
+              title={delaySeconds > 0 ? t("captureNoCopyWithDelay") : row.copyLabel}
               aria-label={row.copyLabel}
-              disabled={busy}
+              disabled={busy || delaySeconds > 0}
               onClick={() => handleCopy(row.mode)}
             >
               <Icon name={copiedMode === row.mode ? "check" : "copy"} />
@@ -193,10 +215,14 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
                 type="button"
                 className="icon-button"
                 title={
-                  pickTabId !== null ? t("capturePick") : t("capturePickUnavailable")
+                  delaySeconds > 0
+                    ? t("captureNoCopyWithDelay")
+                    : pickTabId !== null
+                      ? t("capturePick")
+                      : t("capturePickUnavailable")
                 }
                 aria-label={t("capturePick")}
-                disabled={busy || pickTabId === null}
+                disabled={busy || pickTabId === null || delaySeconds > 0}
                 onClick={handlePick}
               >
                 <Icon name="click" />
@@ -209,6 +235,33 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
           </div>
         </div>
       ))}
+      <div className="capture-timer-row capture-row" title={t("captureDelayLabel")}>
+        <span className="capture-scope">
+          <Icon name="clock" />
+          <span className="capture-scope-label">{t("captureDelayTitle")}</span>
+        </span>
+        <div
+          className="capture-delay"
+          role="radiogroup"
+          aria-label={t("captureDelayLabel")}
+        >
+          {[0, ...DELAY_SECONDS].map((seconds) => (
+            <button
+              key={seconds}
+              type="button"
+              role="radio"
+              aria-checked={delaySeconds === seconds}
+              className={`delay-option ${delaySeconds === seconds ? "active" : ""}`}
+              disabled={busy}
+              onClick={() => changeDelay(seconds)}
+            >
+              {seconds === 0
+                ? t("captureDelayNone")
+                : t("captureDelaySeconds", { seconds })}
+            </button>
+          ))}
+        </div>
+      </div>
     </section>
   )
 }

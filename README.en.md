@@ -11,14 +11,17 @@ A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or v
 - Resizing for both window size and viewport size
 - Resolution templates grouped by aspect ratio (16:9: HD/FHD/WQHD/4K, 4:3: VGA/SVGA/XGA/UXGA)
 - Per-template, per-mode (window-based / viewport-based) offset (margin) values configurable on the Options page
-- Add, edit and delete custom sizes (a correction offset can be specified in window-based mode). The list is always shown right below the templates, and the "Custom size settings" accordion only contains the add/edit form
-- Popup UI opened from the toolbar icon (automatic dark mode support)
+- When a resize would push the window off the screen, it is moved to stay on the screen without changing the size (can be turned off in the settings)
+- Add, edit and delete custom sizes (a correction offset can be specified in window-based mode). The list is always shown right below the templates, and the + next to its heading opens the add form. The name has a default value, and a button fills in the current size
+- Popup UI opened from the toolbar icon (theme selectable in the settings: light, dark or follow the browser)
 - Screenshots of the visible tab or the full page (scrolling capture + stitching)
 - Saved into the `Captures` folder under Downloads (the folder name can be changed). The format is selectable in the settings: PNG (default) / WebP / JPEG
 - Copy screenshots to the clipboard (PNG only)
 - Icon-button UI with Tabler Icons (Visible area / Full page rows x Download / Copy, plus area selection on the Full page row)
 - Choose a scrollable area on the page to capture (candidates are highlighted, and the clicked area can be saved or copied)
-- Share button for X (opens the post screen)
+- Delay timer for screenshots (3, 5 or 10 seconds; for menus that appear on hover)
+- Keyboard shortcuts (resizing to presets and 5 custom size slots, and each kind of screenshot). No keys are assigned by default; assign only the ones you want at `chrome://extensions/shortcuts`
+- Share buttons for social networks (X, Facebook, LINE, Threads, Bluesky, LinkedIn and Reddit; they open the post screen)
 - Local / sync storage switching via `@plasmohq/storage`
 - Factory reset that restores settings, custom sizes and preset offsets to their defaults
 - Multilingual UI (Japanese / English). Choose "Auto / 日本語 / English" under "Language" on the Options page ("Auto" follows the browser UI language; anything other than Japanese falls back to English)
@@ -71,10 +74,10 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │   ├── components/
 │   │   ├── PresetGrid.tsx          # Template size buttons
 │   │   ├── CustomSizeList.tsx      # Saved custom sizes: apply / edit / delete UI
-│   │   ├── CustomSizeManager.tsx   # Add/edit form for custom sizes (accordion)
+│   │   ├── CustomSizeManager.tsx   # Add/edit form for custom sizes
 │   │   ├── CaptureSection.tsx      # Screenshot rows (Download / Copy)
 │   │   ├── Icon.tsx                # Inline Tabler Icons SVG
-│   │   ├── ShareButton.tsx         # Share on X button
+│   │   ├── ShareButton.tsx         # Share buttons for social networks
 │   │   ├── ReviewPrompt.tsx        # Store rating request
 │   │   └── SupportLink.tsx         # Support link
 │   └── lib/
@@ -84,8 +87,12 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │       ├── offset.ts               # Offset (correction value) calculation
 │       ├── resize.ts               # Window / viewport resizing and validation
 │       ├── screenshot.ts           # Visible Tab / Full Page screenshot capture (PNG/WebP/JPEG output)
-│       ├── share.ts                # Builds the X post URL
+│       ├── share.ts                # Builds the URLs of the social networks' post screens
 │       ├── review-prompt.ts        # When to show the rating request, and its state
+│       ├── theme.ts                # Applies the theme (light, dark or follow the browser)
+│       ├── placement.ts            # Where to place a resized window so it stays on screen
+│       ├── commands.ts             # Keyboard shortcut names and what they do
+│       ├── page-copy.ts            # Copying from a shortcut (writes to the clipboard from the page)
 │       ├── filename.ts             # Saved file name and path construction
 │       ├── messages.ts             # Message types between popup and background
 │       └── i18n/                   # Internationalization (messages.en.ts / messages.ja.ts / index.ts / useI18n.tsx)
@@ -211,6 +218,7 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 - A "whole window screenshot" that includes the OS title bar, browser toolbar and window frame cannot be taken with Chrome's standard capture APIs, so please use an external capture tool.
 - "Full page" also works on layouts where the page itself does not scroll and only an inner area does (common in business systems and admin dashboards). If a scrollable area covers at least 70% of the viewport, only its content is captured to the end and stitched vertically (if there are only smaller areas, nothing is extended and you get one screen of the visible area). When "Include the surrounding frame and the part below the area" is enabled in the settings, the frame of the first screen (header, sidebar, etc.) is kept and the part below the area is appended at the end. The sidebar is not extended, so it appears only for the first screen.
 - The select button on the Full page row (enabled only on pages with a scrollable area) highlights the scrollable areas on the page, and you can save or copy the one you click. Press Esc to cancel. Copy is not offered on pages where the clipboard is unavailable, such as http pages. Areas inside cross-origin iframes and areas scrolled by custom JavaScript cannot be chosen.
+- Choosing 3, 5 or 10 seconds with the timer in the screenshot section takes the screenshot that long after the download button is pressed. The popup closes right away, so you can interact with the page in the meantime to bring up hover menus and the like. The remaining seconds appear on the toolbar icon's badge. Copying and area selection are not available with the timer because the popup closes while waiting. If you switch to another tab while waiting, no screenshot is taken (shown with `!`). The timer choice stays until you set it back to "Off".
 - When you press a download button, the popup closes right away and the result is shown as a badge on the toolbar icon (`...` while capturing, `OK` on success, `!` on failure). For copy, the popup closes after the image has been written to the clipboard.
 
 ### 5. Permissions
@@ -228,6 +236,22 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 - From 3 days after installation, a successful resize or capture makes the popup show a request to rate the extension on the store and support development the next time it opens. It does not appear right after the success, so it never interrupts what you are doing.
 - "Later" shows it again after 3 more days. "Don't show again" hides it until the next update (it comes back 3 days after the update). "Rate on the store" opens the store's review page, and it is not shown again, even after updates.
 - The installation date and the state of the request are stored only in the browser (`chrome.storage.local`) and are never sent anywhere.
+
+### 7. Keeping the window on screen
+- When a resize would push the window off the screen, the requested size is kept and the window is moved just enough to stay on the screen. This applies to window-based and viewport-based resizing and to shortcuts. The reference is the work area (excluding the taskbar and so on) of the display the window is on, read from `window.screen` without the `system.display` permission.
+- A size larger than the screen is not changed either. So that the toolbar's extension icons and the window buttons stay reachable, the window is aligned to the right edge and the top edge of the work area (the left and bottom parts go off the screen).
+- Chrome rejects a window with more than half of its area off the screen. Sizes more than twice the area of the screen (for example, 4K on a 2560x1440 screen) are therefore not possible, and an error is shown.
+- Which monitors are adjacent cannot be known without a permission, so even a size meant to span several monitors is kept on the current one. To span monitors, turn off "Move the window to keep it on screen" on the settings page.
+- When a shortcut is used on a special page such as `chrome://`, the screen area cannot be read, so the window is not moved.
+
+### 8. Keyboard shortcuts
+- No keys are assigned by default, because they would collide with other extensions, Windows and Chrome. Open Chrome's shortcuts page (`chrome://extensions/shortcuts`) from "Keyboard shortcuts" on the settings page and assign only the ones you want. The current assignments are also shown on the settings page.
+- Available commands: resizing to a preset (8), resizing to a custom size (5 slots), downloading and copying the visible area or the full page, choosing a scrollable area, and a delayed download of the visible area (3, 5 or 10 seconds). A delayed capture starts without leaving the page, so hover menus can stay open.
+- Presets use the base (window or viewport) last selected in the popup. For custom sizes, choose a size for each slot on the settings page; it is applied with that size's own base. If a slot is empty, or its size was deleted, nothing is resized and a `!` badge and the icon's tooltip tell you so.
+- The popup does not open, so results appear as a badge on the toolbar icon (success `OK` / failure `!`). On failure, the reason is shown in the icon's tooltip while the badge is visible.
+- `activeTab` is also granted by a shortcut, so no extra permissions are needed. Scripts cannot be injected into special pages such as `chrome://`, so only downloading the visible area works there.
+- Copying writes to the clipboard from the page, so it works only on `https` pages and `localhost`.
+- On a tab that is not at 100% zoom, a confirmation appears on the page before the zoom is reset to 100% (unless the confirmation is turned off in the settings). On special pages where it cannot be shown, the zoom is left unchanged.
 
 ## Versioning and changelog
 

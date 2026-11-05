@@ -60,6 +60,18 @@ function createTestExtension(workDir: string): string {
   // captureVisibleTab は <all_urls> または activeTab が必要なため、テスト用複製にだけ <all_urls> を付与する
   manifest.host_permissions = ["<all_urls>"]
   writeFileSync(manifestPath, JSON.stringify(manifest))
+
+  // ショートカットのキー操作は自動テストでは送れないので、登録された処理をテストから呼べるよう
+  // service worker の先頭で控えておく（配布物は変更しない。実キーは xvfb と xdotool で別に確かめた）
+  const workerPath = path.join(dest, manifest.background.service_worker)
+  const hook = `globalThis.__commandListeners = [];
+const __addCommandListener = chrome.commands.onCommand.addListener.bind(chrome.commands.onCommand);
+chrome.commands.onCommand.addListener = (listener) => {
+  globalThis.__commandListeners.push(listener);
+  __addCommandListener(listener);
+};
+`
+  writeFileSync(workerPath, hook + readFileSync(workerPath, "utf8"))
   return dest
 }
 

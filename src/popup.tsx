@@ -6,7 +6,7 @@ import { CustomSizeManager } from "~components/CustomSizeManager"
 import { Icon } from "~components/Icon"
 import { PresetGrid } from "~components/PresetGrid"
 import { ReviewPrompt } from "~components/ReviewPrompt"
-import { ShareButton } from "~components/ShareButton"
+import { ShareButtons } from "~components/ShareButton"
 import { SupportLink } from "~components/SupportLink"
 import { PRESET_GROUPS } from "~lib/constants"
 import { I18nProvider, useI18n } from "~lib/i18n/useI18n"
@@ -21,6 +21,7 @@ import {
   resizeWindow
 } from "~lib/resize"
 import { markReviewPromptOnUse } from "~lib/review-prompt"
+import { initTheme } from "~lib/theme"
 import {
   addCustomSize,
   getCustomSizes,
@@ -40,6 +41,27 @@ import type {
 
 import "./style.css"
 
+initTheme()
+
+/** 今のサイズの数字。× だけ細く小さくして、数字を読みやすくする。 */
+function SizeValue({ size }: { size: DisplayBounds }) {
+  // 読み取れないページでは 0 になるので、壊れて見えないように — を出す
+  if (size.width === 0) {
+    return (
+      <span className="size-value">
+        —<span className="size-times">×</span>—
+      </span>
+    )
+  }
+  return (
+    <span className="size-value">
+      {size.width}
+      <span className="size-times">×</span>
+      {size.height}
+    </span>
+  )
+}
+
 function PopupContent() {
   const { t } = useI18n()
   const [mode, setMode] = useState<SizeMode>("window")
@@ -50,7 +72,9 @@ function PopupContent() {
   const [presetOffsets, setPresetOffsets] = useState<Record<string, PresetModeOffsets>>(
     {}
   )
-  const [status, setStatus] = useState<string | null>(null)
+  const [status, setStatusText] = useState<string | null>(null)
+  /** 見せずに読み上げだけにするメッセージか（リサイズの成功）。 */
+  const [statusQuiet, setStatusQuiet] = useState(false)
   const [busy, setBusy] = useState(false)
   const [customSizeOpen, setCustomSizeOpen] = useState(false)
   const [editingCustomSizeId, setEditingCustomSizeId] = useState<string | null>(null)
@@ -60,6 +84,11 @@ function PopupContent() {
     tabId: number
     zoom: number
   } | null>(null)
+
+  function setStatus(text: string | null, quiet = false) {
+    setStatusText(text)
+    setStatusQuiet(quiet)
+  }
 
   async function refreshSizes() {
     const [w, v] = await Promise.all([getCurrentWindowSize(), getCurrentViewportSize()])
@@ -128,7 +157,7 @@ function PopupContent() {
         await resizeViewport(preset.width + offW, preset.height + offH)
       }
       await refreshSizes()
-      setStatus(t("statusResized", { width: preset.width, height: preset.height }))
+      setStatus(t("statusResized", { width: preset.width, height: preset.height }), true)
       // 評価のお願いは、インストールから日がたってからの成功のときに印を付ける（次に開いたときに出す）
       void markReviewPromptOnUse().catch((error) =>
         console.warn("[review-prompt]", error)
@@ -160,9 +189,18 @@ function PopupContent() {
     setEditingCustomSizeId(size.id)
   }
 
+  /** ラベルの右の ＋ でフォームを開閉する。閉じるときは編集も取りやめる。 */
+  function toggleCustomForm() {
+    if (customSizeOpen) setEditingCustomSizeId(null)
+    setCustomSizeOpen(!customSizeOpen)
+  }
+
   function handleCancelEditCustomSize() {
     setEditingCustomSizeId(null)
   }
+
+  /** 今の基準での実際のサイズ（同じサイズのボタンの強調と、フォームの入力に使う）。 */
+  const currentSize = mode === "window" ? windowSize : viewportSize
 
   return (
     <main className="popup-root">
@@ -170,33 +208,41 @@ function PopupContent() {
 
       <ReviewPrompt />
 
+      {/* 今のサイズは見るだけ。押せる要素と区別するため、薄い背景だけで枠線を付けない */}
       <section className="current-size-section">
-        <div className="size-row">
-          <span className="size-label">{t("windowLabel")}</span>
-          <span className="size-value">
-            {windowSize.width} x {windowSize.height}
-          </span>
+        <div className="size-item" title={t("currentWindowSize")}>
+          <Icon name="app-window" size={15} />
+          <SizeValue size={windowSize} />
         </div>
-        <div className="size-row">
-          <span className="size-label">{t("viewportLabel")}</span>
-          <span className="size-value">
-            {viewportSize.width} x {viewportSize.height}
-          </span>
+        <div
+          className="size-item"
+          title={
+            viewportSize.width === 0 ? t("sizeUnavailable") : t("currentViewportSize")
+          }
+        >
+          <Icon name="viewport-wide" size={15} />
+          <SizeValue size={viewportSize} />
         </div>
       </section>
 
       <div className="mode-toggle">
         <button
           className={`mode-button ${mode === "window" ? "active" : ""}`}
+          aria-label={t("modeWindow")}
+          title={t("modeWindowTitle")}
           onClick={() => changeMode("window")}
         >
-          {t("modeWindow")}
+          <Icon name="app-window" size={14} />
+          <span>{t("modeWindowShort")}</span>
         </button>
         <button
           className={`mode-button ${mode === "viewport" ? "active" : ""}`}
+          aria-label={t("modeViewport")}
+          title={t("modeViewportTitle")}
           onClick={() => changeMode("viewport")}
         >
-          {t("modeViewport")}
+          <Icon name="viewport-wide" size={14} />
+          <span>{t("modeViewportShort")}</span>
         </button>
       </div>
 
@@ -204,6 +250,7 @@ function PopupContent() {
         groups={PRESET_GROUPS}
         offsets={presetOffsets}
         mode={mode}
+        currentSize={currentSize}
         onSelect={requestApplySize}
         disabled={busy}
       />
@@ -211,7 +258,10 @@ function PopupContent() {
       <CustomSizeList
         mode={mode}
         customSizes={customSizes}
+        currentSize={currentSize}
         editingId={editingCustomSizeId}
+        formOpen={customSizeOpen}
+        onToggleForm={toggleCustomForm}
         onApply={requestApplySize}
         onEdit={handleEditCustomSize}
         onRemove={handleRemoveCustomSize}
@@ -220,33 +270,42 @@ function PopupContent() {
       <CustomSizeManager
         mode={mode}
         display={display}
+        currentSize={currentSize}
+        customSizes={customSizes}
         open={customSizeOpen}
         editingSize={customSizes.find((s) => s.id === editingCustomSizeId) ?? null}
-        onToggle={() => setCustomSizeOpen((v) => !v)}
         onAdd={handleAddCustomSize}
         onCancelEdit={handleCancelEditCustomSize}
       />
 
       <CaptureSection busy={busy} onBusyChange={setBusy} onStatus={setStatus} />
 
-      {/* ステータス表示は常に1行分の高さを確保し、表示時にレイアウトが跳ねないようにする */}
-      <p className="status-text" title={status ?? undefined}>
+      {/* 空のときは場所を取らない（エラーや撮影中のときだけ出る） */}
+      <p
+        className={`status-text ${statusQuiet ? "is-quiet" : ""}`}
+        role="status"
+        title={status ?? undefined}
+      >
         {status}
       </p>
 
+      <SupportLink />
+
+      {/* 左に共有先（これから増やせる）、右に設定 */}
       <div className="popup-footer-row">
+        <div className="footer-links">
+          <ShareButtons />
+        </div>
         <button
           type="button"
-          className="footer-button options-link"
+          className="footer-icon-button options-link"
+          title={t("openSettings")}
+          aria-label={t("openSettings")}
           onClick={() => chrome.runtime.openOptionsPage()}
         >
-          <Icon name="settings" size={12} />
-          <span>{t("openSettings")}</span>
+          <Icon name="settings" size={16} />
         </button>
-        <ShareButton />
       </div>
-
-      <SupportLink />
 
       {zoomConfirm && (
         <div className="zoom-confirm-overlay" role="dialog" aria-modal="true">

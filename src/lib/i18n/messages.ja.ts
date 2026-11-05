@@ -3,10 +3,15 @@ import type { MessageKey } from "./messages.en"
 /** 日本語メッセージ辞書。英語辞書と同じキーを必須とする（追加漏れは型エラーになる）。 */
 export const ja: Record<MessageKey, string> = {
   // ---- popup ----
-  windowLabel: "ウィンドウ:",
-  viewportLabel: "ビューポート:",
+  sizeUnavailable: "このページではサイズを読み取れません",
+  currentWindowSize: "今のウィンドウのサイズ",
+  currentViewportSize: "今のビューポートのサイズ（ページが表示される部分）",
   modeWindow: "ウィンドウ基準",
   modeViewport: "ビューポート基準",
+  modeWindowShort: "ウィンドウ",
+  modeViewportShort: "ビューポート",
+  modeWindowTitle: "ツールバーなどを含むウィンドウ全体を、選んだサイズにします",
+  modeViewportTitle: "ページが表示される部分を、選んだサイズにします",
   screenshotTitle: "スクリーンショット",
   captureVisibleLabel: "表示部分",
   captureFullPageLabel: "ページ全体",
@@ -14,8 +19,15 @@ export const ja: Record<MessageKey, string> = {
   captureVisibleCopy: "表示部分のスクリーンショットをクリップボードにコピー",
   captureFullPageDownload: "ページ全体のスクリーンショットをダウンロード",
   captureFullPageCopy: "ページ全体のスクリーンショットをクリップボードにコピー",
-  capturePick: "スクロールする範囲を選んで撮影",
-  capturePickUnavailable: "このページには選べるスクロール範囲がありません",
+  captureDelayTitle: "タイマー",
+  captureDelayLabel:
+    "タイマー: ダウンロードを押してから数秒後に撮影します。その間にメニューなどを開けます",
+  captureDelayNone: "なし",
+  captureDelaySeconds: "{seconds}秒",
+  captureNoCopyWithDelay:
+    "タイマーではコピーと範囲選択を使えません。待つ間に popup が閉じるので、保存だけになります。",
+  capturePick: "一覧など、枠の中だけスクロールする部分を選んで、全体を撮影します",
+  capturePickUnavailable: "このページには、枠の中だけスクロールする部分がありません",
   pickerBanner: "撮影する範囲をクリック（Esc でキャンセル）",
   pickerContent: "内容 {height}px",
   pickerSave: "ダウンロード",
@@ -23,9 +35,8 @@ export const ja: Record<MessageKey, string> = {
   pickerCancel: "キャンセル",
   statusCopied: "クリップボードにコピーしました。",
   errClipboard: "クリップボードへのコピーに失敗しました。",
-  openSettings: "設定を開く",
-  shareOnX: "Xで共有",
-  shareOnXTitle: "この拡張機能をXで共有する（投稿画面が開きます）",
+  openSettings: "設定を開く（言語、テーマ、保存先など）",
+  shareOnTitle: "この拡張機能を{name}で共有する（投稿画面が開きます）",
   shareText:
     "「このサイズだとどう見える？」をすぐ確認。\nウィンドウ/ビューポートのリサイズもページ全体スクショもこれ1つ📸",
   shareHashtags: "#Chrome拡張機能 #Web制作",
@@ -51,18 +62,20 @@ export const ja: Record<MessageKey, string> = {
   delete: "削除",
 
   // ---- custom size manager ----
-  customToggleClose: "▲ カスタムサイズの設定を閉じる",
-  customToggleOpen: "▼ カスタムサイズの設定",
+  customToggleClose: "フォームを閉じる",
+  customToggleOpen: "カスタムサイズを追加",
+  customDefaultName: "カスタム {n}",
+  useCurrentSize: "今のサイズを入れる",
   formTitleEdit: "カスタムサイズの変更",
   formTitleAdd: "カスタムサイズの追加",
   namePlaceholder: "名前（省略可）",
   widthPlaceholder: "幅",
   heightPlaceholder: "高さ",
   offsetLabel: "サイズ補正オフセット（任意・px）:",
-  offsetWidthPlaceholder: "幅補正 (例: 14)",
-  offsetHeightPlaceholder: "高さ補正 (例: 7)",
-  offsetHint: "OSやDPIで見えない境界分ズレる場合に加算する補正値",
-  displayHint: "現在のディスプレイ: {width} x {height}（この範囲内で指定）",
+  offsetWidthPlaceholder: "幅補正",
+  offsetHeightPlaceholder: "高さ補正",
+  offsetHint: "OS や DPI によるズレを補正します",
+  displayHint: "ディスプレイ: {width} x {height}（これが上限）",
   update: "更新",
   add: "追加",
   cancel: "キャンセル",
@@ -85,6 +98,11 @@ export const ja: Record<MessageKey, string> = {
   languageHint:
     "表示言語を選択します。「自動」はブラウザの言語に従います（非対応の言語は英語になります）。",
   languageAuto: "自動",
+  themeLabel: "テーマ",
+  themeHint: "ポップアップとこの画面の色を選びます。",
+  themeAuto: "ブラウザに合わせる",
+  themeLight: "ライト",
+  themeDark: "ダーク",
   captureDirLabel: "スクリーンショット保存先フォルダ名",
   captureDirHint:
     "ダウンロードフォルダ配下に作成されるフォルダ名です（例: Downloads/Captures/...）。",
@@ -95,22 +113,32 @@ export const ja: Record<MessageKey, string> = {
   scrollAreaFrameHint:
     "内側の範囲だけがスクロールするページでは、ページ全体の撮影はその範囲だけを撮ります。有効にすると、最初の1画面の外枠（ヘッダー・サイドバー等）を残し、範囲の下にある部分を最後に付け足します。サイドバー等は伸びないため、最初の1画面分だけが写ります。",
   scrollAreaFrameCheckbox: "外枠と範囲の下の部分も含める",
+  keepOnScreenLabel: "ウィンドウを画面内に収める",
+  keepOnScreenHint:
+    "リサイズで画面からはみ出すときは、サイズはそのままで、はみ出す分だけ位置をずらします。画面より大きいサイズは、ツールバーのアイコンに触れるよう右上に合わせます。複数のモニターにまたがって使うときはオフにしてください。",
+  keepOnScreenCheckbox: "はみ出すときはウィンドウの位置をずらす",
   zoomResetLabel: "拡大縮小されたページのリサイズ",
   zoomResetHint:
     "ページの拡大率が 100% 以外のときは、意図したサイズになるよう拡大率を 100% に戻してからリサイズします。",
   zoomResetConfirmCheckbox: "拡大率を戻す前に確認メッセージを表示する",
+  shortcutsLabel: "キーボードショートカット",
+  shortcutsHint:
+    "既定では何も割り当てていません。使うものだけ、Chrome のショートカットの画面で割り当ててください。プリセットは popup で最後に選んだ基準（ウィンドウ／ビューポート）で、カスタムサイズはそのサイズの基準でリサイズします。結果はツールバーのアイコンに出ます。コピーは https のページと localhost だけで動きます。chrome:// などの特殊なページで使えるのは、表示部分のダウンロードだけです。",
+  shortcutsOpen: "Chrome のショートカットの画面を開く",
+  shortcutsNotSet: "未設定",
+  shortcutsSlotHint:
+    "各枠で使うカスタムサイズを選びます。空の枠のショートカットは何もしません。",
+  shortcutsSlotEmpty: "（空き）",
   storageLabel: "ストレージ領域（カスタムサイズの保存先）",
   storageHint:
     "local: この端末のみに保存されます。sync: Googleアカウントに紐づき、他端末とも同期されます。",
   storageLocalDefault: "local（既定）",
-  save: "保存",
   settingsSaved: "設定を保存しました。",
   presetOffsetLabel: "解像度テンプレートのオフセット（マージン）",
   presetOffsetHint:
-    "各プリセットに、ウィンドウ基準／ビューポート基準それぞれ個別の補正値（px）を設定できます。空欄のまま保存するとそのモードは補正なしになります。",
+    "各プリセットに、ウィンドウ基準／ビューポート基準それぞれ個別の補正値（px）を設定できます。両方を空欄にすると、そのモードは補正なしになります。",
   offsetWidthShort: "幅補正",
   offsetHeightShort: "高さ補正",
-  clear: "クリア",
   resetLabel: "ファクトリーリセット（設定の初期化）",
   resetHint:
     "保存先フォルダ名・スクリーンショット形式・スクロール範囲の撮影設定・ストレージ領域・言語・カスタムサイズ・プリセットのオフセットをすべて初期状態に戻します。",
@@ -140,5 +168,13 @@ export const ja: Record<MessageKey, string> = {
   errPageTooLarge:
     "ページが大きすぎるため、ページ全体のスクリーンショットを生成できませんでした（{width}x{height}）。",
   errCanvas: "キャンバスコンテキストの作成に失敗しました。",
+  errShortcutSlotEmpty:
+    "カスタムサイズ {slot} にサイズが割り当てられていません。拡張機能の設定で選んでください。",
+  errShortcutPresetUnknown: "このショートカットのプリセットが見つかりません。",
+  errClipboardUnavailable:
+    "このページではコピーできません（https か localhost のページのみ）。",
+  errBoundsRejected:
+    "この画面では {width} x {height} のウィンドウにできません（Chrome は、ウィンドウの半分以上が画面内にあることを求めます）。",
+  errDelayTabChanged: "タイマーの間にタブが切り替わったので撮影しませんでした。",
   errPickedAreaMissing: "選んだ範囲が見つかりませんでした。もう一度選んでください。"
 }

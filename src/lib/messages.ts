@@ -12,6 +12,8 @@ export interface CaptureRequest {
   mode: CaptureMode
   /** 省略時は download。 */
   action?: CaptureAction
+  /** 撮影までに待つ秒数（download のみ）。カウントダウンはツールバーのバッジに出す。 */
+  delaySeconds?: number
 }
 
 export interface CaptureResponse {

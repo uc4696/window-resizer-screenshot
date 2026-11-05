@@ -1,5 +1,6 @@
 import { Storage } from "@plasmohq/storage"
 
+import { DELAY_SECONDS, normalizeCustomSizeSlots } from "./commands"
 import { DEFAULT_SETTINGS, IMAGE_FORMATS, STORAGE_KEYS } from "./constants"
 import type {
   CustomSize,
@@ -7,16 +8,20 @@ import type {
   LanguageSetting,
   PresetModeOffsets,
   PresetOffset,
-  SizeMode
+  SizeMode,
+  ThemeSetting
 } from "./types"
 
 export interface Settings {
   captureDirName: string
   storageArea: "local" | "sync"
   language: LanguageSetting
+  theme: ThemeSetting
   imageFormat: ImageFormat
   scrollAreaIncludeFrame: boolean
   zoomResetConfirm: boolean
+  keepWindowOnScreen: boolean
+  customSizeSlots: string[]
 }
 
 /**
@@ -44,6 +49,8 @@ export async function getSettings(): Promise<Settings> {
     captureDirName: raw?.captureDirName || DEFAULT_SETTINGS.captureDirName,
     storageArea: raw?.storageArea || DEFAULT_SETTINGS.storageArea,
     language: raw?.language || DEFAULT_SETTINGS.language,
+    // 未設定・不正値は既定（auto: ブラウザに合わせる）に正規化する
+    theme: raw?.theme === "light" || raw?.theme === "dark" ? raw.theme : "auto",
     // 未設定・不正値は既定（png）に正規化する
     imageFormat: IMAGE_FORMATS.includes(raw?.imageFormat as ImageFormat)
       ? (raw?.imageFormat as ImageFormat)
@@ -51,7 +58,10 @@ export async function getSettings(): Promise<Settings> {
     // 未設定・不正値は既定（false）に正規化する
     scrollAreaIncludeFrame: raw?.scrollAreaIncludeFrame === true,
     // 未設定・不正値は既定（true: 確認する）に正規化する
-    zoomResetConfirm: raw?.zoomResetConfirm !== false
+    zoomResetConfirm: raw?.zoomResetConfirm !== false,
+    // 未設定・不正値は既定（true: 収める）に正規化する
+    keepWindowOnScreen: raw?.keepWindowOnScreen !== false,
+    customSizeSlots: normalizeCustomSizeSlots(raw?.customSizeSlots)
   }
 }
 
@@ -70,6 +80,16 @@ export async function getSizeMode(): Promise<SizeMode> {
 
 export async function setSizeMode(mode: SizeMode): Promise<void> {
   await settingsStorage.set(STORAGE_KEYS.sizeMode, mode)
+}
+
+/** 遅延撮影の秒数（0 はなし）。撮影後も選んだままにする。不正値は 0 に正規化する。 */
+export async function getCaptureDelay(): Promise<number> {
+  const raw = await settingsStorage.get<number>(STORAGE_KEYS.captureDelay)
+  return DELAY_SECONDS.includes(raw as number) ? (raw as number) : 0
+}
+
+export async function setCaptureDelay(seconds: number): Promise<void> {
+  await settingsStorage.set(STORAGE_KEYS.captureDelay, seconds)
 }
 
 export async function getCustomSizes(): Promise<CustomSize[]> {
@@ -158,7 +178,8 @@ export async function resetAllSettings(): Promise<void> {
   await settingsStorage.removeMany([
     STORAGE_KEYS.settings,
     STORAGE_KEYS.presetOffsets,
-    STORAGE_KEYS.sizeMode
+    STORAGE_KEYS.sizeMode,
+    STORAGE_KEYS.captureDelay
   ])
 
   const localStorage = getDataStorage("local")

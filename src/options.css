@@ -9,8 +9,10 @@
   --button-text: #ffffff;
 }
 
+/* ダーク。テーマの設定が「ブラウザに合わせる」のときと「ダーク」のときで同じ値にする */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --bg-color: #111827;
     --panel-bg: #1f2937;
     --text-color: #f9fafb;
@@ -22,14 +24,38 @@
   }
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-color: #111827;
+  --panel-bg: #1f2937;
+  --text-color: #f9fafb;
+  --subtitle-color: #9ca3af;
+  --accent-color: #818cf8;
+  --accent-color-hover: #6366f1;
+  --border-color: #374151;
+  --button-text: #111827;
+}
+
 * {
   box-sizing: border-box;
+  /* 全体を角なしにそろえる（select など既定で丸い要素も含む） */
+  border-radius: 0;
 }
 
 body {
   margin: 0;
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    "Segoe UI Variable Text",
+    "Segoe UI",
+    -apple-system,
+    BlinkMacSystemFont,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  /* 文字のヒンティングを抑えて、斜めや曲線のギザギザを減らす */
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
   background-color: var(--bg-color);
   color: var(--text-color);
 }
@@ -49,7 +75,6 @@ body {
 
 .options-section {
   background-color: var(--panel-bg);
-  border-radius: 10px;
   padding: 16px;
   margin-bottom: 16px;
 }
@@ -72,7 +97,6 @@ body {
   padding: 8px 10px;
   font-size: 13px;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
   background-color: var(--bg-color);
   color: var(--text-color);
 }
@@ -90,19 +114,60 @@ body {
   cursor: pointer;
 }
 
-.options-save-button {
-  padding: 10px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  background-color: var(--accent-color);
-  color: var(--button-text);
-  cursor: pointer;
+.shortcuts-slot-hint {
+  margin-top: 12px;
 }
 
-.options-save-button:hover {
-  background-color: var(--accent-color-hover);
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.shortcut-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.shortcut-slot-select {
+  max-width: 190px;
+  padding: 3px 4px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.shortcut-key {
+  padding: 1px 6px;
+  font-family: inherit;
+  font-size: 11px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  white-space: nowrap;
+}
+
+.shortcut-unset {
+  color: var(--subtitle-color);
+  white-space: nowrap;
+}
+
+/* 変更はその場で保存するので、どこを操作していても見える位置に出す */
+.options-saved-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: var(--accent-color);
+  color: var(--button-text);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .options-saved-text {
@@ -116,7 +181,6 @@ body {
   padding: 6px 8px;
   font-size: 13px;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
   background: var(--bg-color);
   color: var(--text-color);
 }
@@ -164,32 +228,17 @@ body {
   color: var(--subtitle-color);
 }
 
-.offset-preset-save {
+.options-primary-button {
   padding: 6px 10px;
   font-size: 12px;
   border: none;
-  border-radius: 6px;
   background-color: var(--accent-color);
   color: var(--button-text);
   cursor: pointer;
 }
 
-.offset-preset-save:hover {
+.options-primary-button:hover {
   background-color: var(--accent-color-hover);
-}
-
-.offset-preset-clear {
-  padding: 6px 10px;
-  font-size: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--subtitle-color);
-  cursor: pointer;
-}
-
-.offset-preset-clear:hover {
-  background: var(--panel-bg);
 }
 
 .error-text {
@@ -207,7 +256,6 @@ body {
   font-size: 13px;
   font-weight: 600;
   border: 1px solid #dc2626;
-  border-radius: 6px;
   background-color: transparent;
   color: #dc2626;
   cursor: pointer;

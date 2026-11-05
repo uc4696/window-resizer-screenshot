@@ -4,7 +4,7 @@ import { expect, type Page, type Worker } from "@playwright/test"
 
 /** プリセットボタン（title が「幅 x 高さ」）を取得する。 */
 export function presetButton(popup: Page, width: number, height: number) {
-  return popup.locator(`button.preset-button[title="${width} x ${height}"]`)
+  return popup.locator(`button.preset-button[data-size="${width}x${height}"]`)
 }
 
 /** ウィンドウ全体（外寸）のサイズを取得する。 */

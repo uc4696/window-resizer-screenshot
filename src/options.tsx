@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
 
 import { SupportLink } from "~components/SupportLink"
+import { COMMAND_NAMES, parseCommand } from "~lib/commands"
 import { DEFAULT_SETTINGS, IMAGE_FORMATS, PRESET_GROUPS } from "~lib/constants"
 import { LANGUAGE_NATIVE_NAMES, setLanguage } from "~lib/i18n"
 import { I18nProvider, useI18n } from "~lib/i18n/useI18n"
 import { validateOffset } from "~lib/resize"
 import {
+  getCustomSizes,
   getPresetOffsets,
   getSettings,
   migrateCustomSizes,
@@ -15,14 +17,22 @@ import {
   setSettings,
   type Settings
 } from "~lib/storage"
+import { applyTheme, initTheme } from "~lib/theme"
 import type {
+  CustomSize,
   ImageFormat,
   LanguageSetting,
   PresetModeOffsets,
-  SizeMode
+  SizeMode,
+  ThemeSetting
 } from "~lib/types"
 
 import "./options.css"
+
+initTheme()
+
+/** 「設定を保存しました」を出しておく時間（ms）。 */
+const SAVED_TOAST_MS = 2000
 
 const OFFSET_MODES: { mode: SizeMode; labelKey: "modeWindow" | "modeViewport" }[] = [
   { mode: "window", labelKey: "modeWindow" },
@@ -47,6 +57,19 @@ function OptionsContent() {
   >({})
   const [offsetErrors, setOffsetErrors] = useState<Record<string, string>>({})
   const [resetDone, setResetDone] = useState(false)
+  const [commands, setCommands] = useState<chrome.commands.Command[]>([])
+  const [customSizes, setCustomSizes] = useState<CustomSize[]>([])
+
+  // ショートカットの割り当ては Chrome の画面で変えるので、戻ってきたときに読み直す
+  useEffect(() => {
+    const refresh = () => {
+      chrome.commands.getAll().then(setCommands)
+      getCustomSizes().then(setCustomSizes)
+    }
+    refresh()
+    window.addEventListener("focus", refresh)
+    return () => window.removeEventListener("focus", refresh)
+  }, [])
 
   useEffect(() => {
     Promise.all([getSettings(), getPresetOffsets()]).then(([s, offsets]) => {
@@ -67,21 +90,34 @@ function OptionsContent() {
     })
   }, [])
 
+  // 変更はその場で保存するので、保存できたことを少しのあいだ知らせる
+  useEffect(() => {
+    if (!saved) return
+    const timer = setTimeout(() => setSaved(false), SAVED_TOAST_MS)
+    return () => clearTimeout(timer)
+  }, [saved])
+
+  /** 設定はすべて変更した時点で保存・反映する。 */
   async function handleSave(next: Settings) {
     setSaved(false)
     const prevArea = settings.storageArea
+    // 保存を待たずに画面へ反映する（待つと入力欄やラジオボタンが一瞬前の値に戻る）
+    setSettingsState(next)
     await setSettings(next)
     if (prevArea !== next.storageArea) {
       await migrateCustomSizes(prevArea, next.storageArea)
     }
-    setSettingsState(next)
     setLanguage(next.language)
     setSaved(true)
   }
 
-  /** 言語は選択した時点で保存・反映する（他の設定は「保存」ボタンで保存）。 */
   async function handleLanguageChange(language: LanguageSetting) {
     await handleSave({ ...settings, language })
+  }
+
+  async function handleThemeChange(theme: ThemeSetting) {
+    applyTheme(theme)
+    await handleSave({ ...settings, theme })
   }
 
   /** 画像形式は選択した時点で保存・反映する。 */
@@ -106,14 +142,34 @@ function OptionsContent() {
     await handleSave(next)
   }
 
+  /** 画面内に収める設定は切り替えた時点で保存・反映する。 */
+  async function handleKeepOnScreenChange(keepWindowOnScreen: boolean) {
+    const next = { ...settings, keepWindowOnScreen }
+    setSettingsState(next)
+    await handleSave(next)
+  }
+
+  /** ショートカットの枠のカスタムサイズは選んだ時点で保存する。 */
+  async function handleSlotChange(slot: number, id: string) {
+    const customSizeSlots = settings.customSizeSlots.map((current, i) =>
+      i === slot - 1 ? id : current
+    )
+    const next = { ...settings, customSizeSlots }
+    setSettingsState(next)
+    await handleSave(next)
+  }
+
   async function handleSaveOffset(presetId: string, mode: SizeMode) {
     const key = offsetKey(presetId, mode)
     const input = offsetInputs[key] ?? { w: "", h: "" }
     setOffsetErrors((prev) => ({ ...prev, [key]: "" }))
+    const current = presetOffsets[presetId]?.[mode]
 
     if (input.w.trim() === "" && input.h.trim() === "") {
+      if (!current) return
       const next = await removePresetOffset(presetId, mode)
       setPresetOffsets(next)
+      setSaved(true)
       return
     }
 
@@ -127,20 +183,14 @@ function OptionsContent() {
       }))
       return
     }
+    if (current?.offsetWidth === w && current?.offsetHeight === h) return
 
     const next = await setPresetOffset(presetId, mode, {
       offsetWidth: w,
       offsetHeight: h
     })
     setPresetOffsets(next)
-  }
-
-  async function handleClearOffset(presetId: string, mode: SizeMode) {
-    const key = offsetKey(presetId, mode)
-    const next = await removePresetOffset(presetId, mode)
-    setPresetOffsets(next)
-    setOffsetInputs((prev) => ({ ...prev, [key]: { w: "", h: "" } }))
-    setOffsetErrors((prev) => ({ ...prev, [key]: "" }))
+    setSaved(true)
   }
 
   async function handleFactoryReset() {
@@ -151,6 +201,7 @@ function OptionsContent() {
     const [s, offsets] = await Promise.all([getSettings(), getPresetOffsets()])
     setSettingsState(s)
     setLanguage(s.language)
+    applyTheme(s.theme)
     setPresetOffsets(offsets)
     setOffsetInputs({})
     setOffsetErrors({})
@@ -188,6 +239,23 @@ function OptionsContent() {
       </section>
 
       <section className="options-section">
+        <label className="options-label" htmlFor="theme">
+          {t("themeLabel")}
+        </label>
+        <p className="options-hint">{t("themeHint")}</p>
+        <select
+          id="theme"
+          className="options-input"
+          value={settings.theme}
+          onChange={(e) => handleThemeChange(e.target.value as ThemeSetting)}
+        >
+          <option value="auto">{t("themeAuto")}</option>
+          <option value="light">{t("themeLight")}</option>
+          <option value="dark">{t("themeDark")}</option>
+        </select>
+      </section>
+
+      <section className="options-section">
         <label className="options-label" htmlFor="captureDirName">
           {t("captureDirLabel")}
         </label>
@@ -197,9 +265,7 @@ function OptionsContent() {
           className="options-input"
           type="text"
           value={settings.captureDirName}
-          onChange={(e) =>
-            setSettingsState({ ...settings, captureDirName: e.target.value })
-          }
+          onChange={(e) => handleSave({ ...settings, captureDirName: e.target.value })}
         />
       </section>
 
@@ -251,6 +317,70 @@ function OptionsContent() {
       </section>
 
       <section className="options-section">
+        <label className="options-label">{t("keepOnScreenLabel")}</label>
+        <p className="options-hint">{t("keepOnScreenHint")}</p>
+        <label className="options-radio">
+          <input
+            id="keepWindowOnScreen"
+            type="checkbox"
+            checked={settings.keepWindowOnScreen}
+            onChange={(e) => handleKeepOnScreenChange(e.target.checked)}
+          />
+          {t("keepOnScreenCheckbox")}
+        </label>
+      </section>
+
+      <section className="options-section" id="shortcuts">
+        <label className="options-label">{t("shortcutsLabel")}</label>
+        <p className="options-hint">{t("shortcutsHint")}</p>
+        <button
+          type="button"
+          className="options-primary-button"
+          onClick={() => chrome.tabs.create({ url: "chrome://extensions/shortcuts" })}
+        >
+          {t("shortcutsOpen")}
+        </button>
+        <p className="options-hint shortcuts-slot-hint">{t("shortcutsSlotHint")}</p>
+        <div className="shortcut-list">
+          {COMMAND_NAMES.map((name) => {
+            const command = commands.find((c) => c.name === name)
+            const parsed = parseCommand(name)
+            const slot = parsed?.kind === "resize-custom" ? parsed.slot : null
+            return (
+              <div key={name} className="shortcut-row" data-command={name}>
+                <span className="shortcut-name">{command?.description ?? name}</span>
+                {slot !== null && (
+                  <select
+                    className="shortcut-slot-select"
+                    aria-label={command?.description ?? name}
+                    value={
+                      customSizes.some((s) => s.id === settings.customSizeSlots[slot - 1])
+                        ? settings.customSizeSlots[slot - 1]
+                        : ""
+                    }
+                    onChange={(e) => handleSlotChange(slot, e.target.value)}
+                  >
+                    <option value="">{t("shortcutsSlotEmpty")}</option>
+                    {customSizes.map((size) => (
+                      <option key={size.id} value={size.id}>
+                        {size.label} ({size.width} x {size.height},{" "}
+                        {t(size.mode === "window" ? "modeWindow" : "modeViewport")})
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {command?.shortcut ? (
+                  <kbd className="shortcut-key">{command.shortcut}</kbd>
+                ) : (
+                  <span className="shortcut-unset">{t("shortcutsNotSet")}</span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      <section className="options-section">
         <label className="options-label">{t("storageLabel")}</label>
         <p className="options-hint">{t("storageHint")}</p>
         <div className="options-radio-group">
@@ -260,7 +390,7 @@ function OptionsContent() {
               name="storageArea"
               value="local"
               checked={settings.storageArea === "local"}
-              onChange={() => setSettingsState({ ...settings, storageArea: "local" })}
+              onChange={() => handleSave({ ...settings, storageArea: "local" })}
             />
             {t("storageLocalDefault")}
           </label>
@@ -270,18 +400,12 @@ function OptionsContent() {
               name="storageArea"
               value="sync"
               checked={settings.storageArea === "sync"}
-              onChange={() => setSettingsState({ ...settings, storageArea: "sync" })}
+              onChange={() => handleSave({ ...settings, storageArea: "sync" })}
             />
             sync
           </label>
         </div>
       </section>
-
-      <button className="options-save-button" onClick={() => handleSave(settings)}>
-        {t("save")}
-      </button>
-
-      {saved && <p className="options-saved-text">{t("settingsSaved")}</p>}
 
       <section className="options-section">
         <label className="options-label">{t("presetOffsetLabel")}</label>
@@ -301,6 +425,7 @@ function OptionsContent() {
                         className="text-input wh-input"
                         type="number"
                         placeholder={t("offsetWidthShort")}
+                        onBlur={() => handleSaveOffset(preset.id, mode)}
                         value={offsetInputs[key]?.w ?? ""}
                         onChange={(e) =>
                           setOffsetInputs((prev) => ({
@@ -316,6 +441,7 @@ function OptionsContent() {
                         className="text-input wh-input"
                         type="number"
                         placeholder={t("offsetHeightShort")}
+                        onBlur={() => handleSaveOffset(preset.id, mode)}
                         value={offsetInputs[key]?.h ?? ""}
                         onChange={(e) =>
                           setOffsetInputs((prev) => ({
@@ -327,22 +453,6 @@ function OptionsContent() {
                           }))
                         }
                       />
-                      <button
-                        type="button"
-                        className="offset-preset-save"
-                        onClick={() => handleSaveOffset(preset.id, mode)}
-                      >
-                        {t("save")}
-                      </button>
-                      {presetOffsets[preset.id]?.[mode] && (
-                        <button
-                          type="button"
-                          className="offset-preset-clear"
-                          onClick={() => handleClearOffset(preset.id, mode)}
-                        >
-                          {t("clear")}
-                        </button>
-                      )}
                     </div>
                   )
                 })}
@@ -373,6 +483,12 @@ function OptionsContent() {
       <SupportLink />
 
       <p className="options-credit">Icons: Tabler Icons (MIT License)</p>
+
+      {saved && (
+        <p className="options-saved-toast" role="status">
+          {t("settingsSaved")}
+        </p>
+      )}
     </main>
   )
 }

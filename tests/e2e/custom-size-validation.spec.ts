@@ -4,7 +4,7 @@ import { expect, test } from "./fixtures"
 
 async function openForm(popup: Page, mode: "Window-based" | "Viewport-based") {
   await popup.getByRole("button", { name: mode }).click()
-  await popup.getByRole("button", { name: "▼ Custom size settings" }).click()
+  await popup.getByRole("button", { name: "Add a custom size" }).click()
   await expect(popup.getByText("Add custom size")).toBeVisible()
 }
 
@@ -52,7 +52,7 @@ test.describe("カスタムサイズ（入力チェック）", () => {
     await openForm(popup, "Window-based")
     await popup.getByPlaceholder("Width", { exact: true }).fill("800")
     await popup.getByPlaceholder("Height", { exact: true }).fill("600")
-    await popup.getByPlaceholder("Width offset (e.g. 14)").fill("501")
+    await popup.getByPlaceholder("Width offset").fill("501")
     await popup.getByRole("button", { name: "Add", exact: true }).click()
     await expect(popup.locator(".error-text")).toHaveText(/between -500px and 500px/)
   })
@@ -65,9 +65,11 @@ test.describe("カスタムサイズ（入力チェック）", () => {
     await restricted.goto("chrome://version")
     const popup = await openPopup(restricted)
     await popup.getByRole("button", { name: "Viewport-based" }).click()
-    await popup.locator('button.preset-button[title="1024 x 768"]').click()
+    await popup.locator('button.preset-button[data-size="1024x768"]').click()
     await expect(popup.locator(".status-text")).toHaveText(
       /^Error: Due to Chrome restrictions/
     )
+    // 読み取れないサイズは 0 ではなく — で出す
+    await expect(popup.locator(".size-value").nth(1)).toHaveText("—×—")
   })
 })

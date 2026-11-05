@@ -1,86 +1,110 @@
+import { Icon } from "~components/Icon"
 import { useI18n } from "~lib/i18n/useI18n"
 import { formatOffset } from "~lib/offset"
-import type { CustomSize, SizeMode } from "~lib/types"
+import type { CustomSize, DisplayBounds, SizeMode } from "~lib/types"
 
 interface CustomSizeListProps {
   mode: SizeMode
   customSizes: CustomSize[]
+  /** 今の基準での実際のサイズ。同じサイズの行を強調する。 */
+  currentSize: DisplayBounds
   editingId: string | null
+  formOpen: boolean
+  onToggleForm: () => void
   onApply: (size: CustomSize) => void
   onEdit: (size: CustomSize) => void
   onRemove: (id: string) => void
 }
 
 /**
- * 保存済みのカスタムサイズ一覧（適用・編集・削除）。
- * テンプレート（PresetGrid）の直下に常時表示し、
- * 「カスタムサイズの設定」アコーディオンを開かずに素早く適用できるようにする。
- * 該当モードの登録が0件の場合はセクションごと非表示にする。
+ * カスタムサイズの見出しと一覧（適用・編集・削除）。
+ * 見出しの右の ＋ で追加のフォームを開閉するので、登録が0件でも見出しは出す。
+ * 各行には名前とサイズを出し、オフセットはツールチップに出す。
  */
 export function CustomSizeList({
   mode,
   customSizes,
+  currentSize,
   editingId,
+  formOpen,
+  onToggleForm,
   onApply,
   onEdit,
   onRemove
 }: CustomSizeListProps) {
   const { t } = useI18n()
   const filtered = customSizes.filter((s) => s.mode === mode)
-
-  if (filtered.length === 0) {
-    return null
-  }
+  const toggleLabel = formOpen ? t("customToggleClose") : t("customToggleOpen")
 
   return (
     <div className="custom-size-section">
-      <p className="preset-group-title">{t("customSizes")}</p>
-      <div className="custom-size-list">
-        {filtered.map((size) => {
-          const hasOffset =
-            size.mode === "window" &&
-            (size.offsetWidth !== undefined || size.offsetHeight !== undefined)
-          const offW = size.offsetWidth ?? 0
-          const offH = size.offsetHeight ?? 0
-          return (
-            <div
-              className={`custom-size-row ${editingId === size.id ? "is-editing" : ""}`}
-              key={size.id}
-            >
-              <button
-                className="custom-size-apply"
-                onClick={() => onApply(size)}
-                title={`${size.width} x ${size.height}${
-                  hasOffset ? ` (${t("offsetBadge")}: ${formatOffset(offW, offH)})` : ""
-                }`}
-              >
-                <span className="custom-size-name">{size.label}</span>
-                {hasOffset && (
-                  <span className="offset-badge" title={t("offsetBadgeTitle")}>
-                    {t("offsetBadge")}: {formatOffset(offW, offH)}
-                  </span>
-                )}
-              </button>
-              <button
-                className="custom-size-edit"
-                aria-label={t("edit")}
-                title={t("edit")}
-                onClick={() => onEdit(size)}
-              >
-                ✎
-              </button>
-              <button
-                className="custom-size-remove"
-                aria-label={t("delete")}
-                title={t("delete")}
-                onClick={() => onRemove(size.id)}
-              >
-                ×
-              </button>
-            </div>
-          )
-        })}
+      <div className="custom-size-header">
+        <p className="preset-group-title">
+          <Icon name="adjustments-horizontal" size={14} />
+          <span>{t("customSizes")}</span>
+        </p>
+        <button
+          type="button"
+          className="custom-size-toggle"
+          title={toggleLabel}
+          aria-label={toggleLabel}
+          aria-expanded={formOpen}
+          onClick={onToggleForm}
+        >
+          <Icon name={formOpen ? "x" : "plus"} size={14} />
+        </button>
       </div>
+      {filtered.length > 0 && (
+        <div className="custom-size-list">
+          {filtered.map((size) => {
+            const offW = size.offsetWidth ?? 0
+            const offH = size.offsetHeight ?? 0
+            const hasOffset =
+              size.mode === "window" &&
+              (size.offsetWidth !== undefined || size.offsetHeight !== undefined)
+            const isCurrent =
+              size.width + offW === currentSize.width &&
+              size.height + offH === currentSize.height
+            const title = `${size.label} (${size.width} x ${size.height})${
+              hasOffset ? `\n${t("offsetBadge")}: ${formatOffset(offW, offH)}` : ""
+            }`
+            return (
+              <div
+                className={`custom-size-row ${editingId === size.id ? "is-editing" : ""}`}
+                key={size.id}
+              >
+                <button
+                  className={`custom-size-apply ${isCurrent ? "is-current" : ""}`}
+                  aria-current={isCurrent ? "true" : undefined}
+                  onClick={() => onApply(size)}
+                  title={title}
+                >
+                  <span className="custom-size-name">{size.label}</span>
+                  <span className="custom-size-dimensions">
+                    {size.width}×{size.height}
+                  </span>
+                </button>
+                <button
+                  className="custom-size-edit"
+                  aria-label={t("edit")}
+                  title={t("edit")}
+                  onClick={() => onEdit(size)}
+                >
+                  ✎
+                </button>
+                <button
+                  className="custom-size-remove"
+                  aria-label={t("delete")}
+                  title={t("delete")}
+                  onClick={() => onRemove(size.id)}
+                >
+                  ×
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

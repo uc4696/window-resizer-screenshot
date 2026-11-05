@@ -6,10 +6,15 @@
  */
 export const en = {
   // ---- popup ----
-  windowLabel: "Window:",
-  viewportLabel: "Viewport:",
+  sizeUnavailable: "This size cannot be read on this page",
+  currentWindowSize: "Current window size",
+  currentViewportSize: "Current viewport size (the area that shows the page)",
   modeWindow: "Window-based",
   modeViewport: "Viewport-based",
+  modeWindowShort: "Window",
+  modeViewportShort: "Viewport",
+  modeWindowTitle: "The chosen size applies to the whole window, including the toolbar",
+  modeViewportTitle: "The chosen size applies to the area that shows the page",
   screenshotTitle: "Screenshot",
   captureVisibleLabel: "Visible area",
   captureFullPageLabel: "Full page",
@@ -17,8 +22,15 @@ export const en = {
   captureVisibleCopy: "Copy screenshot of visible area to clipboard",
   captureFullPageDownload: "Download screenshot of full page",
   captureFullPageCopy: "Copy screenshot of full page to clipboard",
-  capturePick: "Choose a scrollable area to capture",
-  capturePickUnavailable: "There is no scrollable area to choose on this page",
+  captureDelayTitle: "Timer",
+  captureDelayLabel:
+    "Timer: captures a few seconds after you press download, so you can open a menu first",
+  captureDelayNone: "Off",
+  captureDelaySeconds: "{seconds}s",
+  captureNoCopyWithDelay:
+    "Copying and choosing an area are not available with the timer. The popup closes while waiting, so the screenshot can only be downloaded.",
+  capturePick: "Capture all of a section that scrolls on its own, such as a list",
+  capturePickUnavailable: "This page has no section that scrolls on its own",
   pickerBanner: "Click the area to capture (Esc to cancel)",
   pickerContent: "content {height}px",
   pickerSave: "Download",
@@ -26,9 +38,8 @@ export const en = {
   pickerCancel: "Cancel",
   statusCopied: "Copied to clipboard.",
   errClipboard: "Failed to copy to the clipboard.",
-  openSettings: "Open settings",
-  shareOnX: "Share on X",
-  shareOnXTitle: "Share this extension on X (opens the post screen)",
+  openSettings: "Open settings (language, theme, save folder and more)",
+  shareOnTitle: "Share this extension on {name} (opens the post screen)",
   shareText:
     "Check how your page looks at any size, instantly.\nResize the window/viewport and capture full-page screenshots, all in one extension 📸",
   shareHashtags: "#ChromeExtension #WebDev",
@@ -54,19 +65,20 @@ export const en = {
   delete: "Delete",
 
   // ---- custom size manager ----
-  customToggleClose: "▲ Close custom size settings",
-  customToggleOpen: "▼ Custom size settings",
+  customToggleClose: "Close the form",
+  customToggleOpen: "Add a custom size",
+  customDefaultName: "Custom {n}",
+  useCurrentSize: "Use current size",
   formTitleEdit: "Edit custom size",
   formTitleAdd: "Add custom size",
   namePlaceholder: "Name (optional)",
   widthPlaceholder: "Width",
   heightPlaceholder: "Height",
   offsetLabel: "Size correction offset (optional, px):",
-  offsetWidthPlaceholder: "Width offset (e.g. 14)",
-  offsetHeightPlaceholder: "Height offset (e.g. 7)",
-  offsetHint:
-    "Correction added when the size is off because of invisible borders caused by the OS or DPI",
-  displayHint: "Current display: {width} x {height} (specify within this range)",
+  offsetWidthPlaceholder: "Width offset",
+  offsetHeightPlaceholder: "Height offset",
+  offsetHint: "Fixes gaps from invisible OS or DPI borders",
+  displayHint: "Display: {width} x {height} (the maximum)",
   update: "Update",
   add: "Add",
   cancel: "Cancel",
@@ -89,6 +101,11 @@ export const en = {
   languageHint:
     'Choose the display language. "Auto" follows the browser language (English if unsupported).',
   languageAuto: "Auto",
+  themeLabel: "Theme",
+  themeHint: "Choose the colors of the popup and this page.",
+  themeAuto: "Follow the browser",
+  themeLight: "Light",
+  themeDark: "Dark",
   captureDirLabel: "Screenshot save folder name",
   captureDirHint:
     "Name of the folder created under your Downloads folder (e.g. Downloads/Captures/...).",
@@ -99,22 +116,32 @@ export const en = {
   scrollAreaFrameHint:
     "On pages where only an inner area scrolls, the full-page screenshot captures just that area. When enabled, the surrounding frame of the first screen (header, sidebar, etc.) is kept and the part below the area is appended at the end. The sidebar is not extended, so it appears only for the first screen.",
   scrollAreaFrameCheckbox: "Include the surrounding frame and the part below the area",
+  keepOnScreenLabel: "Keeping the window on screen",
+  keepOnScreenHint:
+    "When a resize would push the window off the screen, it is moved just enough to stay on the screen; the size does not change. A window larger than the screen is aligned to the top right so the toolbar icons stay reachable. Turn this off if you want a window to span several monitors.",
+  keepOnScreenCheckbox: "Move the window to keep it on screen",
   zoomResetLabel: "Resizing a zoomed page",
   zoomResetHint:
     "When the page is not at 100% zoom, the zoom is reset to 100% before resizing so the size comes out as intended.",
   zoomResetConfirmCheckbox: "Ask for confirmation before resetting the zoom",
+  shortcutsLabel: "Keyboard shortcuts",
+  shortcutsHint:
+    "No keys are assigned by default. Assign only the ones you want on Chrome's shortcuts page. Presets use the base (window or viewport) last selected in the popup; custom sizes use their own. Results appear on the toolbar icon. Copying works only on https pages and localhost. On special pages such as chrome://, only downloading the visible area works.",
+  shortcutsOpen: "Open Chrome's shortcuts page",
+  shortcutsNotSet: "Not set",
+  shortcutsSlotHint:
+    "Choose which custom size each slot applies. An empty slot does nothing.",
+  shortcutsSlotEmpty: "(Empty)",
   storageLabel: "Storage area (where custom sizes are saved)",
   storageHint:
     "local: saved on this device only. sync: tied to your Google account and synced across devices.",
   storageLocalDefault: "local (default)",
-  save: "Save",
   settingsSaved: "Settings saved.",
   presetOffsetLabel: "Resolution template offsets (margins)",
   presetOffsetHint:
-    "You can set separate correction values (px) for each preset in window-based and viewport-based modes. Saving with both fields empty removes the correction for that mode.",
+    "You can set separate correction values (px) for each preset in window-based and viewport-based modes. Leaving both fields empty removes the correction for that mode.",
   offsetWidthShort: "Width offset",
   offsetHeightShort: "Height offset",
-  clear: "Clear",
   resetLabel: "Factory reset (initialize settings)",
   resetHint:
     "Restores the save folder name, screenshot format, scrollable area capture setting, storage area, language, custom sizes and preset offsets to their defaults.",
@@ -144,6 +171,15 @@ export const en = {
   errPageTooLarge:
     "The page is too large to generate a full-page screenshot ({width}x{height}).",
   errCanvas: "Failed to create the canvas context.",
+  errShortcutSlotEmpty:
+    "No size is assigned to custom size {slot}. Choose one in the extension settings.",
+  errShortcutPresetUnknown: "The preset for this shortcut was not found.",
+  errClipboardUnavailable:
+    "Copying is not available on this page (https or localhost only).",
+  errBoundsRejected:
+    "Chrome does not allow a {width} x {height} window on this screen, because at least half of the window must be on screen.",
+  errDelayTabChanged:
+    "The screenshot was not taken because the tab was switched during the timer.",
   errPickedAreaMissing: "The selected area was not found. Please choose it again."
 }
 

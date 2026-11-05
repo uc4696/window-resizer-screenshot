@@ -1,23 +1,35 @@
-import { Icon } from "~components/Icon"
+import { Icon, type IconName } from "~components/Icon"
 import { STORE_URL } from "~lib/constants"
 import { useI18n } from "~lib/i18n/useI18n"
-import { buildShareText, buildShareUrl } from "~lib/share"
+import { buildShareTargetUrl, SHARE_TARGETS } from "~lib/share"
 
-/** X（旧Twitter）の投稿画面を新規タブで開く共有ボタン。アイコン + 文字ラベルで共有操作だと分かるようにする。 */
-export function ShareButton() {
+/** SNS の投稿画面を新規タブで開く共有ボタンの列。説明はツールチップに出す。 */
+export function ShareButtons() {
   const { t } = useI18n()
-  const url = buildShareUrl(buildShareText(t("shareText"), STORE_URL, t("shareHashtags")))
+  const content = {
+    message: t("shareText"),
+    storeUrl: STORE_URL,
+    hashtags: t("shareHashtags")
+  }
   return (
-    <a
-      className="footer-button share-button"
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      title={t("shareOnXTitle")}
-      aria-label={t("shareOnXTitle")}
-    >
-      <Icon name="brand-x" size={12} />
-      <span>{t("shareOnX")}</span>
-    </a>
+    <>
+      {SHARE_TARGETS.map(({ id, name }) => {
+        const label = t("shareOnTitle", { name })
+        return (
+          <a
+            key={id}
+            className="footer-icon-button share-button"
+            data-share={id}
+            href={buildShareTargetUrl(id, content)}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={label}
+            aria-label={label}
+          >
+            <Icon name={`brand-${id}` as IconName} size={16} />
+          </a>
+        )
+      })}
+    </>
   )
 }
