@@ -11,13 +11,7 @@ import type {
 import { startCopyInPage } from "~lib/page-copy"
 import { startPicker } from "~lib/picker"
 import { exceedsDisplay } from "~lib/placement"
-import {
-  isZoomed,
-  readDisplayFromTab,
-  resetTabZoom,
-  resizeViewport,
-  resizeWindow
-} from "~lib/resize"
+import { readDisplayFromTab, resizeViewport, resizeWindow } from "~lib/resize"
 import {
   ensureInstalledAt,
   markReviewPromptOnUse,
@@ -280,33 +274,6 @@ async function resolveResizeSize(command: ResizeCommand): Promise<{
   }
 }
 
-/**
- * 拡大率が 100% 以外なら 100% に戻す。確認の設定が有効なら、popup がないのでページで確認する。
- * キャンセルされたら false を返す。確認を出せない特殊なページでは拡大率を変えずに進める。
- */
-async function resetZoomForShortcut(tabId: number): Promise<boolean> {
-  const zoom = await chrome.tabs.getZoom(tabId).catch(() => null)
-  if (zoom === null || !isZoomed(zoom)) return true
-  const { zoomResetConfirm } = await getSettings()
-  if (zoomResetConfirm) {
-    const message = t("zoomConfirmMessage", { zoom: Math.round(zoom * 100) })
-    const answer = await chrome.scripting
-      .executeScript({
-        target: { tabId },
-        func: (text: string) => window.confirm(text),
-        args: [message]
-      })
-      .then(
-        ([{ result }]) => result,
-        () => null
-      )
-    if (answer === null) return true
-    if (!answer) return false
-  }
-  await resetTabZoom(tabId)
-  return true
-}
-
 async function handleResizeCommand(
   command: ResizeCommand,
   tab: chrome.tabs.Tab
@@ -318,8 +285,7 @@ async function handleResizeCommand(
   if (display && exceedsDisplay(size, display)) {
     throw new Error(t("sizeOverDisplay", { ...display }))
   }
-  if (!(await resetZoomForShortcut(tabId))) return
-  const target = { tabId, windowId: tab.windowId, url: tab.url }
+  const target = { tabId, windowId: tab.windowId }
   if (size.mode === "window") {
     await resizeWindow(
       size.width,

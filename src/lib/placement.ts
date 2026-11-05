@@ -56,6 +56,27 @@ export function exceedsDisplay(
 }
 
 /**
+ * 最後に指定したビューポートのサイズとの差が、これ以内なら指定のサイズとして扱う。
+ * 表示スケールが端数だとウィンドウのサイズが 2px 刻みでしか動かず、ちょうどのサイズを作れない。
+ */
+const REQUESTED_SIZE_TOLERANCE = 2
+
+/**
+ * 実際の描画エリアのサイズを、指定されたサイズに揃えて返す（150% で 720 が 721 になるなど）。
+ * 実際のほうが小さいと画像を切り詰めて揃えられないので、大きいときだけ揃える。
+ */
+export function snapToRequested(
+  actual: { width: number; height: number },
+  requested?: { width: number; height: number } | null
+): { width: number; height: number } {
+  if (!requested) return actual
+  const width = actual.width - requested.width
+  const height = actual.height - requested.height
+  const isClose = (diff: number) => diff >= 0 && diff <= REQUESTED_SIZE_TOLERANCE
+  return isClose(width) && isClose(height) ? requested : actual
+}
+
+/**
  * フォームの入力やボタンの強調に使う、今の基準のサイズ。
  * 最大化中のウィンドウは枠の分だけ画面より大きく報告されるので、ディスプレイのサイズを使う。
  */

@@ -1,6 +1,6 @@
 import { MAX_SIZE_FALLBACK, MIN_SIZE } from "./constants"
 import { t } from "./i18n"
-import { placeWindow, type WorkArea } from "./placement"
+import { placeWindow, snapToRequested, type WorkArea } from "./placement"
 import { getSettings } from "./storage"
 import type { DisplayBounds, ValidationResult } from "./types"
 
@@ -100,7 +100,28 @@ export async function readDisplayFromTab(tabId: number): Promise<DisplayBounds |
 export interface ResizeTarget {
   tabId: number
   windowId: number
-  url?: string
+}
+
+/** 最後に指定したビューポートのサイズの保存先（ウィンドウごと、ブラウザを閉じるまで）。 */
+function requestedViewportKey(windowId: number): string {
+  return `requested-viewport-${windowId}`
+}
+
+/**
+ * タブの描画エリアのサイズ。tabs.Tab の width / height は tabs 権限なしで読め、ページの拡大率に
+ * 左右されず、chrome:// でも読める。最後に指定したサイズとの端数の差は指定のサイズに揃える。
+ */
+export async function getDrawingArea(
+  tab: chrome.tabs.Tab
+): Promise<{ actual: DisplayBounds; target: DisplayBounds } | null> {
+  if (!tab.width || !tab.height) return null
+  const actual = { width: tab.width, height: tab.height }
+  const key = requestedViewportKey(tab.windowId)
+  const stored = await chrome.storage.session.get(key)
+  return {
+    actual,
+    target: snapToRequested(actual, stored[key] as DisplayBounds | undefined)
+  }
 }
 
 /**
@@ -217,115 +238,54 @@ export async function resizeWindow(
     Math.round(height + offsetHeight),
     target?.tabId
   )
-}
-
-/**
- * スクリプト実行が許可されていない特殊なURLかを判定する。
- */
-function isRestrictedUrl(url?: string): boolean {
-  if (!url) return true
-  const restrictedPrefixes = [
-    "chrome://",
-    "chrome-extension://",
-    "edge://",
-    "about:",
-    "devtools://",
-    "view-source:"
-  ]
-  return restrictedPrefixes.some((prefix) => url.startsWith(prefix))
+  await chrome.storage.session.remove(requestedViewportKey(win.id))
 }
 
 /**
  * ビューポート（コンテンツ表示領域）のサイズを指定サイズに変更する。
- * ウィンドウ全体サイズとビューポートサイズの差分（ブラウザUI枠）を測定し、
- * その差分を加算したウィンドウサイズに変更することでビューポートサイズを合わせる。
+ * ウィンドウとタブのサイズの差（ブラウザのUI枠）を加えたウィンドウサイズに変更する。
+ * タブのサイズはページの拡大率に左右されないので、拡大したままでも指定どおりになる。
  */
 export async function resizeViewport(
   width: number,
   height: number,
   target?: ResizeTarget
 ) {
-  const win = target
-    ? await chrome.windows.get(target.windowId)
-    : await chrome.windows.getCurrent()
-  if (win.id === undefined || win.width === undefined || win.height === undefined) {
+  const read = async () => {
+    const win = target
+      ? await chrome.windows.get(target.windowId)
+      : await chrome.windows.getCurrent()
+    const [tab] = target
+      ? [await chrome.tabs.get(target.tabId)]
+      : await chrome.tabs.query({ active: true, currentWindow: true })
+    return { win, tab }
+  }
+  let { win, tab } = await read()
+  if (win.id === undefined) throw new Error(t("errWindowInfo"))
+  if (!tab?.id) throw new Error(t("errNoActiveTab"))
+
+  // 最大化などでは枠の大きさが通常の状態と違うので、通常の状態に戻してから差を測る
+  if (win.state !== "normal") {
+    await chrome.windows.update(win.id, { state: "normal" })
+    ;({ win, tab } = await read())
+  }
+  if (win.width === undefined || win.height === undefined) {
     throw new Error(t("errWindowInfo"))
   }
-
-  const [activeTab] = target
-    ? []
-    : await chrome.tabs.query({ active: true, currentWindow: true })
-  const tabId = target?.tabId ?? activeTab?.id
-  if (!tabId) {
-    throw new Error(t("errNoActiveTab"))
-  }
-
-  if (isRestrictedUrl(target ? target.url : activeTab?.url)) {
-    throw new Error(t("errRestrictedPage"))
-  }
-
-  let currentViewport: { width: number; height: number } | undefined
-  try {
-    const results = await chrome.scripting.executeScript({
-      target: { tabId },
-      func: () => ({
-        width: window.innerWidth,
-        height: window.innerHeight
-      })
-    })
-    currentViewport = results?.[0]?.result
-  } catch (e) {
-    throw new Error(
-      t("errViewportFailed", {
-        message: e instanceof Error ? e.message : String(e)
-      }),
-      { cause: e }
-    )
-  }
-
-  if (!currentViewport) {
-    throw new Error(t("errViewportUnavailable"))
-  }
-
-  const diffWidth = win.width - currentViewport.width
-  const diffHeight = win.height - currentViewport.height
+  if (!tab?.width || !tab.height) throw new Error(t("errViewportUnavailable"))
 
   await updateWindowSize(
     win,
-    Math.round(width + diffWidth),
-    Math.round(height + diffHeight),
-    tabId
+    Math.round(width + win.width - tab.width),
+    Math.round(height + win.height - tab.height),
+    tab.id
   )
-}
-
-/**
- * アクティブタブの拡大率を取得する（1 = 100%）。
- * tabs.getZoom は tabs 権限なしで使える。取得できないときは null を返す。
- */
-export async function getActiveTabZoom(): Promise<{
-  tabId: number
-  zoom: number
-} | null> {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-  if (!tab?.id) return null
-  try {
-    return { tabId: tab.id, zoom: await chrome.tabs.getZoom(tab.id) }
-  } catch {
-    return null
-  }
-}
-
-/** 拡大率が 100% でないか（浮動小数の誤差は無視する）。 */
-export function isZoomed(zoom: number): boolean {
-  return Math.abs(zoom - 1) > 0.001
-}
-
-/**
- * タブの拡大率を 100% に戻す。setZoom(0) はブラウザ既定の拡大率に戻すため、
- * 既定が 100% 以外の環境も考慮して 1 を明示する。
- */
-export async function resetTabZoom(tabId: number): Promise<void> {
-  await chrome.tabs.setZoom(tabId, 1)
+  await chrome.storage.session.set({
+    [requestedViewportKey(win.id as number)]: {
+      width: Math.round(width),
+      height: Math.round(height)
+    }
+  })
 }
 
 /** 現在のウィンドウの状態（normal / maximized / fullscreen など）を取得する */
@@ -339,53 +299,9 @@ export async function getCurrentWindowSize(): Promise<DisplayBounds> {
   return { width: win.width ?? 0, height: win.height ?? 0 }
 }
 
-/**
- * ページに注入して、ビューポートのサイズを小数まで測る。
- * innerWidth は拡大中に整数へ丸められ、拡大率を掛けて戻すと 1〜3px ズレる
- * （拡大率 300% で 1280 が 1278 になる）。メディアクエリの判定は丸められないので、二分探索で求める。
- * 外部を参照せず、この中だけで完結させる。
- */
-function measureViewportExact(): DisplayBounds {
-  const search = (feature: string, max: number) => {
-    let low = 0
-    let high = max + 2
-    for (let i = 0; i < 24; i++) {
-      const middle = (low + high) / 2
-      if (window.matchMedia(`(${feature}: ${middle}px)`).matches) low = middle
-      else high = middle
-    }
-    return low
-  }
-  return {
-    width: search("min-width", window.innerWidth),
-    height: search("min-height", window.innerHeight)
-  }
-}
-
-/**
- * 現在のアクティブタブのビューポートサイズを取得する。
- * ページの拡大率に左右されない、ウィンドウの中の表示エリアの実サイズを返す
- * （1280x720 のビューポートは、拡大率 150% でも 80% でも 1280x720）。
- */
+/** 現在のアクティブタブのビューポート（描画エリア）のサイズを取得する。 */
 export async function getCurrentViewportSize(): Promise<DisplayBounds> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-  if (!tab?.id || isRestrictedUrl(tab.url)) {
-    return { width: 0, height: 0 }
-  }
-  try {
-    const [zoom, [{ result }]] = await Promise.all([
-      chrome.tabs.getZoom(tab.id),
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: measureViewportExact
-      })
-    ])
-    if (!result) return { width: 0, height: 0 }
-    return {
-      width: Math.round(result.width * zoom),
-      height: Math.round(result.height * zoom)
-    }
-  } catch {
-    return { width: 0, height: 0 }
-  }
+  const area = tab ? await getDrawingArea(tab) : null
+  return area?.target ?? { width: 0, height: 0 }
 }

@@ -4,7 +4,8 @@ import { test } from "node:test"
 import {
   exceedsDisplay,
   placeWindow,
-  resolveCurrentSize
+  resolveCurrentSize,
+  snapToRequested
 } from "../../src/lib/placement.ts"
 
 /** 1920x1080 の画面。下に 40px のタスクバー。 */
@@ -106,4 +107,26 @@ test("最大化中のウィンドウ基準はディスプレイのサイズを�
   assert.deepEqual(resolveCurrentSize("window", sizes, "fullscreen"), sizes.display)
   assert.deepEqual(resolveCurrentSize("window", sizes, "normal"), sizes.window)
   assert.deepEqual(resolveCurrentSize("viewport", sizes, "maximized"), sizes.viewport)
+})
+
+const REQUESTED = { width: 1280, height: 720 }
+
+test("snapToRequested: 2px 以内で大きいときは、指定のサイズに揃える", () => {
+  assert.deepEqual(snapToRequested({ width: 1280, height: 721 }, REQUESTED), REQUESTED)
+  assert.deepEqual(snapToRequested({ width: 1282, height: 722 }, REQUESTED), REQUESTED)
+})
+
+test("snapToRequested: 3px 以上の差はそのまま", () => {
+  const actual = { width: 1280, height: 723 }
+  assert.deepEqual(snapToRequested(actual, REQUESTED), actual)
+})
+
+test("snapToRequested: 小さいときは切り詰めて揃えられないのでそのまま", () => {
+  const actual = { width: 1280, height: 719 }
+  assert.deepEqual(snapToRequested(actual, REQUESTED), actual)
+})
+
+test("snapToRequested: 指定がなければそのまま", () => {
+  const actual = { width: 1280, height: 721 }
+  assert.deepEqual(snapToRequested(actual, undefined), actual)
 })
