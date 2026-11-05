@@ -21,6 +21,7 @@ export const en = {
   captureVisibleCopy: "Copy screenshot of visible area to clipboard",
   captureFullPageDownload: "Download screenshot of full page",
   captureFullPageCopy: "Copy screenshot of full page to clipboard",
+  captureDelayTitle: "Timer",
   captureDelayLabel:
     "Timer: captures a few seconds after you press download, so you can open a menu first",
   captureDelayNone: "Off",

@@ -18,6 +18,7 @@ export const ja: Record<MessageKey, string> = {
   captureVisibleCopy: "表示部分のスクリーンショットをクリップボードにコピー",
   captureFullPageDownload: "ページ全体のスクリーンショットをダウンロード",
   captureFullPageCopy: "ページ全体のスクリーンショットをクリップボードにコピー",
+  captureDelayTitle: "タイマー",
   captureDelayLabel:
     "タイマー: ダウンロードを押してから数秒後に撮影します。その間にメニューなどを開けます",
   captureDelayNone: "なし",

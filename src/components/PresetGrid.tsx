@@ -12,24 +12,24 @@ interface PresetGridProps {
   disabled?: boolean
 }
 
-/** アスペクト比ごとの、見出しのアイコンとプリセットの画面の幅（高さは 32 で共通）。 */
-const GROUP_LOOKS: Record<string, { icon: IconName; width: number }> = {
-  "16-9": { icon: "ratio-16-9", width: 57 },
-  "4-3": { icon: "ratio-4-3", width: 43 }
+/** アスペクト比ごとの見出しのアイコン。 */
+const GROUP_ICONS: Record<string, IconName> = {
+  "16-9": "ratio-16-9",
+  "4-3": "ratio-4-3"
 }
 
-/** プリセットのアイコン。実際の比率の小さな画面の中に、短い名前（720p など）を書く。 */
-function PresetScreen({ text, width }: { text: string; width: number }) {
+/** プリセットのアイコン。どの比率も同じ大きさの面に、短い名前（720p など）を書く。 */
+function PresetScreen({ text }: { text: string }) {
   return (
     <svg
       className="preset-screen"
-      viewBox={`0 0 ${width} 32`}
-      width={width}
-      height={32}
+      viewBox="0 0 65 30"
+      width="100%"
+      height={30}
       aria-hidden="true"
     >
-      <rect x={1} y={1} width={width - 2} height={30} rx={4} />
-      <text x={width / 2} y={16} textAnchor="middle" dominantBaseline="central">
+      <rect width={65} height={30} />
+      <text x={32.5} y={15} textAnchor="middle" dominantBaseline="central">
         {text}
       </text>
     </svg>
@@ -47,11 +47,10 @@ export function PresetGrid({
   return (
     <div className="preset-groups">
       {groups.map((group) => {
-        const look = GROUP_LOOKS[group.id]
         return (
           <div key={group.id} className="preset-group">
             <p className="preset-group-title">
-              <Icon name={look.icon} size={14} />
+              <Icon name={GROUP_ICONS[group.id]} size={14} />
               <span>{t(group.labelKey)}</span>
             </p>
             <div className="preset-grid">
@@ -71,10 +70,7 @@ export function PresetGrid({
                     title={title}
                     aria-label={title}
                   >
-                    <PresetScreen
-                      text={preset.short ?? preset.label}
-                      width={look.width}
-                    />
+                    <PresetScreen text={preset.short ?? preset.label} />
                     {/* 補正の値はツールチップに出し、ここでは補正があることだけを示す */}
                     {offset && <span className="preset-offset-badge" />}
                   </button>

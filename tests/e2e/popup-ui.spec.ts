@@ -7,7 +7,7 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
   }) => {
     const popup = await openPopup(await openTarget("/"))
 
-    const rows = popup.locator(".capture-row")
+    const rows = popup.locator(".capture-row[data-capture-mode]")
     await expect(rows).toHaveCount(2)
     await expect(rows.nth(0)).toContainText("Visible area")
     await expect(rows.nth(1)).toContainText("Full page")
@@ -46,9 +46,9 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     }
 
     // SVG はインライン展開され、stroke は currentColor（CSS の color で着色）
-    await expect(popup.locator(".capture-row svg")).toHaveCount(7)
+    await expect(popup.locator(".capture-row[data-capture-mode] svg")).toHaveCount(7)
     const strokes = await popup
-      .locator(".capture-row svg")
+      .locator(".capture-row[data-capture-mode] svg")
       .evaluateAll((svgs) => svgs.map((s) => s.getAttribute("stroke")))
     expect(strokes.length).toBe(7)
     expect(new Set(strokes)).toEqual(new Set(["currentColor"]))
@@ -103,6 +103,32 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     expect(root.right - gear.right).toBeLessThan(20)
   })
 
+  test("見た目: プリセットは同じ大きさ、角なし、タイマーは撮影の行の最後", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+    const sizes = await popup.locator("button.preset-button").evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect()
+        return `${Math.round(r.width)}x${Math.round(r.height)}`
+      })
+    )
+    expect(sizes).toHaveLength(8)
+    expect(new Set(sizes).size).toBe(1)
+
+    const radius = await popup
+      .locator("button, select, input, .current-size-section")
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).borderTopLeftRadius))
+    expect(new Set(radius)).toEqual(new Set(["0px"]))
+
+    const order = await popup
+      .locator(".capture-section .capture-row")
+      .evaluateAll((els) => els.map((el) => el.className))
+    expect(order[2]).toContain("capture-timer-row")
+    await expect(popup.locator(".capture-row")).toHaveCount(3)
+  })
+
   test("プリセットは短い名前の SVG で、詳しいサイズはツールチップにある。今のサイズは1行で押せない", async ({
     openTarget,
     openPopup
@@ -139,9 +165,8 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
         const iconRect = icon.getBoundingClientRect()
         // 親ボタン（なければ行頭アイコンのラッパー）の枠
         const frame = (
-          icon.closest(
-            "button, a, .capture-scope, .capture-delay, .size-item, .preset-group-title"
-          ) ?? icon
+          icon.closest("button, a, .capture-scope, .size-item, .preset-group-title") ??
+          icon
         ).getBoundingClientRect()
         const tolerance = 0.5
         return {

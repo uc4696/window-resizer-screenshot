@@ -179,32 +179,7 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
 
   return (
     <section className="capture-section">
-      <div className="capture-header">
-        <p className="section-title">{t("screenshotTitle")}</p>
-        <div
-          className="capture-delay"
-          role="radiogroup"
-          aria-label={t("captureDelayLabel")}
-          title={t("captureDelayLabel")}
-        >
-          <Icon name="clock" size={13} />
-          {[0, ...DELAY_SECONDS].map((seconds) => (
-            <button
-              key={seconds}
-              type="button"
-              role="radio"
-              aria-checked={delaySeconds === seconds}
-              className={`delay-option ${delaySeconds === seconds ? "active" : ""}`}
-              disabled={busy}
-              onClick={() => changeDelay(seconds)}
-            >
-              {seconds === 0
-                ? t("captureDelayNone")
-                : t("captureDelaySeconds", { seconds })}
-            </button>
-          ))}
-        </div>
-      </div>
+      <p className="section-title">{t("screenshotTitle")}</p>
       {rows.map((row) => (
         <div key={row.mode} className="capture-row" data-capture-mode={row.mode}>
           <span className="capture-scope" title={row.label}>
@@ -257,6 +232,33 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
           </div>
         </div>
       ))}
+      <div className="capture-timer-row capture-row" title={t("captureDelayLabel")}>
+        <span className="capture-scope">
+          <Icon name="clock" />
+          <span className="capture-scope-label">{t("captureDelayTitle")}</span>
+        </span>
+        <div
+          className="capture-delay"
+          role="radiogroup"
+          aria-label={t("captureDelayLabel")}
+        >
+          {[0, ...DELAY_SECONDS].map((seconds) => (
+            <button
+              key={seconds}
+              type="button"
+              role="radio"
+              aria-checked={delaySeconds === seconds}
+              className={`delay-option ${delaySeconds === seconds ? "active" : ""}`}
+              disabled={busy}
+              onClick={() => changeDelay(seconds)}
+            >
+              {seconds === 0
+                ? t("captureDelayNone")
+                : t("captureDelaySeconds", { seconds })}
+            </button>
+          ))}
+        </div>
+      </div>
     </section>
   )
 }
