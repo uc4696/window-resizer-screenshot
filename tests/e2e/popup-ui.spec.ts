@@ -61,7 +61,7 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     const popup = await openPopup(await openTarget("/"))
     const share = popup.locator("a.share-button")
 
-    await expect(share).toContainText("Share on X")
+    await expect(share).toHaveAttribute("title", /X/)
     await expect(share).toHaveAttribute("target", "_blank")
     await expect(share).toHaveAttribute("rel", /noopener/)
 
@@ -76,37 +76,52 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     expect(text).toContain("#ChromeExtension")
   })
 
-  test("設定ボタンと共有ボタンは同じデザインで、中央に寄せて間隔が狭く、アイコンがSVGで表示される", async ({
+  test("寄付の下の行に、左に X、右に設定がアイコンで並び、説明はツールチップにある", async ({
     openTarget,
     openPopup
   }) => {
     const popup = await openPopup(await openTarget("/"))
-    const buttons = popup.locator(".popup-footer-row .footer-button")
-    await expect(buttons).toHaveCount(2)
+    const share = popup.locator(".popup-footer-row .share-button")
+    const settings = popup.locator(".popup-footer-row .options-link")
+    await expect(settings).toHaveAttribute("title", /settings/)
+    await expect(share.locator("svg")).toHaveCount(1)
+    await expect(settings.locator("svg")).toHaveCount(1)
+    await expect(share).toHaveText("")
+    await expect(settings).toHaveText("")
 
-    const styles = await buttons.evaluateAll((els) =>
-      els.map((el) => {
-        const s = getComputedStyle(el)
-        const r = el.getBoundingClientRect()
-        return {
-          borderRadius: s.borderRadius,
-          borderColor: s.borderTopColor,
-          fontSize: s.fontSize,
-          color: s.color,
-          svgCount: el.querySelectorAll("svg").length,
-          left: r.left,
-          right: r.right
-        }
-      })
+    const rect = (selector: string) =>
+      popup.evaluate((s) => {
+        const r = document.querySelector(s)!.getBoundingClientRect()
+        return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }
+      }, selector)
+    const root = await rect(".popup-root")
+    const x = await rect(".popup-footer-row .share-button")
+    const gear = await rect(".popup-footer-row .options-link")
+    const support = await rect(".support-section")
+    expect(x.top).toBeGreaterThanOrEqual(support.bottom)
+    expect(x.left - root.left).toBeLessThan(20)
+    expect(root.right - gear.right).toBeLessThan(20)
+  })
+
+  test("プリセットは短い名前の SVG で、詳しいサイズはツールチップにある。今のサイズは1行で押せない", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+    const hd = popup.locator('button.preset-button[data-size="1280x720"]')
+    await expect(hd.locator("svg text")).toHaveText("720p")
+    await expect(hd).toHaveAttribute("title", "HD (1280×720)")
+    await expect(
+      popup.locator('button.preset-button[data-size="640x480"] svg text')
+    ).toHaveText("VGA")
+
+    const items = popup.locator(".current-size-section .size-item")
+    await expect(items).toHaveCount(2)
+    const tops = await items.evaluateAll((els) =>
+      els.map((el) => Math.round(el.getBoundingClientRect().top))
     )
-    expect(styles[0].borderRadius).toBe(styles[1].borderRadius)
-    expect(styles[0].borderColor).toBe(styles[1].borderColor)
-    expect(styles[0].fontSize).toBe(styles[1].fontSize)
-    expect(styles[0].color).toBe(styles[1].color)
-    expect(styles[0].svgCount).toBe(1)
-    expect(styles[1].svgCount).toBe(1)
-    // 2つのボタンの間隔は十分狭い（12px以下）
-    expect(styles[1].left - styles[0].right).toBeLessThanOrEqual(12)
+    expect(tops[0]).toBe(tops[1])
+    await expect(popup.locator(".current-size-section button")).toHaveCount(0)
   })
 
   test("アイコンは枠からはみ出さず、SVGに viewBox がある（縮小されて枠に収まる）", async ({
@@ -114,8 +129,8 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     openPopup
   }) => {
     const popup = await openPopup(await openTarget("/"))
-    // タイマー1 + 行頭アイコン2 + ダウンロード/コピー4 + 範囲選択1 + 設定・X共有2
-    await expect(popup.locator(".ui-icon")).toHaveCount(10)
+    // 今のサイズ2 + 基準2 + 比率2 + タイマー1 + 行頭アイコン2 + ダウンロード/コピー4 + 範囲選択1 + 設定・X共有2
+    await expect(popup.locator(".ui-icon")).toHaveCount(16)
 
     const results = await popup.locator(".ui-icon").evaluateAll((icons) =>
       icons.map((icon) => {
@@ -124,7 +139,9 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
         const iconRect = icon.getBoundingClientRect()
         // 親ボタン（なければ行頭アイコンのラッパー）の枠
         const frame = (
-          icon.closest("button, a, .capture-scope, .capture-delay") ?? icon
+          icon.closest(
+            "button, a, .capture-scope, .capture-delay, .size-item, .preset-group-title"
+          ) ?? icon
         ).getBoundingClientRect()
         const tolerance = 0.5
         return {
@@ -153,12 +170,12 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
   }) => {
     const target = await openTarget("/")
     const first = await openPopup(target)
-    await first.locator(".mode-button", { hasText: "Viewport-based" }).click()
-    await expect(first.locator(".mode-button.active")).toContainText("Viewport-based")
+    await first.locator(".mode-button", { hasText: "Viewport" }).click()
+    await expect(first.locator(".mode-button.active")).toContainText("Viewport")
     await first.close()
 
     const second = await openPopup(target)
-    await expect(second.locator(".mode-button.active")).toContainText("Viewport-based")
+    await expect(second.locator(".mode-button.active")).toContainText("Viewport")
   })
 
   test("言語を日本語にすると、共有の投稿文が日本語のハッシュタグ付きになる", async ({
@@ -192,7 +209,7 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
 
     const popup = await openPopup(await openTarget("/"))
     await popup.setViewportSize({ width: 320, height: 600 })
-    await expect(popup.locator(".mode-button").first()).toHaveText("ウィンドウ基準")
+    await expect(popup.locator(".mode-button").first()).toHaveText("ウィンドウ")
 
     const metrics = await popup.locator(".popup-root").evaluate((el) => ({
       scrollHeight: el.scrollHeight,

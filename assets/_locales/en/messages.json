@@ -18,7 +18,7 @@
     "message": "Screenshot: copy full page"
   },
   "cmdCapturePick": {
-    "message": "Screenshot: choose a scrollable area"
+    "message": "Screenshot: pick a section that scrolls on its own"
   },
   "cmdResizeHd": {
     "message": "Resize: HD (1280 x 720)"

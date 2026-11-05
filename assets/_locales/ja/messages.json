@@ -18,7 +18,7 @@
     "message": "撮影: ページ全体をコピー"
   },
   "cmdCapturePick": {
-    "message": "撮影: スクロール範囲を選ぶ"
+    "message": "撮影: 枠の中だけスクロールする部分を選ぶ"
   },
   "cmdResizeHd": {
     "message": "リサイズ: HD (1280 x 720)"

@@ -64,12 +64,14 @@ test.describe("遅延撮影タイマー", () => {
     await recordDownloadRequests(serviceWorker)
     await recordBadges(serviceWorker)
 
-    await popup.locator(".capture-delay select").selectOption("3")
+    await popup.getByRole("radio", { name: "3s" }).click()
     // タイマーではコピーと範囲選択を使えない
     const visible = popup.locator('.capture-row[data-capture-mode="visible"]')
     await expect(visible.getByRole("button", { name: /Copy/ })).toBeDisabled()
     await expect(
-      popup.getByRole("button", { name: "Choose a scrollable area to capture" })
+      popup.getByRole("button", {
+        name: "Capture all of a section that scrolls on its own, such as a list"
+      })
     ).toBeDisabled()
 
     await target.bringToFront()
@@ -86,13 +88,23 @@ test.describe("遅延撮影タイマー", () => {
     expect(await getBadges(serviceWorker)).toEqual(["3", "2", "1", "...", "OK"])
   })
 
-  test("popup: 開き直すとタイマーはなしに戻る", async ({ openTarget, openPopup }) => {
+  test("popup: タイマーの選択は開き直しても残り、なしに戻すまで続く", async ({
+    openTarget,
+    openPopup
+  }) => {
     const target = await openTarget("/")
     let popup = await openPopup(target)
-    await popup.locator(".capture-delay select").selectOption("10")
+    await expect(popup.getByRole("radio", { name: "Off" })).toBeChecked()
+    await popup.getByRole("radio", { name: "10s" }).click()
     await popup.close()
+
     popup = await openPopup(target)
-    await expect(popup.locator(".capture-delay select")).toHaveValue("0")
+    await expect(popup.getByRole("radio", { name: "10s" })).toBeChecked()
+    await popup.getByRole("radio", { name: "Off" }).click()
+    await popup.close()
+
+    popup = await openPopup(target)
+    await expect(popup.getByRole("radio", { name: "Off" })).toBeChecked()
   })
 
   test("ショートカット: 3秒待って表示部分を保存する", async ({

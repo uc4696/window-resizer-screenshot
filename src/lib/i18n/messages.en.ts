@@ -6,10 +6,14 @@
  */
 export const en = {
   // ---- popup ----
-  windowLabel: "Window:",
-  viewportLabel: "Viewport:",
+  currentWindowSize: "Current window size",
+  currentViewportSize: "Current viewport size (the area that shows the page)",
   modeWindow: "Window-based",
   modeViewport: "Viewport-based",
+  modeWindowShort: "Window",
+  modeViewportShort: "Viewport",
+  modeWindowTitle: "The chosen size applies to the whole window, including the toolbar",
+  modeViewportTitle: "The chosen size applies to the area that shows the page",
   screenshotTitle: "Screenshot",
   captureVisibleLabel: "Visible area",
   captureFullPageLabel: "Full page",
@@ -17,13 +21,14 @@ export const en = {
   captureVisibleCopy: "Copy screenshot of visible area to clipboard",
   captureFullPageDownload: "Download screenshot of full page",
   captureFullPageCopy: "Copy screenshot of full page to clipboard",
-  captureDelayLabel: "Timer: capture after a delay (for menus that appear on hover)",
-  captureDelayNone: "No timer",
-  captureDelaySeconds: "{seconds} sec",
+  captureDelayLabel:
+    "Timer: captures a few seconds after you press download, so you can open a menu first",
+  captureDelayNone: "Off",
+  captureDelaySeconds: "{seconds}s",
   captureNoCopyWithDelay:
     "Copying and choosing an area are not available with the timer. The popup closes while waiting, so the screenshot can only be downloaded.",
-  capturePick: "Choose a scrollable area to capture",
-  capturePickUnavailable: "There is no scrollable area to choose on this page",
+  capturePick: "Capture all of a section that scrolls on its own, such as a list",
+  capturePickUnavailable: "This page has no section that scrolls on its own",
   pickerBanner: "Click the area to capture (Esc to cancel)",
   pickerContent: "content {height}px",
   pickerSave: "Download",
@@ -31,8 +36,7 @@ export const en = {
   pickerCancel: "Cancel",
   statusCopied: "Copied to clipboard.",
   errClipboard: "Failed to copy to the clipboard.",
-  openSettings: "Open settings",
-  shareOnX: "Share on X",
+  openSettings: "Open settings (language, theme, save folder and more)",
   shareOnXTitle: "Share this extension on X (opens the post screen)",
   shareText:
     "Check how your page looks at any size, instantly.\nResize the window/viewport and capture full-page screenshots, all in one extension 📸",
@@ -94,6 +98,11 @@ export const en = {
   languageHint:
     'Choose the display language. "Auto" follows the browser language (English if unsupported).',
   languageAuto: "Auto",
+  themeLabel: "Theme",
+  themeHint: "Choose the colors of the popup and this page.",
+  themeAuto: "Follow the browser",
+  themeLight: "Light",
+  themeDark: "Dark",
   captureDirLabel: "Screenshot save folder name",
   captureDirHint:
     "Name of the folder created under your Downloads folder (e.g. Downloads/Captures/...).",
@@ -124,14 +133,12 @@ export const en = {
   storageHint:
     "local: saved on this device only. sync: tied to your Google account and synced across devices.",
   storageLocalDefault: "local (default)",
-  save: "Save",
   settingsSaved: "Settings saved.",
   presetOffsetLabel: "Resolution template offsets (margins)",
   presetOffsetHint:
-    "You can set separate correction values (px) for each preset in window-based and viewport-based modes. Saving with both fields empty removes the correction for that mode.",
+    "You can set separate correction values (px) for each preset in window-based and viewport-based modes. Leaving both fields empty removes the correction for that mode.",
   offsetWidthShort: "Width offset",
   offsetHeightShort: "Height offset",
-  clear: "Clear",
   resetLabel: "Factory reset (initialize settings)",
   resetHint:
     "Restores the save folder name, screenshot format, scrollable area capture setting, storage area, language, custom sizes and preset offsets to their defaults.",

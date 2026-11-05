@@ -21,6 +21,7 @@ import {
   resizeWindow
 } from "~lib/resize"
 import { markReviewPromptOnUse } from "~lib/review-prompt"
+import { initTheme } from "~lib/theme"
 import {
   addCustomSize,
   getCustomSizes,
@@ -39,6 +40,19 @@ import type {
 } from "~lib/types"
 
 import "./style.css"
+
+initTheme()
+
+/** 今のサイズの数字。× だけ細く小さくして、数字を読みやすくする。 */
+function SizeValue({ size }: { size: DisplayBounds }) {
+  return (
+    <span className="size-value">
+      {size.width}
+      <span className="size-times">×</span>
+      {size.height}
+    </span>
+  )
+}
 
 function PopupContent() {
   const { t } = useI18n()
@@ -170,33 +184,36 @@ function PopupContent() {
 
       <ReviewPrompt />
 
+      {/* 今のサイズは見るだけ。押せる要素と区別するため、薄い背景だけで枠線を付けない */}
       <section className="current-size-section">
-        <div className="size-row">
-          <span className="size-label">{t("windowLabel")}</span>
-          <span className="size-value">
-            {windowSize.width} x {windowSize.height}
-          </span>
+        <div className="size-item" title={t("currentWindowSize")}>
+          <Icon name="app-window" size={15} />
+          <SizeValue size={windowSize} />
         </div>
-        <div className="size-row">
-          <span className="size-label">{t("viewportLabel")}</span>
-          <span className="size-value">
-            {viewportSize.width} x {viewportSize.height}
-          </span>
+        <div className="size-item" title={t("currentViewportSize")}>
+          <Icon name="viewport-wide" size={15} />
+          <SizeValue size={viewportSize} />
         </div>
       </section>
 
       <div className="mode-toggle">
         <button
           className={`mode-button ${mode === "window" ? "active" : ""}`}
+          aria-label={t("modeWindow")}
+          title={t("modeWindowTitle")}
           onClick={() => changeMode("window")}
         >
-          {t("modeWindow")}
+          <Icon name="app-window" size={14} />
+          <span>{t("modeWindowShort")}</span>
         </button>
         <button
           className={`mode-button ${mode === "viewport" ? "active" : ""}`}
+          aria-label={t("modeViewport")}
+          title={t("modeViewportTitle")}
           onClick={() => changeMode("viewport")}
         >
-          {t("modeViewport")}
+          <Icon name="viewport-wide" size={14} />
+          <span>{t("modeViewportShort")}</span>
         </button>
       </div>
 
@@ -234,19 +251,23 @@ function PopupContent() {
         {status}
       </p>
 
+      <SupportLink />
+
+      {/* 左に共有先（これから増やせる）、右に設定 */}
       <div className="popup-footer-row">
+        <div className="footer-links">
+          <ShareButton />
+        </div>
         <button
           type="button"
-          className="footer-button options-link"
+          className="footer-icon-button options-link"
+          title={t("openSettings")}
+          aria-label={t("openSettings")}
           onClick={() => chrome.runtime.openOptionsPage()}
         >
-          <Icon name="settings" size={12} />
-          <span>{t("openSettings")}</span>
+          <Icon name="settings" size={16} />
         </button>
-        <ShareButton />
       </div>
-
-      <SupportLink />
 
       {zoomConfirm && (
         <div className="zoom-confirm-overlay" role="dialog" aria-modal="true">

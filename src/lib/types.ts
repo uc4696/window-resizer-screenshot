@@ -5,12 +5,17 @@ export type SizeMode = "window" | "viewport"
 /** 表示言語の設定。auto はブラウザのUI言語に従う（日本語以外は英語）。 */
 export type LanguageSetting = "auto" | "ja" | "en"
 
+/** 画面のテーマ。auto はブラウザ（OS）の設定に従う。 */
+export type ThemeSetting = "auto" | "light" | "dark"
+
 /** スクリーンショットの保存形式。 */
 export type ImageFormat = "png" | "webp" | "jpeg"
 
 export interface SizePreset {
   id: string
   label: string
+  /** プリセットのアイコンに書く短い名前（720p など）。 */
+  short?: string
   width: number
   height: number
 }

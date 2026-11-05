@@ -1,3 +1,4 @@
+import { Icon, type IconName } from "~components/Icon"
 import { useI18n } from "~lib/i18n/useI18n"
 import { formatOffset } from "~lib/offset"
 import type { PresetGroup, PresetModeOffsets, SizeMode, SizePreset } from "~lib/types"
@@ -11,6 +12,30 @@ interface PresetGridProps {
   disabled?: boolean
 }
 
+/** アスペクト比ごとの、見出しのアイコンとプリセットの画面の幅（高さは 32 で共通）。 */
+const GROUP_LOOKS: Record<string, { icon: IconName; width: number }> = {
+  "16-9": { icon: "ratio-16-9", width: 57 },
+  "4-3": { icon: "ratio-4-3", width: 43 }
+}
+
+/** プリセットのアイコン。実際の比率の小さな画面の中に、短い名前（720p など）を書く。 */
+function PresetScreen({ text, width }: { text: string; width: number }) {
+  return (
+    <svg
+      className="preset-screen"
+      viewBox={`0 0 ${width} 32`}
+      width={width}
+      height={32}
+      aria-hidden="true"
+    >
+      <rect x={1} y={1} width={width - 2} height={30} rx={4} />
+      <text x={width / 2} y={16} textAnchor="middle" dominantBaseline="central">
+        {text}
+      </text>
+    </svg>
+  )
+}
+
 export function PresetGrid({
   groups,
   offsets,
@@ -21,33 +46,44 @@ export function PresetGrid({
   const { t } = useI18n()
   return (
     <div className="preset-groups">
-      {groups.map((group) => (
-        <div key={group.id} className="preset-group">
-          <p className="preset-group-title">{t(group.labelKey)}</p>
-          <div className="preset-grid">
-            {group.presets.map((preset) => {
-              const offset = offsets[preset.id]?.[mode]
-              return (
-                <button
-                  key={preset.id}
-                  className="preset-button"
-                  disabled={disabled}
-                  onClick={() => onSelect(preset)}
-                  title={`${preset.width} x ${preset.height}`}
-                >
-                  <span className="preset-label">{preset.label}</span>
-                  {offset && (
-                    <span className="preset-offset-badge">
-                      {t("offsetBadge")}:{" "}
-                      {formatOffset(offset.offsetWidth, offset.offsetHeight)}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
+      {groups.map((group) => {
+        const look = GROUP_LOOKS[group.id]
+        return (
+          <div key={group.id} className="preset-group">
+            <p className="preset-group-title">
+              <Icon name={look.icon} size={14} />
+              <span>{t(group.labelKey)}</span>
+            </p>
+            <div className="preset-grid">
+              {group.presets.map((preset) => {
+                const offset = offsets[preset.id]?.[mode]
+                const offsetText =
+                  offset &&
+                  `${t("offsetBadge")}: ${formatOffset(offset.offsetWidth, offset.offsetHeight)}`
+                const title = offsetText ? `${preset.label}\n${offsetText}` : preset.label
+                return (
+                  <button
+                    key={preset.id}
+                    className="preset-button"
+                    data-size={`${preset.width}x${preset.height}`}
+                    disabled={disabled}
+                    onClick={() => onSelect(preset)}
+                    title={title}
+                    aria-label={title}
+                  >
+                    <PresetScreen
+                      text={preset.short ?? preset.label}
+                      width={look.width}
+                    />
+                    {/* 補正の値はツールチップに出し、ここでは補正があることだけを示す */}
+                    {offset && <span className="preset-offset-badge" />}
+                  </button>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

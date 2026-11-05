@@ -16,7 +16,7 @@ import {
 } from "./test-server"
 
 const DOWNLOAD_FULL = "Download screenshot of full page"
-const PICK = "Choose a scrollable area to capture"
+const PICK = "Capture all of a section that scrolls on its own, such as a list"
 
 /** 対象ページの表示サイズと DPR。 */
 async function viewportOf(target: Page) {
@@ -141,7 +141,7 @@ test.describe("範囲を選んで撮影", () => {
     await expect(button).toBeDisabled()
     await expect(button).toHaveAttribute(
       "title",
-      "There is no scrollable area to choose on this page"
+      "This page has no section that scrolls on its own"
     )
   })
 

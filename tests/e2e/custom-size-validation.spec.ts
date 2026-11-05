@@ -65,7 +65,7 @@ test.describe("カスタムサイズ（入力チェック）", () => {
     await restricted.goto("chrome://version")
     const popup = await openPopup(restricted)
     await popup.getByRole("button", { name: "Viewport-based" }).click()
-    await popup.locator('button.preset-button[title="1024 x 768"]').click()
+    await popup.locator('button.preset-button[data-size="1024x768"]').click()
     await expect(popup.locator(".status-text")).toHaveText(
       /^Error: Due to Chrome restrictions/
     )

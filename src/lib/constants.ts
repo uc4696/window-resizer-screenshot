@@ -1,4 +1,4 @@
-import type { ImageFormat, PresetGroup, SizePreset } from "./types"
+import type { ImageFormat, PresetGroup, SizePreset, ThemeSetting } from "./types"
 
 /** 選択可能なスクリーンショット形式（表示順）。 */
 export const IMAGE_FORMATS: ImageFormat[] = ["png", "webp", "jpeg"]
@@ -35,20 +35,26 @@ export const PRESET_GROUPS: PresetGroup[] = [
     id: "16-9",
     labelKey: "presetGroup169",
     presets: [
-      { id: "hd", label: "HD (1280×720)", width: 1280, height: 720 },
-      { id: "fhd", label: "FHD (1920×1080)", width: 1920, height: 1080 },
-      { id: "wqhd", label: "WQHD (2560×1440)", width: 2560, height: 1440 },
-      { id: "4k", label: "4K (3840×2160)", width: 3840, height: 2160 }
+      { id: "hd", short: "720p", label: "HD (1280×720)", width: 1280, height: 720 },
+      { id: "fhd", short: "1080p", label: "FHD (1920×1080)", width: 1920, height: 1080 },
+      {
+        id: "wqhd",
+        short: "1440p",
+        label: "WQHD (2560×1440)",
+        width: 2560,
+        height: 1440
+      },
+      { id: "4k", short: "4K", label: "4K (3840×2160)", width: 3840, height: 2160 }
     ]
   },
   {
     id: "4-3",
     labelKey: "presetGroup43",
     presets: [
-      { id: "vga", label: "VGA (640×480)", width: 640, height: 480 },
-      { id: "svga", label: "SVGA (800×600)", width: 800, height: 600 },
-      { id: "xga", label: "XGA (1024×768)", width: 1024, height: 768 },
-      { id: "uxga", label: "UXGA (1600×1200)", width: 1600, height: 1200 }
+      { id: "vga", short: "VGA", label: "VGA (640×480)", width: 640, height: 480 },
+      { id: "svga", short: "SVGA", label: "SVGA (800×600)", width: 800, height: 600 },
+      { id: "xga", short: "XGA", label: "XGA (1024×768)", width: 1024, height: 768 },
+      { id: "uxga", short: "UXGA", label: "UXGA (1600×1200)", width: 1600, height: 1200 }
     ]
   }
 ]
@@ -65,7 +71,8 @@ export const STORAGE_KEYS = {
   customSizes: "custom-sizes",
   settings: "settings",
   presetOffsets: "preset-offsets",
-  sizeMode: "size-mode"
+  sizeMode: "size-mode",
+  captureDelay: "capture-delay"
 } as const
 
 /** 既定の設定値 */
@@ -73,6 +80,7 @@ export const DEFAULT_SETTINGS = {
   captureDirName: "Captures",
   storageArea: "local" as "local" | "sync",
   language: "auto" as "auto" | "ja" | "en",
+  theme: "auto" as ThemeSetting,
   imageFormat: "png" as ImageFormat,
   /** スクロール領域を撮るとき、外枠（最初の1画面）と領域の下の部分も含めるか。 */
   scrollAreaIncludeFrame: false,

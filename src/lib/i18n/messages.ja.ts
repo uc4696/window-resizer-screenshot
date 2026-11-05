@@ -3,10 +3,14 @@ import type { MessageKey } from "./messages.en"
 /** 日本語メッセージ辞書。英語辞書と同じキーを必須とする（追加漏れは型エラーになる）。 */
 export const ja: Record<MessageKey, string> = {
   // ---- popup ----
-  windowLabel: "ウィンドウ:",
-  viewportLabel: "ビューポート:",
+  currentWindowSize: "今のウィンドウのサイズ",
+  currentViewportSize: "今のビューポートのサイズ（ページが表示される部分）",
   modeWindow: "ウィンドウ基準",
   modeViewport: "ビューポート基準",
+  modeWindowShort: "ウィンドウ",
+  modeViewportShort: "ビューポート",
+  modeWindowTitle: "ツールバーなどを含むウィンドウ全体を、選んだサイズにします",
+  modeViewportTitle: "ページが表示される部分を、選んだサイズにします",
   screenshotTitle: "スクリーンショット",
   captureVisibleLabel: "表示部分",
   captureFullPageLabel: "ページ全体",
@@ -14,13 +18,14 @@ export const ja: Record<MessageKey, string> = {
   captureVisibleCopy: "表示部分のスクリーンショットをクリップボードにコピー",
   captureFullPageDownload: "ページ全体のスクリーンショットをダウンロード",
   captureFullPageCopy: "ページ全体のスクリーンショットをクリップボードにコピー",
-  captureDelayLabel: "タイマー: 少し待ってから撮影します（ホバーで出るメニューなどに）",
-  captureDelayNone: "タイマーなし",
+  captureDelayLabel:
+    "タイマー: ダウンロードを押してから数秒後に撮影します。その間にメニューなどを開けます",
+  captureDelayNone: "なし",
   captureDelaySeconds: "{seconds}秒",
   captureNoCopyWithDelay:
     "タイマーではコピーと範囲選択を使えません。待つ間に popup が閉じるので、保存だけになります。",
-  capturePick: "スクロールする範囲を選んで撮影",
-  capturePickUnavailable: "このページには選べるスクロール範囲がありません",
+  capturePick: "一覧など、枠の中だけスクロールする部分を選んで、全体を撮影します",
+  capturePickUnavailable: "このページには、枠の中だけスクロールする部分がありません",
   pickerBanner: "撮影する範囲をクリック（Esc でキャンセル）",
   pickerContent: "内容 {height}px",
   pickerSave: "ダウンロード",
@@ -28,8 +33,7 @@ export const ja: Record<MessageKey, string> = {
   pickerCancel: "キャンセル",
   statusCopied: "クリップボードにコピーしました。",
   errClipboard: "クリップボードへのコピーに失敗しました。",
-  openSettings: "設定を開く",
-  shareOnX: "Xで共有",
+  openSettings: "設定を開く（言語、テーマ、保存先など）",
   shareOnXTitle: "この拡張機能をXで共有する（投稿画面が開きます）",
   shareText:
     "「このサイズだとどう見える？」をすぐ確認。\nウィンドウ/ビューポートのリサイズもページ全体スクショもこれ1つ📸",
@@ -90,6 +94,11 @@ export const ja: Record<MessageKey, string> = {
   languageHint:
     "表示言語を選択します。「自動」はブラウザの言語に従います（非対応の言語は英語になります）。",
   languageAuto: "自動",
+  themeLabel: "テーマ",
+  themeHint: "ポップアップとこの画面の色を選びます。",
+  themeAuto: "ブラウザに合わせる",
+  themeLight: "ライト",
+  themeDark: "ダーク",
   captureDirLabel: "スクリーンショット保存先フォルダ名",
   captureDirHint:
     "ダウンロードフォルダ配下に作成されるフォルダ名です（例: Downloads/Captures/...）。",
@@ -120,14 +129,12 @@ export const ja: Record<MessageKey, string> = {
   storageHint:
     "local: この端末のみに保存されます。sync: Googleアカウントに紐づき、他端末とも同期されます。",
   storageLocalDefault: "local（既定）",
-  save: "保存",
   settingsSaved: "設定を保存しました。",
   presetOffsetLabel: "解像度テンプレートのオフセット（マージン）",
   presetOffsetHint:
-    "各プリセットに、ウィンドウ基準／ビューポート基準それぞれ個別の補正値（px）を設定できます。空欄のまま保存するとそのモードは補正なしになります。",
+    "各プリセットに、ウィンドウ基準／ビューポート基準それぞれ個別の補正値（px）を設定できます。両方を空欄にすると、そのモードは補正なしになります。",
   offsetWidthShort: "幅補正",
   offsetHeightShort: "高さ補正",
-  clear: "クリア",
   resetLabel: "ファクトリーリセット（設定の初期化）",
   resetHint:
     "保存先フォルダ名・スクリーンショット形式・スクロール範囲の撮影設定・ストレージ領域・言語・カスタムサイズ・プリセットのオフセットをすべて初期状態に戻します。",

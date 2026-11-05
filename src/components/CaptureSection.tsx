@@ -5,6 +5,7 @@ import { DELAY_SECONDS } from "~lib/commands"
 import { useI18n } from "~lib/i18n/useI18n"
 import type { CaptureAction, CaptureMode, CaptureResponse } from "~lib/messages"
 import { countPickCandidates, startPicker } from "~lib/picker"
+import { getCaptureDelay, setCaptureDelay } from "~lib/storage"
 
 /** コピー成功後、check アイコンを見せてから popup を閉じるまでの時間（ms）。 */
 export const CLOSE_AFTER_COPY_MS = 800
@@ -47,7 +48,7 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
   const { t } = useI18n()
   const [copiedMode, setCopiedMode] = useState<CaptureMode | null>(null)
   const [pickTabId, setPickTabId] = useState<number | null>(null)
-  /** 遅延撮影の秒数（0 はなし）。popup を開くたびになしに戻す（次の撮影で思わず待たないように）。 */
+  /** 遅延撮影の秒数（0 はなし）。撮影後も選んだままにする。 */
   const [delaySeconds, setDelaySeconds] = useState(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -56,6 +57,15 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
   }, [])
+
+  useEffect(() => {
+    getCaptureDelay().then(setDelaySeconds)
+  }, [])
+
+  function changeDelay(seconds: number) {
+    setDelaySeconds(seconds)
+    void setCaptureDelay(seconds)
+  }
 
   // 対象タブに選べるスクロール範囲があるか調べ、あれば［選択］を有効にする
   useEffect(() => {
@@ -171,22 +181,29 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
     <section className="capture-section">
       <div className="capture-header">
         <p className="section-title">{t("screenshotTitle")}</p>
-        <label className="capture-delay" title={t("captureDelayLabel")}>
-          <Icon name="clock" size={12} />
-          <select
-            aria-label={t("captureDelayLabel")}
-            value={delaySeconds}
-            disabled={busy}
-            onChange={(e) => setDelaySeconds(Number(e.target.value))}
-          >
-            <option value={0}>{t("captureDelayNone")}</option>
-            {DELAY_SECONDS.map((seconds) => (
-              <option key={seconds} value={seconds}>
-                {t("captureDelaySeconds", { seconds })}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div
+          className="capture-delay"
+          role="radiogroup"
+          aria-label={t("captureDelayLabel")}
+          title={t("captureDelayLabel")}
+        >
+          <Icon name="clock" size={13} />
+          {[0, ...DELAY_SECONDS].map((seconds) => (
+            <button
+              key={seconds}
+              type="button"
+              role="radio"
+              aria-checked={delaySeconds === seconds}
+              className={`delay-option ${delaySeconds === seconds ? "active" : ""}`}
+              disabled={busy}
+              onClick={() => changeDelay(seconds)}
+            >
+              {seconds === 0
+                ? t("captureDelayNone")
+                : t("captureDelaySeconds", { seconds })}
+            </button>
+          ))}
+        </div>
       </div>
       {rows.map((row) => (
         <div key={row.mode} className="capture-row" data-capture-mode={row.mode}>

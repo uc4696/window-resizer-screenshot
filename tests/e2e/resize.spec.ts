@@ -80,6 +80,6 @@ test.describe("リサイズ機能（正常系）", () => {
     await presetButton(popup, 800, 600).click()
     await waitForFinalStatus(popup)
 
-    await expect(popup.locator(".size-value").first()).toHaveText("800 x 600")
+    await expect(popup.locator(".size-value").first()).toHaveText("800×600")
   })
 })

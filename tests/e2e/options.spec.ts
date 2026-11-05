@@ -7,7 +7,7 @@ import {
 } from "./helpers"
 
 test.describe("設定画面（正常系）", () => {
-  test("保存先フォルダ名を変更して保存すると、撮影時の保存先に反映される", async ({
+  test("保存先フォルダ名は変更するだけで保存され、撮影時の保存先に反映される", async ({
     context,
     extensionId,
     openTarget,
@@ -17,8 +17,8 @@ test.describe("設定画面（正常系）", () => {
     const options = await context.newPage()
     await options.goto(`chrome-extension://${extensionId}/options.html`)
     await options.locator("#captureDirName").fill("E2ECaptures")
-    await options.getByRole("button", { name: "Save", exact: true }).first().click()
     await expect(options.getByText("Settings saved.")).toBeVisible()
+    await expect(options.getByRole("button", { name: "Save" })).toHaveCount(0)
 
     const target = await openTarget("/")
     const popup = await openPopup(target)
@@ -49,7 +49,7 @@ test.describe("設定画面（正常系）", () => {
     await expect(options.locator("h1")).toContainText("設定")
   })
 
-  test("プリセットのオフセットを保存すると popup のプリセットにバッジが表示される", async ({
+  test("プリセットのオフセットは入力欄を離れると保存され、popup に印が出て、空にすると消える", async ({
     context,
     extensionId,
     openTarget,
@@ -63,14 +63,74 @@ test.describe("設定画面（正常系）", () => {
     const windowRow = item.locator(".offset-preset-row").first()
     await windowRow.getByPlaceholder("Width offset").fill("14")
     await windowRow.getByPlaceholder("Height offset").fill("7")
-    await windowRow.getByRole("button", { name: "Save" }).click()
-    await expect(windowRow.getByRole("button", { name: "Clear" })).toBeVisible()
+    await windowRow.getByPlaceholder("Height offset").blur()
+    await expect(options.getByText("Settings saved.")).toBeVisible()
 
-    const popup = await openPopup(await openTarget("/"))
+    const target = await openTarget("/")
+    let popup = await openPopup(target)
     await popup.getByRole("button", { name: "Window-based" }).click()
     await expect(
       presetButton(popup, 800, 600).locator(".preset-offset-badge")
     ).toBeVisible()
+    await expect(presetButton(popup, 800, 600)).toHaveAttribute("title", /\+14/)
+    await popup.close()
+
+    await windowRow.getByPlaceholder("Width offset").fill("")
+    await windowRow.getByPlaceholder("Height offset").fill("")
+    await windowRow.getByPlaceholder("Height offset").blur()
+    popup = await openPopup(target)
+    await popup.getByRole("button", { name: "Window-based" }).click()
+    await expect(
+      presetButton(popup, 800, 600).locator(".preset-offset-badge")
+    ).toHaveCount(0)
+  })
+
+  test("ストレージ領域は選ぶだけで保存される", async ({ context, extensionId }) => {
+    const options = await context.newPage()
+    await options.goto(`chrome-extension://${extensionId}/options.html`)
+    await options.getByRole("radio", { name: "sync", exact: true }).check()
+    await expect(options.getByText("Settings saved.")).toBeVisible()
+    await options.reload()
+    await expect(options.getByRole("radio", { name: "sync", exact: true })).toBeChecked()
+  })
+
+  test("テーマ: 既定はブラウザに合わせ、ライト・ダークを選ぶと popup にも反映され、初期化で戻る", async ({
+    context,
+    extensionId,
+    openTarget,
+    openPopup
+  }) => {
+    const options = await context.newPage()
+    options.on("dialog", (dialog) => dialog.accept())
+    await options.goto(`chrome-extension://${extensionId}/options.html`)
+    const theme = options.locator("#theme")
+    await expect(theme).toHaveValue("auto")
+    const colors = (page: typeof options) =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--bg-color").trim()
+      )
+
+    await theme.selectOption("dark")
+    await expect(options.getByText("Settings saved.")).toBeVisible()
+    await expect.poll(() => colors(options)).toBe("#111827")
+    const target = await openTarget("/")
+    let popup = await openPopup(target)
+    await expect.poll(() => colors(popup)).toBe("#1f2937")
+    await popup.close()
+
+    await options.bringToFront()
+    await theme.selectOption("light")
+    await expect.poll(() => colors(options)).toMatch(/^#fff(fff)?$/)
+    popup = await openPopup(target)
+    await expect.poll(() => colors(popup)).toMatch(/^#fff(fff)?$/)
+    await popup.close()
+
+    await options.bringToFront()
+    await options.getByRole("button", { name: "Reset settings" }).click()
+    await expect(theme).toHaveValue("auto")
+    await expect
+      .poll(() => options.evaluate(() => document.documentElement.dataset.theme ?? null))
+      .toBeNull()
   })
 
   test("画像形式の既定は PNG で、WebP に変更すると再読み込み後も保持される", async ({

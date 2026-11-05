@@ -13,7 +13,7 @@ A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or v
 - Per-template, per-mode (window-based / viewport-based) offset (margin) values configurable on the Options page
 - When a resize would push the window off the screen, it is moved to stay on the screen without changing the size (can be turned off in the settings)
 - Add, edit and delete custom sizes (a correction offset can be specified in window-based mode). The list is always shown right below the templates, and the "Custom size settings" accordion only contains the add/edit form
-- Popup UI opened from the toolbar icon (automatic dark mode support)
+- Popup UI opened from the toolbar icon (theme selectable in the settings: light, dark or follow the browser)
 - Screenshots of the visible tab or the full page (scrolling capture + stitching)
 - Saved into the `Captures` folder under Downloads (the folder name can be changed). The format is selectable in the settings: PNG (default) / WebP / JPEG
 - Copy screenshots to the clipboard (PNG only)
@@ -89,6 +89,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │       ├── screenshot.ts           # Visible Tab / Full Page screenshot capture (PNG/WebP/JPEG output)
 │       ├── share.ts                # Builds the X post URL
 │       ├── review-prompt.ts        # When to show the rating request, and its state
+│       ├── theme.ts                # Applies the theme (light, dark or follow the browser)
 │       ├── placement.ts            # Where to place a resized window so it stays on screen
 │       ├── commands.ts             # Keyboard shortcut names and what they do
 │       ├── page-copy.ts            # Copying from a shortcut (writes to the clipboard from the page)
@@ -217,7 +218,7 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 - A "whole window screenshot" that includes the OS title bar, browser toolbar and window frame cannot be taken with Chrome's standard capture APIs, so please use an external capture tool.
 - "Full page" also works on layouts where the page itself does not scroll and only an inner area does (common in business systems and admin dashboards). If a scrollable area covers at least 70% of the viewport, only its content is captured to the end and stitched vertically (if there are only smaller areas, nothing is extended and you get one screen of the visible area). When "Include the surrounding frame and the part below the area" is enabled in the settings, the frame of the first screen (header, sidebar, etc.) is kept and the part below the area is appended at the end. The sidebar is not extended, so it appears only for the first screen.
 - The select button on the Full page row (enabled only on pages with a scrollable area) highlights the scrollable areas on the page, and you can save or copy the one you click. Press Esc to cancel. Copy is not offered on pages where the clipboard is unavailable, such as http pages. Areas inside cross-origin iframes and areas scrolled by custom JavaScript cannot be chosen.
-- Choosing 3, 5 or 10 seconds with the timer in the screenshot section takes the screenshot that long after the download button is pressed. The popup closes right away, so you can interact with the page in the meantime to bring up hover menus and the like. The remaining seconds appear on the toolbar icon's badge. Copying and area selection are not available with the timer because the popup closes while waiting. If you switch to another tab while waiting, no screenshot is taken (shown with `!`). The timer choice is not saved; it returns to "No timer" each time the popup opens.
+- Choosing 3, 5 or 10 seconds with the timer in the screenshot section takes the screenshot that long after the download button is pressed. The popup closes right away, so you can interact with the page in the meantime to bring up hover menus and the like. The remaining seconds appear on the toolbar icon's badge. Copying and area selection are not available with the timer because the popup closes while waiting. If you switch to another tab while waiting, no screenshot is taken (shown with `!`). The timer choice stays until you set it back to "Off".
 - When you press a download button, the popup closes right away and the result is shown as a badge on the toolbar icon (`...` while capturing, `OK` on success, `!` on failure). For copy, the popup closes after the image has been written to the clipboard.
 
 ### 5. Permissions
