@@ -29,6 +29,15 @@ const BADGES: Record<BadgeKind, { text: string; color: string }> = {
   error: { text: "!", color: "#dc2626" }
 }
 
+/** タブごとの、バッジを消す予定。新しいバッジを出したら取り消す（前の予定に消されないように）。 */
+const badgeClearTimers = new Map<number, ReturnType<typeof setTimeout>>()
+
+function cancelBadgeClear(tabId: number): void {
+  const timer = badgeClearTimers.get(tabId)
+  if (timer !== undefined) clearTimeout(timer)
+  badgeClearTimers.delete(tabId)
+}
+
 /**
  * タブ単位でツールバーアイコンにバッジを出す。busy 以外は一定時間後に消す。
  * message を渡すと、バッジが出ている間だけアイコンのツールチップにも出す（popup がない流れで理由を伝える）。
@@ -39,11 +48,13 @@ async function showBadge(
   message?: string
 ): Promise<void> {
   const badge = BADGES[kind]
+  cancelBadgeClear(tabId)
   await chrome.action.setBadgeBackgroundColor({ tabId, color: badge.color })
   await chrome.action.setBadgeText({ tabId, text: badge.text })
   if (message) await chrome.action.setTitle({ tabId, title: message })
   if (kind === "busy") return
-  setTimeout(() => {
+  const timer = setTimeout(() => {
+    badgeClearTimers.delete(tabId)
     // タブが閉じられていると失敗するので無視する
     chrome.action.setBadgeText({ tabId, text: "" }).catch(() => undefined)
     // 空文字を渡すとツールチップが空になるので、既定の文言を入れ直す
@@ -54,6 +65,28 @@ async function showBadge(
         .catch(() => undefined)
     }
   }, BADGE_CLEAR_MS)
+  badgeClearTimers.set(tabId, timer)
+}
+
+/** タブごとの、進行中のカウントダウン。同じタブでまた始めたら前のものをやめる。 */
+const countdowns = new Map<number, symbol>()
+
+/**
+ * 残り秒数をバッジに出しながら待つ。service worker は処理の途中で止まらない長さ（10秒まで）なので
+ * setTimeout で待つ。新しいカウントダウンに置き換えられたら false を返す。
+ */
+async function countDown(tabId: number, seconds: number): Promise<boolean> {
+  const id = Symbol()
+  countdowns.set(tabId, id)
+  cancelBadgeClear(tabId)
+  await chrome.action.setBadgeBackgroundColor({ tabId, color: BADGES.busy.color })
+  for (let left = seconds; left > 0; left--) {
+    await chrome.action.setBadgeText({ tabId, text: String(left) })
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    if (countdowns.get(tabId) !== id) return false
+  }
+  countdowns.delete(tabId)
+  return true
 }
 
 // 評価のお願いの起点。service worker が起きるたびに、記録がなければ今を記録する
@@ -127,8 +160,13 @@ async function handleDownloadWithBadge(
 ): Promise<void> {
   const tab = await resolveTab(senderTab)
   const tabId = tab?.id
-  if (tabId !== undefined) await showBadge(tabId, "busy").catch(() => undefined)
   try {
+    if (message.delaySeconds && tabId !== undefined) {
+      if (!(await countDown(tabId, message.delaySeconds))) return
+      // 別のタブに移っていたら、そのタブを写してしまわないように止める
+      if (!(await chrome.tabs.get(tabId)).active) throw new Error(t("errDelayTabChanged"))
+    }
+    if (tabId !== undefined) await showBadge(tabId, "busy").catch(() => undefined)
     const response = await handleCapture(message, tab)
     if (!response.ok) throw new Error(response.error)
     if (tabId !== undefined) await showBadge(tabId, "ok")
@@ -169,6 +207,16 @@ async function handleCommand(
       } else if (!(await startCopyInPage(tab.id, command.mode))) {
         throw new Error(t("errClipboardUnavailable"))
       }
+    } else if (command.kind === "capture-delayed") {
+      await handleDownloadWithBadge(
+        {
+          type: "capture-screenshot",
+          mode: "visible",
+          action: "download",
+          delaySeconds: command.seconds
+        },
+        tab
+      )
     } else if (command.kind === "pick") {
       const count = await startPicker(tab.id, {
         banner: t("pickerBanner"),

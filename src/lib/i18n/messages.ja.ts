@@ -14,6 +14,11 @@ export const ja: Record<MessageKey, string> = {
   captureVisibleCopy: "表示部分のスクリーンショットをクリップボードにコピー",
   captureFullPageDownload: "ページ全体のスクリーンショットをダウンロード",
   captureFullPageCopy: "ページ全体のスクリーンショットをクリップボードにコピー",
+  captureDelayLabel: "タイマー: 少し待ってから撮影します（ホバーで出るメニューなどに）",
+  captureDelayNone: "タイマーなし",
+  captureDelaySeconds: "{seconds}秒",
+  captureNoCopyWithDelay:
+    "タイマーではコピーと範囲選択を使えません。待つ間に popup が閉じるので、保存だけになります。",
   capturePick: "スクロールする範囲を選んで撮影",
   capturePickUnavailable: "このページには選べるスクロール範囲がありません",
   pickerBanner: "撮影する範囲をクリック（Esc でキャンセル）",
@@ -159,5 +164,6 @@ export const ja: Record<MessageKey, string> = {
     "このページではコピーできません（https か localhost のページのみ）。",
   errBoundsRejected:
     "この画面では {width} x {height} のウィンドウにできません（Chrome は、ウィンドウの半分以上が画面内にあることを求めます）。",
+  errDelayTabChanged: "タイマーの間にタブが切り替わったので撮影しませんでした。",
   errPickedAreaMissing: "選んだ範囲が見つかりませんでした。もう一度選んでください。"
 }

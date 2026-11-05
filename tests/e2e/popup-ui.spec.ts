@@ -114,8 +114,8 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     openPopup
   }) => {
     const popup = await openPopup(await openTarget("/"))
-    // 行頭アイコン2 + ダウンロード/コピー4 + 範囲選択1 + 設定・X共有2
-    await expect(popup.locator(".ui-icon")).toHaveCount(9)
+    // タイマー1 + 行頭アイコン2 + ダウンロード/コピー4 + 範囲選択1 + 設定・X共有2
+    await expect(popup.locator(".ui-icon")).toHaveCount(10)
 
     const results = await popup.locator(".ui-icon").evaluateAll((icons) =>
       icons.map((icon) => {
@@ -124,7 +124,7 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
         const iconRect = icon.getBoundingClientRect()
         // 親ボタン（なければ行頭アイコンのラッパー）の枠
         const frame = (
-          icon.closest("button, a, .capture-scope") ?? icon
+          icon.closest("button, a, .capture-scope, .capture-delay") ?? icon
         ).getBoundingClientRect()
         const tolerance = 0.5
         return {

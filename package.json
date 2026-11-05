@@ -65,6 +65,15 @@
       "capture-pick": {
         "description": "__MSG_cmdCapturePick__"
       },
+      "capture-visible-delay-3": {
+        "description": "__MSG_cmdCaptureDelay3__"
+      },
+      "capture-visible-delay-5": {
+        "description": "__MSG_cmdCaptureDelay5__"
+      },
+      "capture-visible-delay-10": {
+        "description": "__MSG_cmdCaptureDelay10__"
+      },
       "resize-preset-hd": {
         "description": "__MSG_cmdResizeHd__"
       },

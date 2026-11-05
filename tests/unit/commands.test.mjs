@@ -46,6 +46,10 @@ test("コマンド名を中身に変換する", () => {
     action: "copy"
   })
   assert.deepEqual(parseCommand("capture-pick"), { kind: "pick" })
+  assert.deepEqual(parseCommand("capture-visible-delay-10"), {
+    kind: "capture-delayed",
+    seconds: 10
+  })
 })
 
 test("知らない名前や枠の外は null", () => {

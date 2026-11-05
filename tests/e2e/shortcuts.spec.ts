@@ -213,8 +213,8 @@ test.describe("キーボードショートカット", () => {
   }) => {
     const options = await context.newPage()
     await options.goto(`chrome-extension://${extensionId}/options.html`)
-    await expect(options.locator(".shortcut-row")).toHaveCount(18)
-    await expect(options.locator(".shortcut-unset")).toHaveCount(18)
+    await expect(options.locator(".shortcut-row")).toHaveCount(21)
+    await expect(options.locator(".shortcut-unset")).toHaveCount(21)
     await expect(options.locator('[data-command="resize-preset-hd"]')).toContainText(
       "Resize: HD (1280 x 720)"
     )

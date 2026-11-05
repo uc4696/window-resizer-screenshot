@@ -58,5 +58,14 @@
   },
   "cmdResizeCustom5": {
     "message": "Resize: custom size 5"
+  },
+  "cmdCaptureDelay3": {
+    "message": "Screenshot: download visible area after 3 seconds"
+  },
+  "cmdCaptureDelay5": {
+    "message": "Screenshot: download visible area after 5 seconds"
+  },
+  "cmdCaptureDelay10": {
+    "message": "Screenshot: download visible area after 10 seconds"
   }
 }

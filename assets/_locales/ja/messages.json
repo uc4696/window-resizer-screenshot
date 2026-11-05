@@ -58,5 +58,14 @@
   },
   "cmdResizeCustom5": {
     "message": "リサイズ: カスタムサイズ 5"
+  },
+  "cmdCaptureDelay3": {
+    "message": "撮影: 3秒後に表示部分をダウンロード"
+  },
+  "cmdCaptureDelay5": {
+    "message": "撮影: 5秒後に表示部分をダウンロード"
+  },
+  "cmdCaptureDelay10": {
+    "message": "撮影: 10秒後に表示部分をダウンロード"
   }
 }

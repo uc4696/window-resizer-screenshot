@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 
 import { Icon } from "~components/Icon"
+import { DELAY_SECONDS } from "~lib/commands"
 import { useI18n } from "~lib/i18n/useI18n"
 import type { CaptureAction, CaptureMode, CaptureResponse } from "~lib/messages"
 import { countPickCandidates, startPicker } from "~lib/picker"
@@ -25,9 +26,15 @@ function dataUrlToPngBlob(dataUrl: string): Blob {
 /** background に撮影を依頼する。 */
 function requestCapture(
   mode: CaptureMode,
-  action: CaptureAction
+  action: CaptureAction,
+  delaySeconds = 0
 ): Promise<CaptureResponse> {
-  return chrome.runtime.sendMessage({ type: "capture-screenshot", mode, action })
+  return chrome.runtime.sendMessage({
+    type: "capture-screenshot",
+    mode,
+    action,
+    delaySeconds
+  })
 }
 
 /**
@@ -40,6 +47,8 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
   const { t } = useI18n()
   const [copiedMode, setCopiedMode] = useState<CaptureMode | null>(null)
   const [pickTabId, setPickTabId] = useState<number | null>(null)
+  /** 遅延撮影の秒数（0 はなし）。popup を開くたびになしに戻す（次の撮影で思わず待たないように）。 */
+  const [delaySeconds, setDelaySeconds] = useState(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -116,7 +125,7 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
     onBusyChange(true)
     onStatus(statusWhileCapturing(mode))
     try {
-      const response = await requestCapture(mode, "download")
+      const response = await requestCapture(mode, "download", delaySeconds)
       if (response?.ok) {
         window.close()
         return
@@ -160,7 +169,25 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
 
   return (
     <section className="capture-section">
-      <p className="section-title">{t("screenshotTitle")}</p>
+      <div className="capture-header">
+        <p className="section-title">{t("screenshotTitle")}</p>
+        <label className="capture-delay" title={t("captureDelayLabel")}>
+          <Icon name="clock" size={12} />
+          <select
+            aria-label={t("captureDelayLabel")}
+            value={delaySeconds}
+            disabled={busy}
+            onChange={(e) => setDelaySeconds(Number(e.target.value))}
+          >
+            <option value={0}>{t("captureDelayNone")}</option>
+            {DELAY_SECONDS.map((seconds) => (
+              <option key={seconds} value={seconds}>
+                {t("captureDelaySeconds", { seconds })}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       {rows.map((row) => (
         <div key={row.mode} className="capture-row" data-capture-mode={row.mode}>
           <span className="capture-scope" title={row.label}>
@@ -181,9 +208,9 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
             <button
               type="button"
               className={`icon-button ${copiedMode === row.mode ? "copied" : ""}`}
-              title={row.copyLabel}
+              title={delaySeconds > 0 ? t("captureNoCopyWithDelay") : row.copyLabel}
               aria-label={row.copyLabel}
-              disabled={busy}
+              disabled={busy || delaySeconds > 0}
               onClick={() => handleCopy(row.mode)}
             >
               <Icon name={copiedMode === row.mode ? "check" : "copy"} />
@@ -193,10 +220,14 @@ export function CaptureSection({ busy, onBusyChange, onStatus }: Props) {
                 type="button"
                 className="icon-button"
                 title={
-                  pickTabId !== null ? t("capturePick") : t("capturePickUnavailable")
+                  delaySeconds > 0
+                    ? t("captureNoCopyWithDelay")
+                    : pickTabId !== null
+                      ? t("capturePick")
+                      : t("capturePickUnavailable")
                 }
                 aria-label={t("capturePick")}
-                disabled={busy || pickTabId === null}
+                disabled={busy || pickTabId === null || delaySeconds > 0}
                 onClick={handlePick}
               >
                 <Icon name="click" />

@@ -17,6 +17,11 @@ export const en = {
   captureVisibleCopy: "Copy screenshot of visible area to clipboard",
   captureFullPageDownload: "Download screenshot of full page",
   captureFullPageCopy: "Copy screenshot of full page to clipboard",
+  captureDelayLabel: "Timer: capture after a delay (for menus that appear on hover)",
+  captureDelayNone: "No timer",
+  captureDelaySeconds: "{seconds} sec",
+  captureNoCopyWithDelay:
+    "Copying and choosing an area are not available with the timer. The popup closes while waiting, so the screenshot can only be downloaded.",
   capturePick: "Choose a scrollable area to capture",
   capturePickUnavailable: "There is no scrollable area to choose on this page",
   pickerBanner: "Click the area to capture (Esc to cancel)",
@@ -163,6 +168,8 @@ export const en = {
     "Copying is not available on this page (https or localhost only).",
   errBoundsRejected:
     "Chrome does not allow a {width} x {height} window on this screen, because at least half of the window must be on screen.",
+  errDelayTabChanged:
+    "The screenshot was not taken because the tab was switched during the timer.",
   errPickedAreaMissing: "The selected area was not found. Please choose it again."
 }
 

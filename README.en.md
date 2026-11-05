@@ -19,6 +19,7 @@ A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or v
 - Copy screenshots to the clipboard (PNG only)
 - Icon-button UI with Tabler Icons (Visible area / Full page rows x Download / Copy, plus area selection on the Full page row)
 - Choose a scrollable area on the page to capture (candidates are highlighted, and the clicked area can be saved or copied)
+- Delay timer for screenshots (3, 5 or 10 seconds; for menus that appear on hover)
 - Keyboard shortcuts (resizing to presets and 5 custom size slots, and each kind of screenshot). No keys are assigned by default; assign only the ones you want at `chrome://extensions/shortcuts`
 - Share button for X (opens the post screen)
 - Local / sync storage switching via `@plasmohq/storage`
@@ -216,6 +217,7 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 - A "whole window screenshot" that includes the OS title bar, browser toolbar and window frame cannot be taken with Chrome's standard capture APIs, so please use an external capture tool.
 - "Full page" also works on layouts where the page itself does not scroll and only an inner area does (common in business systems and admin dashboards). If a scrollable area covers at least 70% of the viewport, only its content is captured to the end and stitched vertically (if there are only smaller areas, nothing is extended and you get one screen of the visible area). When "Include the surrounding frame and the part below the area" is enabled in the settings, the frame of the first screen (header, sidebar, etc.) is kept and the part below the area is appended at the end. The sidebar is not extended, so it appears only for the first screen.
 - The select button on the Full page row (enabled only on pages with a scrollable area) highlights the scrollable areas on the page, and you can save or copy the one you click. Press Esc to cancel. Copy is not offered on pages where the clipboard is unavailable, such as http pages. Areas inside cross-origin iframes and areas scrolled by custom JavaScript cannot be chosen.
+- Choosing 3, 5 or 10 seconds with the timer in the screenshot section takes the screenshot that long after the download button is pressed. The popup closes right away, so you can interact with the page in the meantime to bring up hover menus and the like. The remaining seconds appear on the toolbar icon's badge. Copying and area selection are not available with the timer because the popup closes while waiting. If you switch to another tab while waiting, no screenshot is taken (shown with `!`). The timer choice is not saved; it returns to "No timer" each time the popup opens.
 - When you press a download button, the popup closes right away and the result is shown as a badge on the toolbar icon (`...` while capturing, `OK` on success, `!` on failure). For copy, the popup closes after the image has been written to the clipboard.
 
 ### 5. Permissions
@@ -243,7 +245,7 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 
 ### 8. Keyboard shortcuts
 - No keys are assigned by default, because they would collide with other extensions, Windows and Chrome. Open Chrome's shortcuts page (`chrome://extensions/shortcuts`) from "Keyboard shortcuts" on the settings page and assign only the ones you want. The current assignments are also shown on the settings page.
-- Available commands: resizing to a preset (8), resizing to a custom size (5 slots), downloading and copying the visible area or the full page, and choosing a scrollable area.
+- Available commands: resizing to a preset (8), resizing to a custom size (5 slots), downloading and copying the visible area or the full page, choosing a scrollable area, and a delayed download of the visible area (3, 5 or 10 seconds). A delayed capture starts without leaving the page, so hover menus can stay open.
 - Presets use the base (window or viewport) last selected in the popup. For custom sizes, choose a size for each slot on the settings page; it is applied with that size's own base. If a slot is empty, or its size was deleted, nothing is resized and a `!` badge and the icon's tooltip tell you so.
 - The popup does not open, so results appear as a badge on the toolbar icon (success `OK` / failure `!`). On failure, the reason is shown in the icon's tooltip while the badge is visible.
 - `activeTab` is also granted by a shortcut, so no extra permissions are needed. Scripts cannot be injected into special pages such as `chrome://`, so only downloading the visible area works there.

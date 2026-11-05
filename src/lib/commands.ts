@@ -7,6 +7,9 @@
  */
 export const CUSTOM_SLOT_COUNT = 5
 
+/** 遅延撮影の秒数（popup の選択肢とショートカットで共通）。 */
+export const DELAY_SECONDS = [3, 5, 10]
+
 /** package.json の manifest.commands と同じプリセット（constants.ts の id）。 */
 const PRESET_IDS = ["hd", "fhd", "wqhd", "4k", "vga", "svga", "xga", "uxga"]
 
@@ -18,6 +21,7 @@ export type ShortcutCommand =
       mode: "visible" | "full-page"
       action: "download" | "copy"
     }
+  | { kind: "capture-delayed"; seconds: number }
   | { kind: "pick" }
 
 const CAPTURE_COMMANDS: Record<string, ShortcutCommand> = {
@@ -29,7 +33,13 @@ const CAPTURE_COMMANDS: Record<string, ShortcutCommand> = {
     action: "download"
   },
   "capture-full-page-copy": { kind: "capture", mode: "full-page", action: "copy" },
-  "capture-pick": { kind: "pick" }
+  "capture-pick": { kind: "pick" },
+  ...Object.fromEntries(
+    DELAY_SECONDS.map((seconds) => [
+      `capture-visible-delay-${seconds}`,
+      { kind: "capture-delayed", seconds } as ShortcutCommand
+    ])
+  )
 }
 
 /** 設定画面に並べる順。 */

@@ -393,6 +393,43 @@ body {
   margin: 0 0 4px 0;
 }
 
+.capture-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.capture-header .section-title {
+  margin: 0;
+}
+
+.capture-delay {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--subtitle-color);
+}
+
+.capture-delay select {
+  height: 18px;
+  padding: 0 2px;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.capture-delay select:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 1px;
+}
+
 .capture-row {
   display: flex;
   align-items: center;
