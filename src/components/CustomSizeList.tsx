@@ -1,3 +1,4 @@
+import { Icon } from "~components/Icon"
 import { useI18n } from "~lib/i18n/useI18n"
 import { formatOffset } from "~lib/offset"
 import type { CustomSize, SizeMode } from "~lib/types"
@@ -34,7 +35,10 @@ export function CustomSizeList({
 
   return (
     <div className="custom-size-section">
-      <p className="preset-group-title">{t("customSizes")}</p>
+      <p className="preset-group-title">
+        <Icon name="adjustments-horizontal" size={14} />
+        <span>{t("customSizes")}</span>
+      </p>
       <div className="custom-size-list">
         {filtered.map((size) => {
           const hasOffset =

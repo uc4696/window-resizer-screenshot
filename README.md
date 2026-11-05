@@ -21,7 +21,7 @@
 - スクロールする範囲をページ上で選んで撮影（候補をハイライトし、クリックした範囲を保存／コピー）
 - 遅延撮影タイマー（3・5・10秒後に撮影。ホバーで出るメニューなどを撮るためのもの）
 - キーボードショートカット（プリセット・カスタムサイズ5枠へのリサイズと各種の撮影。既定では何も割り当てず、`chrome://extensions/shortcuts` で使うものだけ割り当てます）
-- X（旧Twitter）への共有ボタン（投稿画面を開きます）
+- SNS への共有ボタン（X、Facebook、LINE、Threads、Bluesky、LinkedIn、Reddit。投稿画面を開きます）
 - `@plasmohq/storage` によるローカル/同期ストレージの切り替え設定
 - 設定・カスタムサイズ・プリセットオフセットを初期状態に戻すファクトリーリセット機能
 - 多言語対応（日本語 / English）。Options画面の「言語」で「自動 / 日本語 / English」を選択可能（「自動」はブラウザのUI言語に従い、日本語以外は英語）
@@ -77,7 +77,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 │   │   ├── CustomSizeManager.tsx   # カスタムサイズの追加・変更フォーム（アコーディオン）
 │   │   ├── CaptureSection.tsx      # スクリーンショット欄（2行 × ダウンロード／コピー）
 │   │   ├── Icon.tsx                # Tabler Icons の SVG をインライン展開
-│   │   ├── ShareButton.tsx         # Xへの共有ボタン
+│   │   ├── ShareButton.tsx         # SNSへの共有ボタン
 │   │   ├── ReviewPrompt.tsx        # ストアの評価のお願い
 │   │   └── SupportLink.tsx         # サポートリンク
 │   └── lib/
@@ -91,7 +91,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 │       ├── commands.ts             # キーボードショートカットの名前と中身の対応
 │       ├── page-copy.ts            # ショートカットからのコピー（ページ側でクリップボードに書く）
 │       ├── screenshot.ts           # Visible Tab / Full Page のスクリーンショット撮影（PNG/WebP/JPEG 出力）
-│       ├── share.ts                # X投稿画面のURL生成
+│       ├── share.ts                # SNSの投稿画面のURL生成
 │       ├── review-prompt.ts        # 評価のお願いを出す条件と状態の管理
 │       ├── filename.ts             # 保存ファイル名・保存パスの組み立て
 │       ├── messages.ts             # popup <-> background 間のメッセージ型定義

@@ -21,7 +21,7 @@ A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or v
 - Choose a scrollable area on the page to capture (candidates are highlighted, and the clicked area can be saved or copied)
 - Delay timer for screenshots (3, 5 or 10 seconds; for menus that appear on hover)
 - Keyboard shortcuts (resizing to presets and 5 custom size slots, and each kind of screenshot). No keys are assigned by default; assign only the ones you want at `chrome://extensions/shortcuts`
-- Share button for X (opens the post screen)
+- Share buttons for social networks (X, Facebook, LINE, Threads, Bluesky, LinkedIn and Reddit; they open the post screen)
 - Local / sync storage switching via `@plasmohq/storage`
 - Factory reset that restores settings, custom sizes and preset offsets to their defaults
 - Multilingual UI (Japanese / English). Choose "Auto / 日本語 / English" under "Language" on the Options page ("Auto" follows the browser UI language; anything other than Japanese falls back to English)
@@ -77,7 +77,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │   │   ├── CustomSizeManager.tsx   # Add/edit form for custom sizes (accordion)
 │   │   ├── CaptureSection.tsx      # Screenshot rows (Download / Copy)
 │   │   ├── Icon.tsx                # Inline Tabler Icons SVG
-│   │   ├── ShareButton.tsx         # Share on X button
+│   │   ├── ShareButton.tsx         # Share buttons for social networks
 │   │   ├── ReviewPrompt.tsx        # Store rating request
 │   │   └── SupportLink.tsx         # Support link
 │   └── lib/
@@ -87,7 +87,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │       ├── offset.ts               # Offset (correction value) calculation
 │       ├── resize.ts               # Window / viewport resizing and validation
 │       ├── screenshot.ts           # Visible Tab / Full Page screenshot capture (PNG/WebP/JPEG output)
-│       ├── share.ts                # Builds the X post URL
+│       ├── share.ts                # Builds the URLs of the social networks' post screens
 │       ├── review-prompt.ts        # When to show the rating request, and its state
 │       ├── theme.ts                # Applies the theme (light, dark or follow the browser)
 │       ├── placement.ts            # Where to place a resized window so it stays on screen

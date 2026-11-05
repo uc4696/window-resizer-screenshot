@@ -1,4 +1,11 @@
+import adjustmentsHorizontal from "data-text:../../icons/adjustments-horizontal.svg"
 import appWindow from "data-text:../../icons/app-window.svg"
+import brandBluesky from "data-text:../../icons/brand-bluesky.svg"
+import brandFacebook from "data-text:../../icons/brand-facebook.svg"
+import brandLine from "data-text:../../icons/brand-line.svg"
+import brandLinkedin from "data-text:../../icons/brand-linkedin.svg"
+import brandReddit from "data-text:../../icons/brand-reddit.svg"
+import brandThreads from "data-text:../../icons/brand-threads.svg"
 import brandX from "data-text:../../icons/brand-x.svg"
 import check from "data-text:../../icons/check.svg"
 import click from "data-text:../../icons/click.svg"
@@ -29,6 +36,13 @@ const ICONS = {
   click: stripClass(click),
   clock: stripClass(clock),
   "brand-x": stripClass(brandX),
+  "brand-facebook": stripClass(brandFacebook),
+  "brand-line": stripClass(brandLine),
+  "brand-threads": stripClass(brandThreads),
+  "brand-bluesky": stripClass(brandBluesky),
+  "brand-linkedin": stripClass(brandLinkedin),
+  "brand-reddit": stripClass(brandReddit),
+  "adjustments-horizontal": stripClass(adjustmentsHorizontal),
   settings: stripClass(settings),
   star: stripClass(star),
   "app-window": stripClass(appWindow),

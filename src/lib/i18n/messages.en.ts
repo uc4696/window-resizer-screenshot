@@ -38,7 +38,7 @@ export const en = {
   statusCopied: "Copied to clipboard.",
   errClipboard: "Failed to copy to the clipboard.",
   openSettings: "Open settings (language, theme, save folder and more)",
-  shareOnXTitle: "Share this extension on X (opens the post screen)",
+  shareOnTitle: "Share this extension on {name} (opens the post screen)",
   shareText:
     "Check how your page looks at any size, instantly.\nResize the window/viewport and capture full-page screenshots, all in one extension 📸",
   shareHashtags: "#ChromeExtension #WebDev",

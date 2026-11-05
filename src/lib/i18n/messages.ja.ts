@@ -35,7 +35,7 @@ export const ja: Record<MessageKey, string> = {
   statusCopied: "クリップボードにコピーしました。",
   errClipboard: "クリップボードへのコピーに失敗しました。",
   openSettings: "設定を開く（言語、テーマ、保存先など）",
-  shareOnXTitle: "この拡張機能をXで共有する（投稿画面が開きます）",
+  shareOnTitle: "この拡張機能を{name}で共有する（投稿画面が開きます）",
   shareText:
     "「このサイズだとどう見える？」をすぐ確認。\nウィンドウ/ビューポートのリサイズもページ全体スクショもこれ1つ📸",
   shareHashtags: "#Chrome拡張機能 #Web制作",

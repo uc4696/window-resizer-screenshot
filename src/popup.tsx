@@ -6,7 +6,7 @@ import { CustomSizeManager } from "~components/CustomSizeManager"
 import { Icon } from "~components/Icon"
 import { PresetGrid } from "~components/PresetGrid"
 import { ReviewPrompt } from "~components/ReviewPrompt"
-import { ShareButton } from "~components/ShareButton"
+import { ShareButtons } from "~components/ShareButton"
 import { SupportLink } from "~components/SupportLink"
 import { PRESET_GROUPS } from "~lib/constants"
 import { I18nProvider, useI18n } from "~lib/i18n/useI18n"
@@ -267,7 +267,7 @@ function PopupContent() {
       {/* 左に共有先（これから増やせる）、右に設定 */}
       <div className="popup-footer-row">
         <div className="footer-links">
-          <ShareButton />
+          <ShareButtons />
         </div>
         <button
           type="button"

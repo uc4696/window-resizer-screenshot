@@ -36,8 +36,8 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     const popup = await openPopup(await openTarget("/"))
 
     const targets = popup.locator("button.icon-button, a.share-button")
-    // 描画完了を待ってから数える（アイコンボタン5つ + 共有ボタン1つ）
-    await expect(targets).toHaveCount(6)
+    // 描画完了を待ってから数える（アイコンボタン5つ + 共有ボタン7つ）
+    await expect(targets).toHaveCount(12)
     for (const el of await targets.all()) {
       const title = await el.getAttribute("title")
       const label = await el.getAttribute("aria-label")
@@ -59,7 +59,7 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     openPopup
   }) => {
     const popup = await openPopup(await openTarget("/"))
-    const share = popup.locator("a.share-button")
+    const share = popup.locator('a.share-button[data-share="x"]')
 
     await expect(share).toHaveAttribute("title", /X/)
     await expect(share).toHaveAttribute("target", "_blank")
@@ -76,12 +76,67 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     expect(text).toContain("#ChromeExtension")
   })
 
+  test("共有先: 7 つの SNS が新規タブで開き、ツールチップに名前がある", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+    const links = popup.locator(".footer-links a.share-button")
+    await expect(links).toHaveCount(7)
+    const info = await links.evaluateAll((els) =>
+      els.map((el) => ({
+        id: el.getAttribute("data-share"),
+        host: new URL((el as HTMLAnchorElement).href).host,
+        target: el.getAttribute("target"),
+        rel: el.getAttribute("rel"),
+        title: el.getAttribute("title"),
+        svg: el.querySelectorAll("svg").length,
+        top: Math.round(el.getBoundingClientRect().top)
+      }))
+    )
+    expect(info.map((i) => i.host)).toEqual([
+      "x.com",
+      "www.facebook.com",
+      "social-plugins.line.me",
+      "www.threads.com",
+      "bsky.app",
+      "www.linkedin.com",
+      "www.reddit.com"
+    ])
+    for (const item of info) {
+      expect(item.target).toBe("_blank")
+      expect(item.rel).toContain("noopener")
+      expect(item.svg).toBe(1)
+      expect(item.top).toBe(info[0].top)
+    }
+    expect(info[2].title).toContain("LINE")
+  })
+
+  test("カスタムサイズのラベルにもアイコンがある", async ({
+    openTarget,
+    openPopup,
+    serviceWorker
+  }) => {
+    await serviceWorker.evaluate(() =>
+      chrome.storage.local.set({
+        "custom-sizes": JSON.stringify([
+          { id: "c1", label: "Mine", width: 900, height: 650, mode: "window" }
+        ])
+      })
+    )
+    const popup = await openPopup(await openTarget("/"))
+    await popup.getByRole("button", { name: "Window-based" }).click()
+    await expect(
+      popup.locator(".custom-size-section .preset-group-title svg")
+    ).toHaveCount(1)
+  })
+
   test("寄付の下の行に、左に X、右に設定がアイコンで並び、説明はツールチップにある", async ({
     openTarget,
     openPopup
   }) => {
     const popup = await openPopup(await openTarget("/"))
-    const share = popup.locator(".popup-footer-row .share-button")
+    const share = popup.locator('.popup-footer-row .share-button[data-share="x"]')
     const settings = popup.locator(".popup-footer-row .options-link")
     await expect(settings).toHaveAttribute("title", /settings/)
     await expect(share.locator("svg")).toHaveCount(1)
@@ -190,8 +245,8 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     openPopup
   }) => {
     const popup = await openPopup(await openTarget("/"))
-    // 今のサイズ2 + 基準2 + 比率2 + タイマー1 + 行頭アイコン2 + ダウンロード/コピー4 + 範囲選択1 + 設定・X共有2
-    await expect(popup.locator(".ui-icon")).toHaveCount(16)
+    // 今のサイズ2 + 基準2 + 比率2 + タイマー1 + 行頭アイコン2 + ダウンロード/コピー4 + 範囲選択1 + 共有7 + 設定1
+    await expect(popup.locator(".ui-icon")).toHaveCount(22)
 
     const results = await popup.locator(".ui-icon").evaluateAll((icons) =>
       icons.map((icon) => {
@@ -250,7 +305,8 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     await expect(options.getByText("設定を保存しました。")).toBeVisible()
 
     const popup = await openPopup(await openTarget("/"))
-    const href = (await popup.locator("a.share-button").getAttribute("href")) ?? ""
+    const href =
+      (await popup.locator('a.share-button[data-share="x"]').getAttribute("href")) ?? ""
     const text = new URL(href).searchParams.get("text") ?? ""
     expect(text).toContain("#Chrome拡張機能 #Web制作")
     expect(text).toContain("このサイズだとどう見える")
