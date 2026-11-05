@@ -122,6 +122,13 @@ function OptionsContent() {
     await handleSave(next)
   }
 
+  /** 画面内に収める設定は切り替えた時点で保存・反映する。 */
+  async function handleKeepOnScreenChange(keepWindowOnScreen: boolean) {
+    const next = { ...settings, keepWindowOnScreen }
+    setSettingsState(next)
+    await handleSave(next)
+  }
+
   /** ショートカットの枠のカスタムサイズは選んだ時点で保存する。 */
   async function handleSlotChange(slot: number, id: string) {
     const customSizeSlots = settings.customSizeSlots.map((current, i) =>
@@ -273,6 +280,20 @@ function OptionsContent() {
             onChange={(e) => handleZoomResetConfirmChange(e.target.checked)}
           />
           {t("zoomResetConfirmCheckbox")}
+        </label>
+      </section>
+
+      <section className="options-section">
+        <label className="options-label">{t("keepOnScreenLabel")}</label>
+        <p className="options-hint">{t("keepOnScreenHint")}</p>
+        <label className="options-radio">
+          <input
+            id="keepWindowOnScreen"
+            type="checkbox"
+            checked={settings.keepWindowOnScreen}
+            onChange={(e) => handleKeepOnScreenChange(e.target.checked)}
+          />
+          {t("keepOnScreenCheckbox")}
         </label>
       </section>
 

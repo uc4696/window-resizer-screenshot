@@ -95,13 +95,17 @@ export const ja: Record<MessageKey, string> = {
   scrollAreaFrameHint:
     "内側の範囲だけがスクロールするページでは、ページ全体の撮影はその範囲だけを撮ります。有効にすると、最初の1画面の外枠（ヘッダー・サイドバー等）を残し、範囲の下にある部分を最後に付け足します。サイドバー等は伸びないため、最初の1画面分だけが写ります。",
   scrollAreaFrameCheckbox: "外枠と範囲の下の部分も含める",
+  keepOnScreenLabel: "ウィンドウを画面内に収める",
+  keepOnScreenHint:
+    "リサイズで画面からはみ出すときは、サイズはそのままで、はみ出す分だけ位置をずらします。画面より大きいサイズは、ツールバーのアイコンに触れるよう右上に合わせます。複数のモニターにまたがって使うときはオフにしてください。",
+  keepOnScreenCheckbox: "はみ出すときはウィンドウの位置をずらす",
   zoomResetLabel: "拡大縮小されたページのリサイズ",
   zoomResetHint:
     "ページの拡大率が 100% 以外のときは、意図したサイズになるよう拡大率を 100% に戻してからリサイズします。",
   zoomResetConfirmCheckbox: "拡大率を戻す前に確認メッセージを表示する",
   shortcutsLabel: "キーボードショートカット",
   shortcutsHint:
-    "既定では何も割り当てていません。使うものだけ、Chrome のショートカットの画面で割り当ててください。プリセットは popup で最後に選んだ基準（ウィンドウ／ビューポート）で、カスタムサイズはそのサイズの基準でリサイズします。結果はツールバーのアイコンに出ます。コピーは https のページと localhost だけで動き、chrome:// などの特殊なページでは撮影できません。",
+    "既定では何も割り当てていません。使うものだけ、Chrome のショートカットの画面で割り当ててください。プリセットは popup で最後に選んだ基準（ウィンドウ／ビューポート）で、カスタムサイズはそのサイズの基準でリサイズします。結果はツールバーのアイコンに出ます。コピーは https のページと localhost だけで動きます。chrome:// などの特殊なページで使えるのは、表示部分のダウンロードだけです。",
   shortcutsOpen: "Chrome のショートカットの画面を開く",
   shortcutsNotSet: "未設定",
   shortcutsSlotHint:
@@ -153,5 +157,7 @@ export const ja: Record<MessageKey, string> = {
   errShortcutPresetUnknown: "このショートカットのプリセットが見つかりません。",
   errClipboardUnavailable:
     "このページではコピーできません（https か localhost のページのみ）。",
+  errBoundsRejected:
+    "この画面では {width} x {height} のウィンドウにできません（Chrome は、ウィンドウの半分以上が画面内にあることを求めます）。",
   errPickedAreaMissing: "選んだ範囲が見つかりませんでした。もう一度選んでください。"
 }

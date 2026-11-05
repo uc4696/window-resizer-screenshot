@@ -1,5 +1,7 @@
 import { MAX_SIZE_FALLBACK, MIN_SIZE } from "./constants"
 import { t } from "./i18n"
+import { placeWindow, type WorkArea } from "./placement"
+import { getSettings } from "./storage"
 import type { DisplayBounds, ValidationResult } from "./types"
 
 /**
@@ -86,6 +88,99 @@ export interface ResizeTarget {
 }
 
 /**
+ * ウィンドウが乗っているディスプレイの作業領域を取得する（system.display 権限は使わない）。
+ * popup ではその画面の window.screen を、service worker ではタブに注入して読む。
+ * 注入できないページ（chrome:// 等）を service worker から扱うときは取得できず null を返す。
+ */
+async function readWorkArea(tabId?: number): Promise<WorkArea | null> {
+  const read = () => {
+    const s = window.screen as Screen & { availLeft: number; availTop: number }
+    return {
+      left: s.availLeft,
+      top: s.availTop,
+      width: s.availWidth,
+      height: s.availHeight
+    }
+  }
+  if (typeof window !== "undefined") return read()
+  if (tabId === undefined) return null
+  try {
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: read
+    })
+    return result ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 面積の半分以上が画面の外に出るウィンドウを Chrome は受け付けない
+ * （Bounds must be at least 50% within visible screen space）。この拒否を分かる言葉に置き換える。
+ */
+function toBoundsError(error: unknown, width: number, height: number): unknown {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes("50%")
+    ? new Error(t("errBoundsRejected", { width, height }))
+    : error
+}
+
+/**
+ * ウィンドウのサイズを変更する。設定が有効なら、指定のサイズはそのままで、
+ * はみ出す分だけ位置をずらして画面内に収める（placeWindow）。
+ */
+async function updateWindowSize(
+  win: chrome.windows.Window,
+  width: number,
+  height: number,
+  tabId?: number
+): Promise<void> {
+  const windowId = win.id as number
+  const { keepWindowOnScreen } = await getSettings()
+  const area = keepWindowOnScreen ? await readWorkArea(tabId) : null
+  if (!area) {
+    await chrome.windows
+      .update(windowId, { width, height, state: "normal" })
+      .catch((error) => {
+        throw toBoundsError(error, width, height)
+      })
+    return
+  }
+
+  // 最大化などの位置は元の位置ではないので、通常の状態に戻してから位置を読む
+  const current =
+    win.state === "normal"
+      ? win
+      : await chrome.windows
+          .update(windowId, { state: "normal" })
+          .then(() => chrome.windows.get(windowId))
+  const position = { left: current.left ?? 0, top: current.top ?? 0 }
+  const placed = placeWindow(position, { width, height }, area)
+  try {
+    await chrome.windows.update(windowId, { width, height, state: "normal", ...placed })
+  } catch (error) {
+    if (!placed) throw toBoundsError(error, width, height)
+    // 右隣のモニターにまたがれば収まる場合など、動かさない方が通ることがある
+    await chrome.windows
+      .update(windowId, { width, height, state: "normal" })
+      .catch(() => {
+        throw toBoundsError(error, width, height)
+      })
+  }
+
+  // Chrome の最小サイズなどで指定どおりにならなかったときは、実際のサイズで収め直す
+  const actual = await chrome.windows.get(windowId)
+  if (actual.width === width && actual.height === height) return
+  const again = placeWindow(
+    { left: actual.left ?? 0, top: actual.top ?? 0 },
+    { width: actual.width ?? width, height: actual.height ?? height },
+    area
+  )
+  if (again) await chrome.windows.update(windowId, again).catch(() => undefined)
+}
+
+/**
  * ウィンドウ全体のサイズ（ブラウザのUI枠含む）を指定サイズに変更する。
  * offsetWidth / offsetHeight が指定されている場合、その補正値を加算する。
  */
@@ -100,11 +195,12 @@ export async function resizeWindow(
     ? await chrome.windows.get(target.windowId)
     : await chrome.windows.getCurrent()
   if (win.id === undefined) return
-  await chrome.windows.update(win.id, {
-    width: Math.round(width + offsetWidth),
-    height: Math.round(height + offsetHeight),
-    state: "normal"
-  })
+  await updateWindowSize(
+    win,
+    Math.round(width + offsetWidth),
+    Math.round(height + offsetHeight),
+    target?.tabId
+  )
 }
 
 /**
@@ -178,11 +274,12 @@ export async function resizeViewport(
   const diffWidth = win.width - currentViewport.width
   const diffHeight = win.height - currentViewport.height
 
-  await chrome.windows.update(win.id, {
-    width: Math.round(width + diffWidth),
-    height: Math.round(height + diffHeight),
-    state: "normal"
-  })
+  await updateWindowSize(
+    win,
+    Math.round(width + diffWidth),
+    Math.round(height + diffHeight),
+    tabId
+  )
 }
 
 /**

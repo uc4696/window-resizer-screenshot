@@ -18,6 +18,7 @@ export interface Settings {
   imageFormat: ImageFormat
   scrollAreaIncludeFrame: boolean
   zoomResetConfirm: boolean
+  keepWindowOnScreen: boolean
   customSizeSlots: string[]
 }
 
@@ -54,6 +55,8 @@ export async function getSettings(): Promise<Settings> {
     scrollAreaIncludeFrame: raw?.scrollAreaIncludeFrame === true,
     // 未設定・不正値は既定（true: 確認する）に正規化する
     zoomResetConfirm: raw?.zoomResetConfirm !== false,
+    // 未設定・不正値は既定（true: 収める）に正規化する
+    keepWindowOnScreen: raw?.keepWindowOnScreen !== false,
     customSizeSlots: normalizeCustomSizeSlots(raw?.customSizeSlots)
   }
 }
