@@ -1,5 +1,6 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
+import { URL } from "node:url"
 
 import { en } from "../../src/lib/i18n/messages.en.ts"
 import { ja } from "../../src/lib/i18n/messages.ja.ts"
