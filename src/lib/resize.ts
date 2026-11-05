@@ -76,6 +76,16 @@ export function validateOffset(
 }
 
 /**
+ * リサイズの対象。popup は省略して「現在のウィンドウとアクティブタブ」を使う。
+ * service worker（ショートカット）には現在のウィンドウがないので、対象を明示する。
+ */
+export interface ResizeTarget {
+  tabId: number
+  windowId: number
+  url?: string
+}
+
+/**
  * ウィンドウ全体のサイズ（ブラウザのUI枠含む）を指定サイズに変更する。
  * offsetWidth / offsetHeight が指定されている場合、その補正値を加算する。
  */
@@ -83,9 +93,12 @@ export async function resizeWindow(
   width: number,
   height: number,
   offsetWidth = 0,
-  offsetHeight = 0
+  offsetHeight = 0,
+  target?: ResizeTarget
 ) {
-  const win = await chrome.windows.getCurrent()
+  const win = target
+    ? await chrome.windows.get(target.windowId)
+    : await chrome.windows.getCurrent()
   if (win.id === undefined) return
   await chrome.windows.update(win.id, {
     width: Math.round(width + offsetWidth),
@@ -115,25 +128,34 @@ function isRestrictedUrl(url?: string): boolean {
  * ウィンドウ全体サイズとビューポートサイズの差分（ブラウザUI枠）を測定し、
  * その差分を加算したウィンドウサイズに変更することでビューポートサイズを合わせる。
  */
-export async function resizeViewport(width: number, height: number) {
-  const win = await chrome.windows.getCurrent()
+export async function resizeViewport(
+  width: number,
+  height: number,
+  target?: ResizeTarget
+) {
+  const win = target
+    ? await chrome.windows.get(target.windowId)
+    : await chrome.windows.getCurrent()
   if (win.id === undefined || win.width === undefined || win.height === undefined) {
     throw new Error(t("errWindowInfo"))
   }
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-  if (!tab?.id) {
+  const [activeTab] = target
+    ? []
+    : await chrome.tabs.query({ active: true, currentWindow: true })
+  const tabId = target?.tabId ?? activeTab?.id
+  if (!tabId) {
     throw new Error(t("errNoActiveTab"))
   }
 
-  if (isRestrictedUrl(tab.url)) {
+  if (isRestrictedUrl(target ? target.url : activeTab?.url)) {
     throw new Error(t("errRestrictedPage"))
   }
 
   let currentViewport: { width: number; height: number } | undefined
   try {
     const results = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
+      target: { tabId },
       func: () => ({
         width: window.innerWidth,
         height: window.innerHeight

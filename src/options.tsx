@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
 
 import { SupportLink } from "~components/SupportLink"
+import { COMMAND_NAMES, parseCommand } from "~lib/commands"
 import { DEFAULT_SETTINGS, IMAGE_FORMATS, PRESET_GROUPS } from "~lib/constants"
 import { LANGUAGE_NATIVE_NAMES, setLanguage } from "~lib/i18n"
 import { I18nProvider, useI18n } from "~lib/i18n/useI18n"
 import { validateOffset } from "~lib/resize"
 import {
+  getCustomSizes,
   getPresetOffsets,
   getSettings,
   migrateCustomSizes,
@@ -16,6 +18,7 @@ import {
   type Settings
 } from "~lib/storage"
 import type {
+  CustomSize,
   ImageFormat,
   LanguageSetting,
   PresetModeOffsets,
@@ -47,6 +50,19 @@ function OptionsContent() {
   >({})
   const [offsetErrors, setOffsetErrors] = useState<Record<string, string>>({})
   const [resetDone, setResetDone] = useState(false)
+  const [commands, setCommands] = useState<chrome.commands.Command[]>([])
+  const [customSizes, setCustomSizes] = useState<CustomSize[]>([])
+
+  // ショートカットの割り当ては Chrome の画面で変えるので、戻ってきたときに読み直す
+  useEffect(() => {
+    const refresh = () => {
+      chrome.commands.getAll().then(setCommands)
+      getCustomSizes().then(setCustomSizes)
+    }
+    refresh()
+    window.addEventListener("focus", refresh)
+    return () => window.removeEventListener("focus", refresh)
+  }, [])
 
   useEffect(() => {
     Promise.all([getSettings(), getPresetOffsets()]).then(([s, offsets]) => {
@@ -102,6 +118,16 @@ function OptionsContent() {
   /** 拡大率リセットの確認設定は切り替えた時点で保存・反映する。 */
   async function handleZoomResetConfirmChange(zoomResetConfirm: boolean) {
     const next = { ...settings, zoomResetConfirm }
+    setSettingsState(next)
+    await handleSave(next)
+  }
+
+  /** ショートカットの枠のカスタムサイズは選んだ時点で保存する。 */
+  async function handleSlotChange(slot: number, id: string) {
+    const customSizeSlots = settings.customSizeSlots.map((current, i) =>
+      i === slot - 1 ? id : current
+    )
+    const next = { ...settings, customSizeSlots }
     setSettingsState(next)
     await handleSave(next)
   }
@@ -248,6 +274,56 @@ function OptionsContent() {
           />
           {t("zoomResetConfirmCheckbox")}
         </label>
+      </section>
+
+      <section className="options-section" id="shortcuts">
+        <label className="options-label">{t("shortcutsLabel")}</label>
+        <p className="options-hint">{t("shortcutsHint")}</p>
+        <button
+          type="button"
+          className="offset-preset-save"
+          onClick={() => chrome.tabs.create({ url: "chrome://extensions/shortcuts" })}
+        >
+          {t("shortcutsOpen")}
+        </button>
+        <p className="options-hint shortcuts-slot-hint">{t("shortcutsSlotHint")}</p>
+        <div className="shortcut-list">
+          {COMMAND_NAMES.map((name) => {
+            const command = commands.find((c) => c.name === name)
+            const parsed = parseCommand(name)
+            const slot = parsed?.kind === "resize-custom" ? parsed.slot : null
+            return (
+              <div key={name} className="shortcut-row" data-command={name}>
+                <span className="shortcut-name">{command?.description ?? name}</span>
+                {slot !== null && (
+                  <select
+                    className="shortcut-slot-select"
+                    aria-label={command?.description ?? name}
+                    value={
+                      customSizes.some((s) => s.id === settings.customSizeSlots[slot - 1])
+                        ? settings.customSizeSlots[slot - 1]
+                        : ""
+                    }
+                    onChange={(e) => handleSlotChange(slot, e.target.value)}
+                  >
+                    <option value="">{t("shortcutsSlotEmpty")}</option>
+                    {customSizes.map((size) => (
+                      <option key={size.id} value={size.id}>
+                        {size.label} ({size.width} x {size.height},{" "}
+                        {t(size.mode === "window" ? "modeWindow" : "modeViewport")})
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {command?.shortcut ? (
+                  <kbd className="shortcut-key">{command.shortcut}</kbd>
+                ) : (
+                  <span className="shortcut-unset">{t("shortcutsNotSet")}</span>
+                )}
+              </div>
+            )
+          })}
+        </div>
       </section>
 
       <section className="options-section">

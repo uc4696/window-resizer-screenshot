@@ -99,6 +99,14 @@ export const ja: Record<MessageKey, string> = {
   zoomResetHint:
     "ページの拡大率が 100% 以外のときは、意図したサイズになるよう拡大率を 100% に戻してからリサイズします。",
   zoomResetConfirmCheckbox: "拡大率を戻す前に確認メッセージを表示する",
+  shortcutsLabel: "キーボードショートカット",
+  shortcutsHint:
+    "既定では何も割り当てていません。使うものだけ、Chrome のショートカットの画面で割り当ててください。プリセットは popup で最後に選んだ基準（ウィンドウ／ビューポート）で、カスタムサイズはそのサイズの基準でリサイズします。結果はツールバーのアイコンに出ます。コピーは https のページと localhost だけで動き、chrome:// などの特殊なページでは撮影できません。",
+  shortcutsOpen: "Chrome のショートカットの画面を開く",
+  shortcutsNotSet: "未設定",
+  shortcutsSlotHint:
+    "各枠で使うカスタムサイズを選びます。空の枠のショートカットは何もしません。",
+  shortcutsSlotEmpty: "（空き）",
   storageLabel: "ストレージ領域（カスタムサイズの保存先）",
   storageHint:
     "local: この端末のみに保存されます。sync: Googleアカウントに紐づき、他端末とも同期されます。",
@@ -140,5 +148,10 @@ export const ja: Record<MessageKey, string> = {
   errPageTooLarge:
     "ページが大きすぎるため、ページ全体のスクリーンショットを生成できませんでした（{width}x{height}）。",
   errCanvas: "キャンバスコンテキストの作成に失敗しました。",
+  errShortcutSlotEmpty:
+    "カスタムサイズ {slot} にサイズが割り当てられていません。拡張機能の設定で選んでください。",
+  errShortcutPresetUnknown: "このショートカットのプリセットが見つかりません。",
+  errClipboardUnavailable:
+    "このページではコピーできません（https か localhost のページのみ）。",
   errPickedAreaMissing: "選んだ範囲が見つかりませんでした。もう一度選んでください。"
 }

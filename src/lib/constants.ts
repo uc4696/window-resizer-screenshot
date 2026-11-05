@@ -77,5 +77,7 @@ export const DEFAULT_SETTINGS = {
   /** スクロール領域を撮るとき、外枠（最初の1画面）と領域の下の部分も含めるか。 */
   scrollAreaIncludeFrame: false,
   /** 拡大率が100%以外のページをリサイズするとき、100%に戻す前に確認するか。 */
-  zoomResetConfirm: true
+  zoomResetConfirm: true,
+  /** ショートカットの枠に割り当てたカスタムサイズの id（空き枠は ""）。 */
+  customSizeSlots: [] as string[]
 }

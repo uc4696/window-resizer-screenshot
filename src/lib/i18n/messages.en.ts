@@ -103,6 +103,14 @@ export const en = {
   zoomResetHint:
     "When the page is not at 100% zoom, the zoom is reset to 100% before resizing so the size comes out as intended.",
   zoomResetConfirmCheckbox: "Ask for confirmation before resetting the zoom",
+  shortcutsLabel: "Keyboard shortcuts",
+  shortcutsHint:
+    "No keys are assigned by default. Assign only the ones you want on Chrome's shortcuts page. Presets use the base (window or viewport) last selected in the popup; custom sizes use their own. Results appear on the toolbar icon. Copying works only on https pages and localhost, and screenshots cannot be taken on special pages such as chrome://.",
+  shortcutsOpen: "Open Chrome's shortcuts page",
+  shortcutsNotSet: "Not set",
+  shortcutsSlotHint:
+    "Choose which custom size each slot applies. An empty slot does nothing.",
+  shortcutsSlotEmpty: "(Empty)",
   storageLabel: "Storage area (where custom sizes are saved)",
   storageHint:
     "local: saved on this device only. sync: tied to your Google account and synced across devices.",
@@ -144,6 +152,11 @@ export const en = {
   errPageTooLarge:
     "The page is too large to generate a full-page screenshot ({width}x{height}).",
   errCanvas: "Failed to create the canvas context.",
+  errShortcutSlotEmpty:
+    "No size is assigned to custom size {slot}. Choose one in the extension settings.",
+  errShortcutPresetUnknown: "The preset for this shortcut was not found.",
+  errClipboardUnavailable:
+    "Copying is not available on this page (https or localhost only).",
   errPickedAreaMissing: "The selected area was not found. Please choose it again."
 }
 

@@ -90,6 +90,49 @@ body {
   cursor: pointer;
 }
 
+.shortcuts-slot-hint {
+  margin-top: 12px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.shortcut-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.shortcut-slot-select {
+  max-width: 190px;
+  padding: 3px 4px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.shortcut-key {
+  padding: 1px 6px;
+  font-family: inherit;
+  font-size: 11px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-color);
+  white-space: nowrap;
+}
+
+.shortcut-unset {
+  color: var(--subtitle-color);
+  white-space: nowrap;
+}
+
 .options-save-button {
   padding: 10px 20px;
   font-size: 13px;

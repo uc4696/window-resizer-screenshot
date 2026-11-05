@@ -1,5 +1,6 @@
 import { Storage } from "@plasmohq/storage"
 
+import { normalizeCustomSizeSlots } from "./commands"
 import { DEFAULT_SETTINGS, IMAGE_FORMATS, STORAGE_KEYS } from "./constants"
 import type {
   CustomSize,
@@ -17,6 +18,7 @@ export interface Settings {
   imageFormat: ImageFormat
   scrollAreaIncludeFrame: boolean
   zoomResetConfirm: boolean
+  customSizeSlots: string[]
 }
 
 /**
@@ -51,7 +53,8 @@ export async function getSettings(): Promise<Settings> {
     // 未設定・不正値は既定（false）に正規化する
     scrollAreaIncludeFrame: raw?.scrollAreaIncludeFrame === true,
     // 未設定・不正値は既定（true: 確認する）に正規化する
-    zoomResetConfirm: raw?.zoomResetConfirm !== false
+    zoomResetConfirm: raw?.zoomResetConfirm !== false,
+    customSizeSlots: normalizeCustomSizeSlots(raw?.customSizeSlots)
   }
 }
 

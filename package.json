@@ -48,7 +48,63 @@
       "storage",
       "downloads",
       "scripting"
-    ]
+    ],
+    "commands": {
+      "capture-visible-download": {
+        "description": "__MSG_cmdCaptureVisibleDownload__"
+      },
+      "capture-visible-copy": {
+        "description": "__MSG_cmdCaptureVisibleCopy__"
+      },
+      "capture-full-page-download": {
+        "description": "__MSG_cmdCaptureFullPageDownload__"
+      },
+      "capture-full-page-copy": {
+        "description": "__MSG_cmdCaptureFullPageCopy__"
+      },
+      "capture-pick": {
+        "description": "__MSG_cmdCapturePick__"
+      },
+      "resize-preset-hd": {
+        "description": "__MSG_cmdResizeHd__"
+      },
+      "resize-preset-fhd": {
+        "description": "__MSG_cmdResizeFhd__"
+      },
+      "resize-preset-wqhd": {
+        "description": "__MSG_cmdResizeWqhd__"
+      },
+      "resize-preset-4k": {
+        "description": "__MSG_cmdResize4k__"
+      },
+      "resize-preset-vga": {
+        "description": "__MSG_cmdResizeVga__"
+      },
+      "resize-preset-svga": {
+        "description": "__MSG_cmdResizeSvga__"
+      },
+      "resize-preset-xga": {
+        "description": "__MSG_cmdResizeXga__"
+      },
+      "resize-preset-uxga": {
+        "description": "__MSG_cmdResizeUxga__"
+      },
+      "resize-custom-1": {
+        "description": "__MSG_cmdResizeCustom1__"
+      },
+      "resize-custom-2": {
+        "description": "__MSG_cmdResizeCustom2__"
+      },
+      "resize-custom-3": {
+        "description": "__MSG_cmdResizeCustom3__"
+      },
+      "resize-custom-4": {
+        "description": "__MSG_cmdResizeCustom4__"
+      },
+      "resize-custom-5": {
+        "description": "__MSG_cmdResizeCustom5__"
+      }
+    }
   },
   "allowScripts": {
     "lmdb": true,

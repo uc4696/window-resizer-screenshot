@@ -1,3 +1,5 @@
+import { parseCommand, type ShortcutCommand } from "~lib/commands"
+import { SIZE_PRESETS } from "~lib/constants"
 import { buildDownloadPath, buildScreenshotFilename } from "~lib/filename"
 import { initI18n, t } from "~lib/i18n"
 import type {
@@ -6,13 +8,17 @@ import type {
   CaptureResponse,
   ExtensionMessage
 } from "~lib/messages"
+import { startCopyInPage } from "~lib/page-copy"
+import { startPicker } from "~lib/picker"
+import { isZoomed, resetTabZoom, resizeViewport, resizeWindow } from "~lib/resize"
 import {
   ensureInstalledAt,
   markReviewPromptOnUse,
   resetReviewPromptOnUpdate
 } from "~lib/review-prompt"
 import { captureFullPage, captureVisibleTab } from "~lib/screenshot"
-import { getSettings } from "~lib/storage"
+import { getCustomSizes, getPresetOffsets, getSettings, getSizeMode } from "~lib/storage"
+import type { SizeMode } from "~lib/types"
 
 /** 結果のバッジ（OK / !）を表示しておく時間（ms）。 */
 const BADGE_CLEAR_MS = 3000
@@ -23,15 +29,30 @@ const BADGES: Record<BadgeKind, { text: string; color: string }> = {
   error: { text: "!", color: "#dc2626" }
 }
 
-/** タブ単位でツールバーアイコンにバッジを出す。busy 以外は一定時間後に消す。 */
-async function showBadge(tabId: number, kind: BadgeKind): Promise<void> {
+/**
+ * タブ単位でツールバーアイコンにバッジを出す。busy 以外は一定時間後に消す。
+ * message を渡すと、バッジが出ている間だけアイコンのツールチップにも出す（popup がない流れで理由を伝える）。
+ */
+async function showBadge(
+  tabId: number,
+  kind: BadgeKind,
+  message?: string
+): Promise<void> {
   const badge = BADGES[kind]
   await chrome.action.setBadgeBackgroundColor({ tabId, color: badge.color })
   await chrome.action.setBadgeText({ tabId, text: badge.text })
+  if (message) await chrome.action.setTitle({ tabId, title: message })
   if (kind === "busy") return
   setTimeout(() => {
     // タブが閉じられていると失敗するので無視する
     chrome.action.setBadgeText({ tabId, text: "" }).catch(() => undefined)
+    // 空文字を渡すとツールチップが空になるので、既定の文言を入れ直す
+    if (message) {
+      chrome.action
+        .getTitle({})
+        .then((title) => chrome.action.setTitle({ tabId, title }))
+        .catch(() => undefined)
+    }
   }, BADGE_CLEAR_MS)
 }
 
@@ -46,8 +67,8 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
   )
 })
 
-/** 撮影に成功したときに、評価のお願いの印を付ける（次に popup を開いたときに出す）。 */
-function noteCaptureSucceeded(): void {
+/** リサイズ・撮影に成功したときに、評価のお願いの印を付ける（次に popup を開いたときに出す）。 */
+function noteUseSucceeded(): void {
   void markReviewPromptOnUse().catch((error) => console.warn("[review-prompt]", error))
 }
 
@@ -77,8 +98,8 @@ chrome.runtime.onMessage.addListener(
       return
     }
 
-    if (message.mode === "picked" && senderTab?.id !== undefined) {
-      // 範囲選択からのコピーは popup が閉じているため、撮影中をバッジで示す（結果はページ側から届く）
+    if (senderTab?.id !== undefined) {
+      // ページからのコピー（範囲選択・ショートカット）は popup がないため、撮影中をバッジで示す（結果はページ側から届く）
       void showBadge(senderTab.id, "busy").catch(() => undefined)
     }
     handleCapture(message, senderTab)
@@ -113,8 +134,149 @@ async function handleDownloadWithBadge(
     if (tabId !== undefined) await showBadge(tabId, "ok")
   } catch (error) {
     console.error("[capture]", error)
-    if (tabId !== undefined) await showBadge(tabId, "error").catch(() => undefined)
+    if (tabId !== undefined) {
+      await showBadge(tabId, "error", errorMessage(error)).catch(() => undefined)
+    }
   }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+// ---- キーボードショートカット（popup が開かないので、結果はバッジで知らせる） ----
+
+chrome.commands.onCommand.addListener((name, tab) => {
+  const command = parseCommand(name)
+  if (command) void handleCommand(command, tab)
+})
+
+async function handleCommand(
+  command: ShortcutCommand,
+  commandTab?: chrome.tabs.Tab
+): Promise<void> {
+  // service worker は随時停止・再起動されるため、処理ごとに最新の言語設定を反映する
+  await initI18n()
+  const tab = await resolveTab(commandTab)
+  if (tab?.id === undefined || tab.windowId === undefined) return
+  try {
+    if (command.kind === "capture") {
+      if (command.action === "download") {
+        await handleDownloadWithBadge(
+          { type: "capture-screenshot", mode: command.mode, action: "download" },
+          tab
+        )
+      } else if (!(await startCopyInPage(tab.id, command.mode))) {
+        throw new Error(t("errClipboardUnavailable"))
+      }
+    } else if (command.kind === "pick") {
+      const count = await startPicker(tab.id, {
+        banner: t("pickerBanner"),
+        content: t("pickerContent"),
+        save: t("pickerSave"),
+        copy: t("pickerCopy"),
+        cancel: t("pickerCancel")
+      })
+      if (count === 0) throw new Error(t("capturePickUnavailable"))
+    } else {
+      await handleResizeCommand(command, tab)
+    }
+  } catch (error) {
+    console.error("[shortcut]", error)
+    await showBadge(tab.id, "error", errorMessage(error)).catch(() => undefined)
+  }
+}
+
+type ResizeCommand = Extract<ShortcutCommand, { kind: "resize-preset" | "resize-custom" }>
+
+/** ショートカットで指定されたサイズと基準を、保存済みの設定から求める。 */
+async function resolveResizeSize(command: ResizeCommand): Promise<{
+  width: number
+  height: number
+  offsetWidth: number
+  offsetHeight: number
+  mode: SizeMode
+}> {
+  if (command.kind === "resize-custom") {
+    const { customSizeSlots } = await getSettings()
+    const id = customSizeSlots[command.slot - 1]
+    const size = (await getCustomSizes()).find((s) => s.id === id)
+    if (!id || !size) {
+      throw new Error(t("errShortcutSlotEmpty", { slot: command.slot }))
+    }
+    return {
+      width: size.width,
+      height: size.height,
+      offsetWidth: size.offsetWidth ?? 0,
+      offsetHeight: size.offsetHeight ?? 0,
+      mode: size.mode
+    }
+  }
+  const preset = SIZE_PRESETS.find((p) => p.id === command.presetId)
+  if (!preset) throw new Error(t("errShortcutPresetUnknown"))
+  const [mode, offsets] = await Promise.all([getSizeMode(), getPresetOffsets()])
+  const offset = offsets[preset.id]?.[mode]
+  return {
+    width: preset.width,
+    height: preset.height,
+    offsetWidth: offset?.offsetWidth ?? 0,
+    offsetHeight: offset?.offsetHeight ?? 0,
+    mode
+  }
+}
+
+/**
+ * 拡大率が 100% 以外なら 100% に戻す。確認の設定が有効なら、popup がないのでページで確認する。
+ * キャンセルされたら false を返す。確認を出せない特殊なページでは拡大率を変えずに進める。
+ */
+async function resetZoomForShortcut(tabId: number): Promise<boolean> {
+  const zoom = await chrome.tabs.getZoom(tabId).catch(() => null)
+  if (zoom === null || !isZoomed(zoom)) return true
+  const { zoomResetConfirm } = await getSettings()
+  if (zoomResetConfirm) {
+    const message = t("zoomConfirmMessage", { zoom: Math.round(zoom * 100) })
+    const answer = await chrome.scripting
+      .executeScript({
+        target: { tabId },
+        func: (text: string) => window.confirm(text),
+        args: [message]
+      })
+      .then(
+        ([{ result }]) => result,
+        () => null
+      )
+    if (answer === null) return true
+    if (!answer) return false
+  }
+  await resetTabZoom(tabId)
+  return true
+}
+
+async function handleResizeCommand(
+  command: ResizeCommand,
+  tab: chrome.tabs.Tab
+): Promise<void> {
+  const tabId = tab.id as number
+  const size = await resolveResizeSize(command)
+  if (!(await resetZoomForShortcut(tabId))) return
+  const target = { tabId, windowId: tab.windowId, url: tab.url }
+  if (size.mode === "window") {
+    await resizeWindow(
+      size.width,
+      size.height,
+      size.offsetWidth,
+      size.offsetHeight,
+      target
+    )
+  } else {
+    await resizeViewport(
+      size.width + size.offsetWidth,
+      size.height + size.offsetHeight,
+      target
+    )
+  }
+  await showBadge(tabId, "ok")
+  noteUseSucceeded()
 }
 
 async function handleCapture(
@@ -143,7 +305,7 @@ async function handleCapture(
         })
 
   if (isCopy) {
-    noteCaptureSucceeded()
+    noteUseSucceeded()
     return { ok: true, dataUrl }
   }
 
@@ -157,6 +319,6 @@ async function handleCapture(
     conflictAction: "uniquify"
   })
 
-  noteCaptureSucceeded()
+  noteUseSucceeded()
   return { ok: true, downloadId, filename }
 }

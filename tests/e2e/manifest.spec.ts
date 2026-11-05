@@ -36,6 +36,13 @@ test.describe("manifest.json（配布物の回帰チェック）", () => {
     expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/)
   })
 
+  test("ショートカットに既定のキーを割り当てていない", () => {
+    expect(Object.keys(manifest.commands).length).toBeGreaterThan(0)
+    for (const command of Object.values<{ suggested_key?: unknown }>(manifest.commands)) {
+      expect(command.suggested_key).toBeUndefined()
+    }
+  })
+
   test("クリップボード用の追加権限（clipboardWrite）を要求していない", () => {
     expect(manifest.permissions).not.toContain("clipboardWrite")
   })

@@ -4,5 +4,59 @@
   },
   "extensionDescription": {
     "message": "Chrome extension that resizes the window/viewport to a specified size and captures screenshots of the visible area or the full page"
+  },
+  "cmdCaptureVisibleDownload": {
+    "message": "Screenshot: download visible area"
+  },
+  "cmdCaptureVisibleCopy": {
+    "message": "Screenshot: copy visible area"
+  },
+  "cmdCaptureFullPageDownload": {
+    "message": "Screenshot: download full page"
+  },
+  "cmdCaptureFullPageCopy": {
+    "message": "Screenshot: copy full page"
+  },
+  "cmdCapturePick": {
+    "message": "Screenshot: choose a scrollable area"
+  },
+  "cmdResizeHd": {
+    "message": "Resize: HD (1280 x 720)"
+  },
+  "cmdResizeFhd": {
+    "message": "Resize: FHD (1920 x 1080)"
+  },
+  "cmdResizeWqhd": {
+    "message": "Resize: WQHD (2560 x 1440)"
+  },
+  "cmdResize4k": {
+    "message": "Resize: 4K (3840 x 2160)"
+  },
+  "cmdResizeVga": {
+    "message": "Resize: VGA (640 x 480)"
+  },
+  "cmdResizeSvga": {
+    "message": "Resize: SVGA (800 x 600)"
+  },
+  "cmdResizeXga": {
+    "message": "Resize: XGA (1024 x 768)"
+  },
+  "cmdResizeUxga": {
+    "message": "Resize: UXGA (1600 x 1200)"
+  },
+  "cmdResizeCustom1": {
+    "message": "Resize: custom size 1"
+  },
+  "cmdResizeCustom2": {
+    "message": "Resize: custom size 2"
+  },
+  "cmdResizeCustom3": {
+    "message": "Resize: custom size 3"
+  },
+  "cmdResizeCustom4": {
+    "message": "Resize: custom size 4"
+  },
+  "cmdResizeCustom5": {
+    "message": "Resize: custom size 5"
   }
 }

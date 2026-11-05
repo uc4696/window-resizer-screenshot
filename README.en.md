@@ -18,6 +18,7 @@ A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or v
 - Copy screenshots to the clipboard (PNG only)
 - Icon-button UI with Tabler Icons (Visible area / Full page rows x Download / Copy, plus area selection on the Full page row)
 - Choose a scrollable area on the page to capture (candidates are highlighted, and the clicked area can be saved or copied)
+- Keyboard shortcuts (resizing to presets and 5 custom size slots, and each kind of screenshot). No keys are assigned by default; assign only the ones you want at `chrome://extensions/shortcuts`
 - Share button for X (opens the post screen)
 - Local / sync storage switching via `@plasmohq/storage`
 - Factory reset that restores settings, custom sizes and preset offsets to their defaults
@@ -86,6 +87,8 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │       ├── screenshot.ts           # Visible Tab / Full Page screenshot capture (PNG/WebP/JPEG output)
 │       ├── share.ts                # Builds the X post URL
 │       ├── review-prompt.ts        # When to show the rating request, and its state
+│       ├── commands.ts             # Keyboard shortcut names and what they do
+│       ├── page-copy.ts            # Copying from a shortcut (writes to the clipboard from the page)
 │       ├── filename.ts             # Saved file name and path construction
 │       ├── messages.ts             # Message types between popup and background
 │       └── i18n/                   # Internationalization (messages.en.ts / messages.ja.ts / index.ts / useI18n.tsx)
@@ -228,6 +231,15 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 - From 3 days after installation, a successful resize or capture makes the popup show a request to rate the extension on the store and support development the next time it opens. It does not appear right after the success, so it never interrupts what you are doing.
 - "Later" shows it again after 3 more days. "Don't show again" hides it until the next update (it comes back 3 days after the update). "Rate on the store" opens the store's review page, and it is not shown again, even after updates.
 - The installation date and the state of the request are stored only in the browser (`chrome.storage.local`) and are never sent anywhere.
+
+### 7. Keyboard shortcuts
+- No keys are assigned by default, because they would collide with other extensions, Windows and Chrome. Open Chrome's shortcuts page (`chrome://extensions/shortcuts`) from "Keyboard shortcuts" on the settings page and assign only the ones you want. The current assignments are also shown on the settings page.
+- Available commands: resizing to a preset (8), resizing to a custom size (5 slots), downloading and copying the visible area or the full page, and choosing a scrollable area.
+- Presets use the base (window or viewport) last selected in the popup. For custom sizes, choose a size for each slot on the settings page; it is applied with that size's own base. If a slot is empty, or its size was deleted, nothing is resized and a `!` badge and the icon's tooltip tell you so.
+- The popup does not open, so results appear as a badge on the toolbar icon (success `OK` / failure `!`). On failure, the reason is shown in the icon's tooltip while the badge is visible.
+- `activeTab` is also granted by a shortcut, so no extra permissions are needed. Because of Chrome's restrictions, screenshots cannot be taken on special pages such as `chrome://`.
+- Copying writes to the clipboard from the page, so it works only on `https` pages and `localhost`.
+- On a tab that is not at 100% zoom, a confirmation appears on the page before the zoom is reset to 100% (unless the confirmation is turned off in the settings). On special pages where it cannot be shown, the zoom is left unchanged.
 
 ## Versioning and changelog
 
