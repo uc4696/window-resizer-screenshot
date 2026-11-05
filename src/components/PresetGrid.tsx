@@ -1,6 +1,7 @@
 import { Icon, type IconName } from "~components/Icon"
 import { useI18n } from "~lib/i18n/useI18n"
 import { formatOffset } from "~lib/offset"
+import { exceedsDisplay } from "~lib/placement"
 import type {
   DisplayBounds,
   PresetGroup,
@@ -16,6 +17,8 @@ interface PresetGridProps {
   mode: SizeMode
   /** 今の基準での実際のサイズ。同じサイズのプリセットを強調する。 */
   currentSize: DisplayBounds
+  /** ディスプレイのサイズ。超えるプリセットは押せない。 */
+  display: DisplayBounds
   onSelect: (preset: SizePreset) => void
   disabled?: boolean
 }
@@ -49,6 +52,7 @@ export function PresetGrid({
   offsets,
   mode,
   currentSize,
+  display,
   onSelect,
   disabled
 }: PresetGridProps) {
@@ -71,14 +75,21 @@ export function PresetGrid({
                 const isCurrent =
                   preset.width + (offset?.offsetWidth ?? 0) === currentSize.width &&
                   preset.height + (offset?.offsetHeight ?? 0) === currentSize.height
-                const title = offsetText ? `${preset.label}\n${offsetText}` : preset.label
+                const over = exceedsDisplay(preset, display)
+                const title = [
+                  preset.label,
+                  offsetText,
+                  over ? t("sizeOverDisplay", { ...display }) : null
+                ]
+                  .filter(Boolean)
+                  .join("\n")
                 return (
                   <button
                     key={preset.id}
                     className={`preset-button ${isCurrent ? "is-current" : ""}`}
                     aria-current={isCurrent ? "true" : undefined}
                     data-size={`${preset.width}x${preset.height}`}
-                    disabled={disabled}
+                    disabled={disabled || over}
                     onClick={() => onSelect(preset)}
                     title={title}
                     aria-label={title}

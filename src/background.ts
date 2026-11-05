@@ -10,7 +10,14 @@ import type {
 } from "~lib/messages"
 import { startCopyInPage } from "~lib/page-copy"
 import { startPicker } from "~lib/picker"
-import { isZoomed, resetTabZoom, resizeViewport, resizeWindow } from "~lib/resize"
+import { exceedsDisplay } from "~lib/placement"
+import {
+  isZoomed,
+  readDisplayFromTab,
+  resetTabZoom,
+  resizeViewport,
+  resizeWindow
+} from "~lib/resize"
 import {
   ensureInstalledAt,
   markReviewPromptOnUse,
@@ -306,6 +313,11 @@ async function handleResizeCommand(
 ): Promise<void> {
   const tabId = tab.id as number
   const size = await resolveResizeSize(command)
+  // popup と同じく、ディスプレイを超えるサイズにはしない（読めない特殊なページではそのまま進める）
+  const display = await readDisplayFromTab(tabId)
+  if (display && exceedsDisplay(size, display)) {
+    throw new Error(t("sizeOverDisplay", { ...display }))
+  }
   if (!(await resetZoomForShortcut(tabId))) return
   const target = { tabId, windowId: tab.windowId, url: tab.url }
   if (size.mode === "window") {

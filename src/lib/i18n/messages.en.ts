@@ -180,6 +180,7 @@ export const en = {
     "Chrome does not allow a {width} x {height} window on this screen, because at least half of the window must be on screen.",
   errDelayTabChanged:
     "The screenshot was not taken because the tab was switched during the timer.",
+  sizeOverDisplay: "Larger than this display ({width} x {height})",
   errPickedAreaMissing: "The selected area was not found. Please choose it again."
 }
 

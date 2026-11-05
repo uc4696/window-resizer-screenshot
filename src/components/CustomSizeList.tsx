@@ -1,6 +1,7 @@
 import { Icon } from "~components/Icon"
 import { useI18n } from "~lib/i18n/useI18n"
 import { formatOffset } from "~lib/offset"
+import { exceedsDisplay } from "~lib/placement"
 import type { CustomSize, DisplayBounds, SizeMode } from "~lib/types"
 
 interface CustomSizeListProps {
@@ -8,6 +9,8 @@ interface CustomSizeListProps {
   customSizes: CustomSize[]
   /** 今の基準での実際のサイズ。同じサイズの行を強調する。 */
   currentSize: DisplayBounds
+  /** ディスプレイのサイズ。別のモニターや同期で登録した、超えるサイズは押せない。 */
+  display: DisplayBounds
   editingId: string | null
   formOpen: boolean
   onToggleForm: () => void
@@ -25,6 +28,7 @@ export function CustomSizeList({
   mode,
   customSizes,
   currentSize,
+  display,
   editingId,
   formOpen,
   onToggleForm,
@@ -65,9 +69,14 @@ export function CustomSizeList({
             const isCurrent =
               size.width + offW === currentSize.width &&
               size.height + offH === currentSize.height
-            const title = `${size.label} (${size.width} x ${size.height})${
-              hasOffset ? `\n${t("offsetBadge")}: ${formatOffset(offW, offH)}` : ""
-            }`
+            const over = exceedsDisplay(size, display)
+            const title = [
+              `${size.label} (${size.width} x ${size.height})`,
+              hasOffset ? `${t("offsetBadge")}: ${formatOffset(offW, offH)}` : null,
+              over ? t("sizeOverDisplay", { ...display }) : null
+            ]
+              .filter(Boolean)
+              .join("\n")
             return (
               <div
                 className={`custom-size-row ${editingId === size.id ? "is-editing" : ""}`}
@@ -76,6 +85,7 @@ export function CustomSizeList({
                 <button
                   className={`custom-size-apply ${isCurrent ? "is-current" : ""}`}
                   aria-current={isCurrent ? "true" : undefined}
+                  disabled={over}
                   onClick={() => onApply(size)}
                   title={title}
                 >

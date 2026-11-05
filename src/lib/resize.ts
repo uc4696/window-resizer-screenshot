@@ -78,6 +78,22 @@ export function validateOffset(
 }
 
 /**
+ * ウィンドウが乗っているディスプレイのサイズをタブから読む（service worker 用）。
+ * 注入できないページ（chrome:// 等）では null を返す。
+ */
+export async function readDisplayFromTab(tabId: number): Promise<DisplayBounds | null> {
+  try {
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => ({ width: window.screen.width, height: window.screen.height })
+    })
+    return result ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
  * リサイズの対象。popup は省略して「現在のウィンドウとアクティブタブ」を使う。
  * service worker（ショートカット）には現在のウィンドウがないので、対象を明示する。
  */
@@ -310,6 +326,11 @@ export function isZoomed(zoom: number): boolean {
  */
 export async function resetTabZoom(tabId: number): Promise<void> {
   await chrome.tabs.setZoom(tabId, 1)
+}
+
+/** 現在のウィンドウの状態（normal / maximized / fullscreen など）を取得する */
+export async function getCurrentWindowState(): Promise<string | undefined> {
+  return (await chrome.windows.getCurrent()).state
 }
 
 /** 現在のウィンドウサイズを取得する */

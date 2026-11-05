@@ -10,11 +10,13 @@ import { ShareButtons } from "~components/ShareButton"
 import { SupportLink } from "~components/SupportLink"
 import { PRESET_GROUPS } from "~lib/constants"
 import { I18nProvider, useI18n } from "~lib/i18n/useI18n"
+import { resolveCurrentSize } from "~lib/placement"
 import {
   getActiveTabZoom,
   getCurrentDisplayBounds,
   getCurrentViewportSize,
   getCurrentWindowSize,
+  getCurrentWindowState,
   isZoomed,
   resetTabZoom,
   resizeViewport,
@@ -68,6 +70,7 @@ function PopupContent() {
   const [windowSize, setWindowSize] = useState<DisplayBounds>({ width: 0, height: 0 })
   const [viewportSize, setViewportSize] = useState<DisplayBounds>({ width: 0, height: 0 })
   const [display, setDisplay] = useState<DisplayBounds>({ width: 0, height: 0 })
+  const [windowState, setWindowState] = useState<string | undefined>(undefined)
   const [customSizes, setCustomSizes] = useState<CustomSize[]>([])
   const [presetOffsets, setPresetOffsets] = useState<Record<string, PresetModeOffsets>>(
     {}
@@ -91,15 +94,25 @@ function PopupContent() {
   }
 
   async function refreshSizes() {
-    const [w, v] = await Promise.all([getCurrentWindowSize(), getCurrentViewportSize()])
+    const [w, v, state] = await Promise.all([
+      getCurrentWindowSize(),
+      getCurrentViewportSize(),
+      getCurrentWindowState()
+    ])
     setWindowSize(w)
     setViewportSize(v)
+    setWindowState(state)
   }
 
   useEffect(() => {
-    Promise.all([getCurrentWindowSize(), getCurrentViewportSize()]).then(([w, v]) => {
+    Promise.all([
+      getCurrentWindowSize(),
+      getCurrentViewportSize(),
+      getCurrentWindowState()
+    ]).then(([w, v, state]) => {
       setWindowSize(w)
       setViewportSize(v)
+      setWindowState(state)
     })
     getCurrentDisplayBounds().then(setDisplay)
     getCustomSizes().then(setCustomSizes)
@@ -200,7 +213,11 @@ function PopupContent() {
   }
 
   /** 今の基準での実際のサイズ（同じサイズのボタンの強調と、フォームの入力に使う）。 */
-  const currentSize = mode === "window" ? windowSize : viewportSize
+  const currentSize = resolveCurrentSize(
+    mode,
+    { window: windowSize, viewport: viewportSize, display },
+    windowState
+  )
 
   return (
     <main className="popup-root">
@@ -251,6 +268,7 @@ function PopupContent() {
         offsets={presetOffsets}
         mode={mode}
         currentSize={currentSize}
+        display={display}
         onSelect={requestApplySize}
         disabled={busy}
       />
@@ -259,6 +277,7 @@ function PopupContent() {
         mode={mode}
         customSizes={customSizes}
         currentSize={currentSize}
+        display={display}
         editingId={editingCustomSizeId}
         formOpen={customSizeOpen}
         onToggleForm={toggleCustomForm}

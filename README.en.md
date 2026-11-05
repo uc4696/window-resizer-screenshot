@@ -240,8 +240,8 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 
 ### 7. Keeping the window on screen
 - When a resize would push the window off the screen, the requested size is kept and the window is moved just enough to stay on the screen. This applies to window-based and viewport-based resizing and to shortcuts. The reference is the work area (excluding the taskbar and so on) of the display the window is on, read from `window.screen` without the `system.display` permission.
-- A size larger than the screen is not changed either. So that the toolbar's extension icons and the window buttons stay reachable, the window is aligned to the right edge and the top edge of the work area (the left and bottom parts go off the screen).
-- Chrome rejects a window with more than half of its area off the screen. Sizes more than twice the area of the screen (for example, 4K on a 2560x1440 screen) are therefore not possible, and an error is shown.
+- Sizes larger than the display cannot be selected. A preset or custom size that exceeds the display in either width or height is disabled, with the reason in its tooltip (shortcuts show `!`), because a window that goes off the screen may become impossible to operate. The comparison uses the size after display scaling, so a 1920x1080 monitor at 125% has a limit of 1536x864.
+- Setting the viewport to the display size makes the window larger than the screen by its frame. The window is aligned to the top so the title bar stays on screen, and to the right so the toolbar icons stay reachable (the left and bottom parts go off the screen).
 - Which monitors are adjacent cannot be known without a permission, so even a size meant to span several monitors is kept on the current one. To span monitors, turn off "Move the window to keep it on screen" on the settings page.
 - When a shortcut is used on a special page such as `chrome://`, the screen area cannot be read, so the window is not moved.
 

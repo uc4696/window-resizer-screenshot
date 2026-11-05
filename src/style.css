@@ -268,8 +268,13 @@ body {
   margin-bottom: 14px;
 }
 
-.custom-size-apply:hover {
+.custom-size-apply:hover:not(:disabled) {
   background-color: var(--accent-soft-hover);
+}
+
+.custom-size-apply:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .custom-size-apply.is-current,

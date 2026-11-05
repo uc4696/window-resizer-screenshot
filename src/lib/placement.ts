@@ -42,3 +42,34 @@ export function placeWindow(
   if (left === current.left && top === current.top) return null
   return { left, top }
 }
+
+/**
+ * サイズがディスプレイを超えるか。幅と高さのどちらか片方でも超えたら超えたものとする
+ * （画面外に出ると操作できなくなるので選ばせない）。ディスプレイが未取得（0）のときは超えないものとする。
+ */
+export function exceedsDisplay(
+  size: { width: number; height: number },
+  display: { width: number; height: number }
+): boolean {
+  if (display.width === 0 || display.height === 0) return false
+  return size.width > display.width || size.height > display.height
+}
+
+/**
+ * フォームの入力やボタンの強調に使う、今の基準のサイズ。
+ * 最大化中のウィンドウは枠の分だけ画面より大きく報告されるので、ディスプレイのサイズを使う。
+ */
+export function resolveCurrentSize(
+  mode: "window" | "viewport",
+  sizes: {
+    window: { width: number; height: number }
+    viewport: { width: number; height: number }
+    display: { width: number; height: number }
+  },
+  windowState?: string
+): { width: number; height: number } {
+  if (mode === "viewport") return sizes.viewport
+  return windowState === "maximized" || windowState === "fullscreen"
+    ? sizes.display
+    : sizes.window
+}

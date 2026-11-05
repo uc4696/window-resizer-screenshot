@@ -1,7 +1,11 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
 
-import { placeWindow } from "../../src/lib/placement.ts"
+import {
+  exceedsDisplay,
+  placeWindow,
+  resolveCurrentSize
+} from "../../src/lib/placement.ts"
 
 /** 1920x1080 の画面。下に 40px のタスクバー。 */
 const AREA = { left: 0, top: 0, width: 1920, height: 1040 }
@@ -75,4 +79,31 @@ test("画面と同じ大きさなら原点に合う", () => {
     placeWindow({ left: 10, top: 10 }, { width: 1920, height: 1040 }, AREA),
     { left: 0, top: 0 }
   )
+})
+
+test("片方でもディスプレイを超えたら超えたものとする", () => {
+  const display = { width: 1280, height: 720 }
+  assert.equal(exceedsDisplay({ width: 1280, height: 720 }, display), false)
+  assert.equal(exceedsDisplay({ width: 800, height: 600 }, display), false)
+  assert.equal(exceedsDisplay({ width: 1024, height: 768 }, display), true)
+  assert.equal(exceedsDisplay({ width: 1281, height: 100 }, display), true)
+})
+
+test("ディスプレイが未取得なら超えないものとする", () => {
+  assert.equal(
+    exceedsDisplay({ width: 3840, height: 2160 }, { width: 0, height: 0 }),
+    false
+  )
+})
+
+test("最大化中のウィンドウ基準はディスプレイのサイズを使う", () => {
+  const sizes = {
+    window: { width: 1936, height: 1056 },
+    viewport: { width: 1920, height: 950 },
+    display: { width: 1920, height: 1080 }
+  }
+  assert.deepEqual(resolveCurrentSize("window", sizes, "maximized"), sizes.display)
+  assert.deepEqual(resolveCurrentSize("window", sizes, "fullscreen"), sizes.display)
+  assert.deepEqual(resolveCurrentSize("window", sizes, "normal"), sizes.window)
+  assert.deepEqual(resolveCurrentSize("viewport", sizes, "maximized"), sizes.viewport)
 })

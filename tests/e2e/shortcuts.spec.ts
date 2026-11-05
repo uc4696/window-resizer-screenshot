@@ -78,6 +78,18 @@ test.describe("キーボードショートカット", () => {
       .toEqual({ width: 1024, height: 768 })
   })
 
+  test("ディスプレイを超えるプリセットはリサイズせず、! とツールチップで知らせる", async ({
+    openTarget,
+    serviceWorker
+  }) => {
+    const target = await openTarget("/")
+    const before = await getWindowSize(serviceWorker, target)
+    await runCommand(serviceWorker, target, "resize-preset-4k")
+    await expect.poll(() => getBadge(serviceWorker, target)).toBe("!")
+    expect(await getTitle(serviceWorker, target)).toContain("Larger than this display")
+    expect(await getWindowSize(serviceWorker, target)).toEqual(before)
+  })
+
   test("カスタムサイズの枠: 割り当てがなければ ! とツールチップで知らせ、割り当てるとそのサイズにする", async ({
     context,
     extensionId,
