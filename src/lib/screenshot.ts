@@ -68,6 +68,8 @@ interface PageMetrics {
   scrollWidth: number
   scrollHeight: number
   viewportWidth: number
+  /** ビューポートの幅（小数まで）。拡大中の innerWidth は丸められるので、倍率はこちらで求める。 */
+  exactViewportWidth: number
   viewportHeight: number
   dpr: number
   scrollX: number
@@ -182,10 +184,20 @@ async function measurePage(tabId: number, usePicked: boolean): Promise<PageMetri
         }
       }
 
+      // メディアクエリの判定は丸められないので、二分探索で小数まで測る
+      let low = 0
+      let high = window.innerWidth + 2
+      for (let i = 0; i < 24; i++) {
+        const middle = (low + high) / 2
+        if (window.matchMedia(`(min-width: ${middle}px)`).matches) low = middle
+        else high = middle
+      }
+
       return {
         scrollWidth: Math.max(doc.scrollWidth, scrollingWidth, window.innerWidth),
         scrollHeight,
         viewportWidth: window.innerWidth,
+        exactViewportWidth: low,
         viewportHeight: window.innerHeight,
         dpr: window.devicePixelRatio || 1,
         scrollX,
@@ -316,7 +328,10 @@ async function scrollAndMeasure(
         return { appliedY: scroller.scrollTop, viewportHeight: 0 }
       }
       window.scrollTo({ left: 0, top: targetY, behavior: "instant" })
-      return { appliedY: window.scrollY, viewportHeight: window.innerHeight }
+      // 次の撮影までの送り幅。innerHeight は拡大中に切り上がることがあり（110% で 654.55 が 655）、
+      // 横スクロールバーの分も含むので、すき間が出ないよう本文の高さを切り捨てて使う
+      const height = window.visualViewport?.height ?? window.innerHeight
+      return { appliedY: window.scrollY, viewportHeight: Math.floor(height) }
     },
     args: [y, useScroller ? SCROLLER_ATTR : null]
   })
@@ -380,8 +395,15 @@ export async function captureFullPage(
   options: FullPageOptions = {}
 ): Promise<string> {
   const metrics = await measurePage(tabId, options.picked ?? false)
-  const { scrollWidth, viewportWidth, dpr, scrollX, scrollY, backgroundColor, scroller } =
-    metrics
+  const {
+    scrollWidth,
+    exactViewportWidth,
+    dpr,
+    scrollX,
+    scrollY,
+    backgroundColor,
+    scroller
+  } = metrics
   const layout: "page" | "area" | "framed" = !scroller
     ? "page"
     : options.includeFrame
@@ -429,7 +451,9 @@ export async function captureFullPage(
     const firstBitmap = await createImageBitmap(dataUrlToBlob(firstTileDataUrl))
 
     // 実際に撮影された画像から実DPRを算出（申告値とズレる場合があるため）
-    const realDpr = firstBitmap.width / viewportWidth || dpr
+    const realDpr = firstBitmap.width / exactViewportWidth || dpr
+    // スクロール範囲の高さは整数に丸められているので、拡大中は 1px 重ねてすき間を防ぐ
+    if (scroller && !Number.isInteger(realDpr)) step = Math.max(1, step - 1)
     // スクロール範囲の表示領域（実ピクセル）。各タイルからここを切り出す。
     const crop = scroller
       ? {
