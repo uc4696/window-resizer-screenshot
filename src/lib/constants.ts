@@ -21,6 +21,9 @@ export const IMAGE_EXTENSIONS: Record<ImageFormat, string> = {
 export const STORE_URL =
   "https://chromewebstore.google.com/detail/kaikockbajglbkgoeepfbamdknadhiji"
 
+/** ストアのレビューのページ（評価のお願いの［ストアで評価する］で開く）。 */
+export const STORE_REVIEW_URL = `${STORE_URL}/reviews`
+
 /**
  * 解像度テンプレート（プリセット）。アスペクト比ごとにグループ化されている。
  * ウィンドウ基準の場合はウィンドウサイズに、

@@ -58,6 +58,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │   ├── install-chrome.mjs          # Downloads Chrome for Testing for E2E tests (set CHROME_CHANNEL)
 │   └── e2e-wsl.sh                  # Runs E2E tests on WSL2 with xvfb
 ├── tests/e2e/                      # E2E tests (Playwright), shared fixtures and a test server
+├── tests/unit/                     # Unit tests (node:test)
 ├── playwright.config.ts            # Playwright configuration
 ├── .github/workflows/e2e-beta.yml  # Daily E2E run (Chrome Beta) and failure notifications
 ├── .github/funding.yml             # Support link settings (Buy Me a Coffee)
@@ -74,6 +75,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │   │   ├── CaptureSection.tsx      # Screenshot rows (Download / Copy)
 │   │   ├── Icon.tsx                # Inline Tabler Icons SVG
 │   │   ├── ShareButton.tsx         # Share on X button
+│   │   ├── ReviewPrompt.tsx        # Store rating request
 │   │   └── SupportLink.tsx         # Support link
 │   └── lib/
 │       ├── types.ts                # Type definitions
@@ -83,6 +85,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 │       ├── resize.ts               # Window / viewport resizing and validation
 │       ├── screenshot.ts           # Visible Tab / Full Page screenshot capture (PNG/WebP/JPEG output)
 │       ├── share.ts                # Builds the X post URL
+│       ├── review-prompt.ts        # When to show the rating request, and its state
 │       ├── filename.ts             # Saved file name and path construction
 │       ├── messages.ts             # Message types between popup and background
 │       └── i18n/                   # Internationalization (messages.en.ts / messages.ja.ts / index.ts / useI18n.tsx)
@@ -152,9 +155,13 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
 
   `npm run format` formats the source code in `src`, `tests`, `scripts`, etc. with Prettier (Markdown is excluded). `npm run lint` runs static analysis with ESLint.
 
+### Unit tests
+
+Run them with `npm test` (`tests/unit/`, no browser needed). They check the conditions for showing the rating request.
+
 ### E2E tests (automated tests)
 
-The extension is loaded into a real browser with Playwright and Chrome for Testing. The tests cover resizing (presets, custom sizes, offsets), input validation, screenshots (visible area / full page), the options page, and a permission check of the distributed `manifest.json`.
+The extension is loaded into a real browser with Playwright and Chrome for Testing. The tests cover resizing (presets, custom sizes, offsets), input validation, screenshots (visible area / full page), the options page, the rating request, and a permission check of the distributed `manifest.json`.
 
 - **CI (GitHub Actions)**: `.github/workflows/e2e-beta.yml` runs **every day at 03:00 (JST)** against the **Beta** channel of Chrome (manual runs: "Run workflow" in the Actions tab). On failure it opens a GitHub issue (label `e2e-failure`; it comments on the existing open issue if there is one) and sends a Slack message.
   - Slack notifications require the repository secret `SLACK_WEBHOOK_URL` (a Slack Incoming Webhook URL).
@@ -216,6 +223,11 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 | `scripting` | Measuring the viewport, and scroll control/measurement scripts for full-page screenshots |
 
 `host_permissions` (`<all_urls>`), `tabs` and `system.display` are not used. The upper-limit check for custom sizes uses `window.screen` of the display where the popup is shown.
+
+### 6. Store rating request
+- From 3 days after installation, a successful resize or capture makes the popup show a request to rate the extension on the store and support development the next time it opens. It does not appear right after the success, so it never interrupts what you are doing.
+- "Later" shows it again after 3 more days. "Don't show again" hides it until the next update (it comes back 3 days after the update). "Rate on the store" opens the store's review page, and it is not shown again, even after updates.
+- The installation date and the state of the request are stored only in the browser (`chrome.storage.local`) and are never sent anywhere.
 
 ## Versioning and changelog
 

@@ -67,6 +67,14 @@ export const ja: Record<MessageKey, string> = {
   add: "追加",
   cancel: "キャンセル",
 
+  // ---- review prompt ----
+  reviewPromptTitle: "Window & Viewport Resizer は役に立っていますか？",
+  reviewPromptBody: "Chrome ウェブストアで評価する。",
+  reviewPromptSupport: "ドリンク1杯ごちそうする！",
+  reviewPromptRate: "ストアで評価する",
+  reviewPromptLater: "あとで",
+  reviewPromptNever: "表示しない",
+
   // ---- support link ----
   supportText: "ドリンクを奢って開発を応援する",
 

@@ -6,6 +6,11 @@ import type {
   CaptureResponse,
   ExtensionMessage
 } from "~lib/messages"
+import {
+  ensureInstalledAt,
+  markReviewPromptOnUse,
+  resetReviewPromptOnUpdate
+} from "~lib/review-prompt"
 import { captureFullPage, captureVisibleTab } from "~lib/screenshot"
 import { getSettings } from "~lib/storage"
 
@@ -28,6 +33,22 @@ async function showBadge(tabId: number, kind: BadgeKind): Promise<void> {
     // タブが閉じられていると失敗するので無視する
     chrome.action.setBadgeText({ tabId, text: "" }).catch(() => undefined)
   }, BADGE_CLEAR_MS)
+}
+
+// 評価のお願いの起点。service worker が起きるたびに、記録がなければ今を記録する
+void ensureInstalledAt().catch((error) => console.warn("[review-prompt]", error))
+
+// アップデートしたら、評価のお願いの「表示しない」を取り消す（評価した人はそのまま）
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason !== "update") return
+  void resetReviewPromptOnUpdate().catch((error) =>
+    console.warn("[review-prompt]", error)
+  )
+})
+
+/** 撮影に成功したときに、評価のお願いの印を付ける（次に popup を開いたときに出す）。 */
+function noteCaptureSucceeded(): void {
+  void markReviewPromptOnUse().catch((error) => console.warn("[review-prompt]", error))
 }
 
 chrome.runtime.onMessage.addListener(
@@ -122,6 +143,7 @@ async function handleCapture(
         })
 
   if (isCopy) {
+    noteCaptureSucceeded()
     return { ok: true, dataUrl }
   }
 
@@ -135,5 +157,6 @@ async function handleCapture(
     conflictAction: "uniquify"
   })
 
+  noteCaptureSucceeded()
   return { ok: true, downloadId, filename }
 }

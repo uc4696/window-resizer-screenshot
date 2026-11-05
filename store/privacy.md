@@ -31,10 +31,10 @@ Injects scripts into the current tab (granted via activeTab) to: measure the vie
 ### storage
 
 ```text
-Stores the user's settings locally (or in Chrome sync if the user chooses): custom sizes, preset offsets, save folder name, image format, language, the last selected size mode, and capture/zoom options. Nothing is sent to external servers.
+Stores the user's settings locally (or in Chrome sync if the user chooses): custom sizes, preset offsets, save folder name, image format, language, the last selected size mode, and capture/zoom options. Also stores locally the installation date and whether the store rating request was answered. Nothing is sent to external servers.
 ```
 
-（訳）ユーザーの設定（カスタムサイズ、プリセットのオフセット、保存先フォルダ名、画像形式、言語、最後に選んだサイズ基準、撮影・拡大率のオプション）をローカル（ユーザーが選べば Chrome の同期領域）に保存する。外部サーバーへは送信しない。
+（訳）ユーザーの設定（カスタムサイズ、プリセットのオフセット、保存先フォルダ名、画像形式、言語、最後に選んだサイズ基準、撮影・拡大率のオプション）をローカル（ユーザーが選べば Chrome の同期領域）に保存する。あわせて、インストール日時とストアの評価のお願いへの回答をローカルに保存する。外部サーバーへは送信しない。
 
 ### downloads
 

@@ -5,6 +5,7 @@ import copy from "data-text:../../icons/copy.svg"
 import download from "data-text:../../icons/download.svg"
 import screenshot from "data-text:../../icons/screenshot.svg"
 import settings from "data-text:../../icons/settings.svg"
+import star from "data-text:../../icons/star.svg"
 import viewportTall from "data-text:../../icons/viewport-tall.svg"
 
 /**
@@ -22,7 +23,8 @@ const ICONS = {
   check: stripClass(check),
   click: stripClass(click),
   "brand-x": stripClass(brandX),
-  settings: stripClass(settings)
+  settings: stripClass(settings),
+  star: stripClass(star)
 } as const
 
 export type IconName = keyof typeof ICONS

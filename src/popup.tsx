@@ -5,6 +5,7 @@ import { CustomSizeList } from "~components/CustomSizeList"
 import { CustomSizeManager } from "~components/CustomSizeManager"
 import { Icon } from "~components/Icon"
 import { PresetGrid } from "~components/PresetGrid"
+import { ReviewPrompt } from "~components/ReviewPrompt"
 import { ShareButton } from "~components/ShareButton"
 import { SupportLink } from "~components/SupportLink"
 import { PRESET_GROUPS } from "~lib/constants"
@@ -19,6 +20,7 @@ import {
   resizeViewport,
   resizeWindow
 } from "~lib/resize"
+import { markReviewPromptOnUse } from "~lib/review-prompt"
 import {
   addCustomSize,
   getCustomSizes,
@@ -127,6 +129,10 @@ function PopupContent() {
       }
       await refreshSizes()
       setStatus(t("statusResized", { width: preset.width, height: preset.height }))
+      // 評価のお願いは、インストールから日がたってからの成功のときに印を付ける（次に開いたときに出す）
+      void markReviewPromptOnUse().catch((error) =>
+        console.warn("[review-prompt]", error)
+      )
     } catch (e) {
       setStatus(t("statusError", { message: e instanceof Error ? e.message : String(e) }))
     } finally {
@@ -161,6 +167,8 @@ function PopupContent() {
   return (
     <main className="popup-root">
       <h1 className="popup-title">Window &amp; Viewport Resizer</h1>
+
+      <ReviewPrompt />
 
       <section className="current-size-section">
         <div className="size-row">

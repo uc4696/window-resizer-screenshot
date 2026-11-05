@@ -5,7 +5,7 @@ description: 型チェック・本番ビルド・Playwright E2E を順に実行�
 
 プロジェクトルートで次を順に実行する。途中で失敗したらそこで止め、エラー内容と原因の見立てを日本語で報告する。
 
-1. `npx tsc --noEmit` と `npm run lint`（lint は失敗しても止めずに結果を記録し、次へ進む）
+1. `npx tsc --noEmit` と `npm test`（単体テスト）と `npm run lint`（lint は失敗しても止めずに結果を記録し、次へ進む）
 2. `npm run build`
    - `Bindings not found.` で失敗したら `npm rebuild` を実行してからやり直す。
 3. `npm run test:e2e:wsl`

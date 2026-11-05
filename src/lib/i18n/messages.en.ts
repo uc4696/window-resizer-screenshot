@@ -71,6 +71,14 @@ export const en = {
   add: "Add",
   cancel: "Cancel",
 
+  // ---- review prompt ----
+  reviewPromptTitle: "Is Window & Viewport Resizer helpful?",
+  reviewPromptBody: "Rate it on the Chrome Web Store.",
+  reviewPromptSupport: "Buy me a drink!",
+  reviewPromptRate: "Rate on the store",
+  reviewPromptLater: "Later",
+  reviewPromptNever: "Don't show again",
+
   // ---- support link ----
   supportText: "Buy me a drink to support development",
 

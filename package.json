@@ -12,6 +12,7 @@
     "prepackage": "node scripts/copy-license.mjs",
     "package": "plasmo package",
     "icon": "node scripts/generate-icon.js",
+    "test": "node --experimental-strip-types --test tests/unit/*.test.mjs",
     "test:install-browser": "node scripts/install-chrome.mjs",
     "test:e2e": "playwright test",
     "test:e2e:wsl": "wsl.exe -d Ubuntu -e bash scripts/e2e-wsl.sh",
