@@ -55,7 +55,8 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 ├── scripts/
 │   ├── generate-icon.js            # icon-source.png から各サイズのアイコンを生成（sharp使用）
 │   ├── copy-license.mjs            # Tabler Icons のライセンスをビルド成果物（ZIP）へコピー（build/package 時に自動実行）
-│   └── install-chrome.mjs          # E2Eテスト用の Chrome for Testing を取得（CHROME_CHANNEL で指定）
+│   ├── install-chrome.mjs          # E2Eテスト用の Chrome for Testing を取得（CHROME_CHANNEL で指定）
+│   └── e2e-wsl.sh                  # E2Eテストを WSL2 と xvfb で実行
 ├── tests/e2e/                      # E2Eテスト（Playwright）と共通フィクスチャ・テスト用サーバー
 ├── playwright.config.ts            # Playwright設定
 ├── .github/workflows/e2e-beta.yml  # 毎日のE2Eテスト（Chrome Beta）と失敗通知
@@ -158,12 +159,22 @@ Playwright と Chrome for Testing で、拡張機能を実ブラウザに読み�
 - **CI（GitHub Actions）**: `.github/workflows/e2e-beta.yml` が **毎日 03:00（JST）** に Chrome の **Beta** チャンネルで実行します（手動実行は Actions タブの「Run workflow」）。失敗すると、GitHub の Issue（`e2e-failure` ラベル。未クローズの Issue があればコメント追記）と Slack に通知します。
   - Slack 通知には、リポジトリの Secrets に `SLACK_WEBHOOK_URL`（Slack の Incoming Webhook URL）の登録が必要です。
   - 定期実行（`schedule`）はデフォルトブランチ（`main`）上のワークフローだけが対象です。
-- **ローカル（CIで失敗したときの再現・確認用）**:
+- **ローカル（WSL2、ふだんはこちら）**: WSL2 の Ubuntu と xvfb で実行するので、Windows の画面にブラウザは出ず、クリップボードも変わりません。Ubuntu には Node 24（nvm で導入）・xvfb・xauth・rsync・unzip が必要です。
+
+  ```powershell
+  npm run test:e2e:wsl                                  # 全件を実行
+  npm run test:e2e:wsl -- tests/e2e/clipboard.spec.ts   # 引数は Playwright に渡します
+  npm run test:e2e:wsl -- --channel beta                # Chrome のチャンネルを指定
+  npm run test:e2e:wsl -- --update-browser              # Chrome を最新に取り直す
+  ```
+
+  作業中のファイルを WSL 側の `~/e2e/resizer` に同期し、依存関係（`package-lock.json` が変わったときだけ）・ビルド・Chrome の取得も WSL 側で行います。結果は Windows 側の `test-results/` に戻り、終了コードはテストのものを返します。
+- **ローカル（Windows、リリース前や Windows でだけ起きる問題の確認用）**:
 
   ```powershell
   npm run build                 # テストは build/chrome-mv3-prod を読み込みます
   npm run test:install-browser  # Chrome for Testing を取得（既定は Stable）
-  npm run test:e2e              # 実行（ブラウザのウィンドウが実際に開きます）
+  npm run test:e2e              # 実行（ブラウザのウィンドウが画面に開きます）
   ```
 
   Beta で再現したい場合は、`$env:CHROME_CHANNEL = "beta"; npm run test:install-browser` を実行してください。取得したブラウザは `.chrome-for-testing/` に保存されます（Git管理対象外）。

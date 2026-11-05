@@ -17,7 +17,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Windows + npm 11 以降ではネイティブモジュールのインストールスクリプトがブロックされ、`plasmo build` が `Bindings not found.` で失敗する。`npm install` の後は毎回 `npm rebuild` を実行する。
 - 型チェック: `npx tsc --noEmit`（i18n の `messages.ja.ts` は `messages.en.ts` と同じキーを型で必須にしているので、文言の追加漏れもここで検出される）。
-- E2E は `build/chrome-mv3-prod` を読み込むので、先に `npm run build` が必要。ブラウザは `npm run test:install-browser`（`.chrome-for-testing/` に取得、Beta は `CHROME_CHANNEL=beta`）。実ウィンドウを操作するため直列実行で、実行中はブラウザが実際に開く。
+- E2E はふだん `npm run test:e2e:wsl` で実行する（`scripts/e2e-wsl.sh`）。WSL2 の Ubuntu と xvfb で動くので、Windows の画面にブラウザが出ず、クリップボードも変わらない。作業中のファイルを `~/e2e/resizer` に rsync で同期し、ビルドと Chrome の取得も WSL 側で行い、`test-results/` を Windows 側に戻す。引数は Playwright に渡る（`-- tests/e2e/<name>.spec.ts`）。Beta は `-- --channel beta`、Chrome の更新は `-- --update-browser`。WSL には Node 24（nvm）・xvfb・xauth・rsync・unzip が要る。
+- Windows の `npm run test:e2e` は、リリース前の確認と、Windows でだけ起きる問題を疑うときに使う。`build/chrome-mv3-prod` を読み込むので先に `npm run build` が必要。ブラウザは `npm run test:install-browser`（`.chrome-for-testing/` に取得、Beta は `CHROME_CHANNEL=beta`）。実ウィンドウを操作するため直列実行で、実行中はブラウザが画面の前面に開いて作業を止める。
 - 整形は Prettier（`printWidth` 90・セミコロンなし・ダブルクォート・末尾カンマなし・2スペース）。全体は `npm run format`。Markdown は README の表を崩さないよう対象外。Lint は `npm run lint`（ESLint flat config: `eslint.config.mjs`）。
 - `.plasmo/` と `build/` は生成物なので編集しない。
 - Plasmo のエントリファイル（`popup.tsx` / `options.tsx` / `background.ts`）は `src/` 配下に置く（`~*` → `./src/*`）。`assets/` はルートのまま。
