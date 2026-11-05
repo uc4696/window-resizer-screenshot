@@ -17,6 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Windows + npm 11 以降ではネイティブモジュールのインストールスクリプトがブロックされ、`plasmo build` が `Bindings not found.` で失敗する。`npm install` の後は毎回 `npm rebuild` を実行する。
 - 型チェック: `npx tsc --noEmit`（i18n の `messages.ja.ts` は `messages.en.ts` と同じキーを型で必須にしているので、文言の追加漏れもここで検出される）。
+- 単体テスト: `npm test`（`tests/unit/*.test.mjs`。node の型除去で `src/` の `.ts` を直接読むので、対象のファイルは `~lib` などの別名を import しない）。
 - E2E はふだん `npm run test:e2e:wsl` で実行する（`scripts/e2e-wsl.sh`）。WSL2 の Ubuntu と xvfb で動くので、Windows の画面にブラウザが出ず、クリップボードも変わらない。作業中のファイルを `~/e2e/resizer` に rsync で同期し、ビルドと Chrome の取得も WSL 側で行い、`test-results/` を Windows 側に戻す。引数は Playwright に渡る（`-- tests/e2e/<name>.spec.ts`）。Beta は `-- --channel beta`、Chrome の更新は `-- --update-browser`。WSL には Node 24（nvm）・xvfb・xauth・rsync・unzip が要る。
 - Windows の `npm run test:e2e` は、リリース前の確認と、Windows でだけ起きる問題を疑うときに使う。`build/chrome-mv3-prod` を読み込むので先に `npm run build` が必要。ブラウザは `npm run test:install-browser`（`.chrome-for-testing/` に取得、Beta は `CHROME_CHANNEL=beta`）。実ウィンドウを操作するため直列実行で、実行中はブラウザが画面の前面に開いて作業を止める。
 - 整形は Prettier（`printWidth` 90・セミコロンなし・ダブルクォート・末尾カンマなし・2スペース）。全体は `npm run format`。Markdown は README の表を崩さないよう対象外。Lint は `npm run lint`（ESLint flat config: `eslint.config.mjs`）。
@@ -42,12 +43,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **X 共有**: `https://x.com/intent/post?text=...` を新規タブで開く（権限不要）。本文は `src/lib/share.ts` で組み立て、文言とハッシュタグは i18n（ja: `#Chrome拡張機能 #Web制作` / en: `#ChromeExtension #WebDev`）。
 - **アイコン**: Tabler Icons（MIT）の `icons/*.svg` を `data-text:` でインライン展開する（`src/components/Icon.tsx`）。
   - Plasmo のビルドで SVG の `viewBox` が除去され、width/height を変えても縮小されず見切れる。そのため Icon.tsx で `viewBox="0 0 24 24"` を補い、width/height を `size` に書き換える。SVG 内の class（`icon ...`）は読み込み時に除去し、ラッパーのクラスは `.ui-icon`。
-  - 線画（outline）: screenshot / viewport-tall / download / copy / check / settings / click。brand-x だけは細線だと小サイズで欠けるため塗りつぶし（filled）。
+  - 線画（outline）: screenshot / viewport-tall / download / copy / check / settings / click / star。brand-x だけは細線だと小サイズで欠けるため塗りつぶし（filled）。
   - サイズは既定 16px、フッターボタン内は 12px。
   - ライセンスは `licenses/LICENSE-tabler.txt`。設定画面に「Icons: Tabler Icons (MIT License)」と表記する。
 - **サイズ基準の記憶**: 最後に選んだサイズ基準（window / viewport）を local ストレージのキー `size-mode` に保存し、ポップアップ表示時に復元する（`src/lib/storage.ts` の `getSizeMode` / `setSizeMode`、`src/popup.tsx` の `changeMode`）。不正値・未設定は window に正規化し、ファクトリーリセットで削除する。
 - **フッターボタン**: 「設定を開く」と「X で共有」は共通クラス `.footer-button`（枠線付きの pill 型、アイコン + 文字）で同じデザインにする。`.popup-footer-row` で中央寄せ、間隔は 6px。
 - **拡大縮小されたページのリサイズ**: popup でプリセット／カスタムサイズを押したとき、アクティブタブの拡大率（`chrome.tabs.getZoom`、tabs 権限不要）が 100% 以外なら、拡大率を 100% に戻してからリサイズする（`src/popup.tsx` の `requestApplySize`、`src/lib/resize.ts` の `getActiveTabZoom` / `resetTabZoom`）。ウィンドウ基準・ビューポート基準の両方が対象。設定 `zoomResetConfirm`（既定 true、不正値も true に正規化）が有効なら、popup 全体に重ねた確認（`.zoom-confirm-overlay`、［キャンセル］［100% に戻してリサイズ］）を出し、キャンセル時は何も変えない。`window.confirm` は popup では使わない。`setZoom(0)` はブラウザ既定の拡大率に戻るため、1 を明示する。拡大率が取得できないタブ（取得失敗）は確認なしでそのままリサイズする。
+- **評価のお願い**: Szna と同じ仕組み（`src/lib/review-prompt.ts`、`src/components/ReviewPrompt.tsx`）。インストールから3日（`REVIEW_PROMPT_MIN_DAYS`）たったあと、リサイズか撮影に成功したときに「出す」印（`pending`）を付け、次に popup を開いたときに、タイトルの下に大きく（高さ 400px 以上）出して本来の中身を下へ押し出す。その場では出さない。印を付けるのは、リサイズが popup の `applySize`、撮影が background の `handleCapture`（範囲選択も含む）。内容は見出し、［ストアで評価する］（星アイコン。`STORE_REVIEW_URL` を新規タブで開く）、Buy Me a Coffee のバナー（同じ 200×56px）、［あとで］［表示しない］。［あとで］はそこから3日たったあとの次の成功でまた出す（`postponedUntil`）。［表示しない］は `closed` にするが、アップデート（`onInstalled` の `update`、読み込み直しも含む）で取り消し、そこから3日たったあとにまた出す。［ストアで評価する］を押した人は `rated` を記録し、アップデートしても出さない。状態は chrome.storage.local の `reviewPrompt`、起点は `installedAt`（service worker が起きるたびに、なければ記録。この仕組みより前からの利用者は最初に動いたときが起点）。設定ではないのでファクトリーリセットでは消さない。
 - **ツールバーアイコンの色**: 線の色は `#7465e0`。もとの淡い色（`#8578eb` 系・16px は半透明）ではライトモードのツールバーでほぼ見えなかったため、全サイズ（`assets/icon*.png`・`icon-source.png`）を濃くし、16px は不透明度も上げている。
 - **ポップアップの高さ**: 初期状態でスクロールが出ないよう余白を詰めるが、`.popup-root` の `max-height: 560px` / `overflow-y: auto` は外さない。日本語のフォールバックフォントは行高 `normal` が大きく ja だけはみ出したため、`body` の `line-height` を 1.35 に固定している（計測値: en 546px / ja 552px）。E2E で en / ja とも初期状態でスクロールが出ないことを確認している。
 

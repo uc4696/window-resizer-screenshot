@@ -544,6 +544,99 @@ body {
   height: auto;
 }
 
+/* 評価のお願い。popup の幅いっぱいに大きく出し、本来の中身は下へ押し出す */
+.review-prompt {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 18px;
+  min-height: 400px;
+  margin: 0 -14px 12px;
+  padding: 32px 28px;
+  background-color: var(--panel-bg);
+  text-align: center;
+}
+
+.review-prompt h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.review-block {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.review-block p {
+  margin: 0;
+  color: var(--subtitle-color);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* Buy Me a Coffee のバナー（幅 200px、1090×306 の画像）と同じ大きさにそろえる */
+.review-rate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 200px;
+  height: 56px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background-color: var(--accent-color);
+  color: var(--button-text);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.review-rate:hover {
+  background-color: var(--accent-color-hover);
+}
+
+.review-prompt .support-image {
+  width: 200px;
+}
+
+.review-divider {
+  width: 48px;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.review-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.review-secondary {
+  min-width: 96px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.review-secondary:hover {
+  border-color: var(--accent-color);
+}
+
+.review-secondary:focus-visible,
+.review-rate:focus-visible,
+.review-prompt .support-link:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
 /* 拡大率を 100% に戻す確認（popup 全体に重ね、スクロール位置によらず見えるようにする） */
 .zoom-confirm-overlay {
   position: fixed;

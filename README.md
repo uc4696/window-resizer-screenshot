@@ -58,6 +58,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 │   ├── install-chrome.mjs          # E2Eテスト用の Chrome for Testing を取得（CHROME_CHANNEL で指定）
 │   └── e2e-wsl.sh                  # E2Eテストを WSL2 と xvfb で実行
 ├── tests/e2e/                      # E2Eテスト（Playwright）と共通フィクスチャ・テスト用サーバー
+├── tests/unit/                     # 単体テスト（node:test）
 ├── playwright.config.ts            # Playwright設定
 ├── .github/workflows/e2e-beta.yml  # 毎日のE2Eテスト（Chrome Beta）と失敗通知
 ├── .github/funding.yml             # 開発支援リンク（Buy Me a Coffee）の設定
@@ -74,6 +75,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 │   │   ├── CaptureSection.tsx      # スクリーンショット欄（2行 × ダウンロード／コピー）
 │   │   ├── Icon.tsx                # Tabler Icons の SVG をインライン展開
 │   │   ├── ShareButton.tsx         # Xへの共有ボタン
+│   │   ├── ReviewPrompt.tsx        # ストアの評価のお願い
 │   │   └── SupportLink.tsx         # サポートリンク
 │   └── lib/
 │       ├── types.ts                # 型定義
@@ -83,6 +85,7 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 │       ├── resize.ts               # ウィンドウ／ビューポートのリサイズ・バリデーション
 │       ├── screenshot.ts           # Visible Tab / Full Page のスクリーンショット撮影（PNG/WebP/JPEG 出力）
 │       ├── share.ts                # X投稿画面のURL生成
+│       ├── review-prompt.ts        # 評価のお願いを出す条件と状態の管理
 │       ├── filename.ts             # 保存ファイル名・保存パスの組み立て
 │       ├── messages.ts             # popup <-> background 間のメッセージ型定義
 │       └── i18n/                   # 多言語対応（messages.en.ts / messages.ja.ts / index.ts / useI18n.tsx）
@@ -152,9 +155,13 @@ Plasmoの「[src directory](https://docs.plasmo.com/framework/customization/src)
 
   `npm run format` は Prettier で `src` / `tests` / `scripts` などのソースコードを整形します（Markdown は対象外）。`npm run lint` は ESLint で静的解析を行います。
 
+### 単体テスト
+
+`npm test` で実行します（`tests/unit/`、ブラウザは使いません）。評価のお願いを出す条件を確かめています。
+
 ### E2Eテスト（自動テスト）
 
-Playwright と Chrome for Testing で、拡張機能を実ブラウザに読み込んで動作確認します。テスト内容は、リサイズ（プリセット・カスタムサイズ・オフセット）、入力チェック、スクリーンショット（表示範囲・フルページ）、設定画面、配布物 `manifest.json` の権限チェックです。
+Playwright と Chrome for Testing で、拡張機能を実ブラウザに読み込んで動作確認します。テスト内容は、リサイズ（プリセット・カスタムサイズ・オフセット）、入力チェック、スクリーンショット（表示範囲・フルページ）、設定画面、評価のお願い、配布物 `manifest.json` の権限チェックです。
 
 - **CI（GitHub Actions）**: `.github/workflows/e2e-beta.yml` が **毎日 03:00（JST）** に Chrome の **Beta** チャンネルで実行します（手動実行は Actions タブの「Run workflow」）。失敗すると、GitHub の Issue（`e2e-failure` ラベル。未クローズの Issue があればコメント追記）と Slack に通知します。
   - Slack 通知には、リポジトリの Secrets に `SLACK_WEBHOOK_URL`（Slack の Incoming Webhook URL）の登録が必要です。
@@ -216,6 +223,11 @@ Playwright と Chrome for Testing で、拡張機能を実ブラウザに読み�
 | `scripting` | ビューポート実測、およびページ全体スクリーンショットのスクロール制御・計測スクリプト注入 |
 
 `host_permissions`（`<all_urls>`）、`tabs`、`system.display` は使用していません。カスタムサイズ入力時の解像度の上限チェックには、ポップアップが表示されているディスプレイの `window.screen` の値を使用します。
+
+### 6. ストアの評価のお願い
+- インストールから3日たったあと、リサイズか撮影に成功すると、次にポップアップを開いたときにストアの評価と開発の応援のお願いを表示します。操作の途中で割り込まないよう、成功したその場では表示しません。
+- 「あとで」を選ぶと、そこから3日たったあとに再び表示します。「表示しない」を選ぶと、次にアップデートされるまで表示しません（アップデートから3日たったあとに再び表示します）。「ストアで評価する」を押すと、ストアのレビューのページを開き、以後はアップデートしても表示しません。
+- インストール日時と表示の状態はブラウザ内（`chrome.storage.local`）にだけ保存し、外部には送信しません。
 
 ## バージョン管理・変更履歴（Changelog）
 
