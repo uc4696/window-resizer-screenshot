@@ -64,7 +64,9 @@ function PopupContent() {
   const [presetOffsets, setPresetOffsets] = useState<Record<string, PresetModeOffsets>>(
     {}
   )
-  const [status, setStatus] = useState<string | null>(null)
+  const [status, setStatusText] = useState<string | null>(null)
+  /** 見せずに読み上げだけにするメッセージか（リサイズの成功）。 */
+  const [statusQuiet, setStatusQuiet] = useState(false)
   const [busy, setBusy] = useState(false)
   const [customSizeOpen, setCustomSizeOpen] = useState(false)
   const [editingCustomSizeId, setEditingCustomSizeId] = useState<string | null>(null)
@@ -74,6 +76,11 @@ function PopupContent() {
     tabId: number
     zoom: number
   } | null>(null)
+
+  function setStatus(text: string | null, quiet = false) {
+    setStatusText(text)
+    setStatusQuiet(quiet)
+  }
 
   async function refreshSizes() {
     const [w, v] = await Promise.all([getCurrentWindowSize(), getCurrentViewportSize()])
@@ -142,7 +149,7 @@ function PopupContent() {
         await resizeViewport(preset.width + offW, preset.height + offH)
       }
       await refreshSizes()
-      setStatus(t("statusResized", { width: preset.width, height: preset.height }))
+      setStatus(t("statusResized", { width: preset.width, height: preset.height }), true)
       // 評価のお願いは、インストールから日がたってからの成功のときに印を付ける（次に開いたときに出す）
       void markReviewPromptOnUse().catch((error) =>
         console.warn("[review-prompt]", error)
@@ -246,8 +253,12 @@ function PopupContent() {
 
       <CaptureSection busy={busy} onBusyChange={setBusy} onStatus={setStatus} />
 
-      {/* ステータス表示は常に1行分の高さを確保し、表示時にレイアウトが跳ねないようにする */}
-      <p className="status-text" title={status ?? undefined}>
+      {/* 空のときは場所を取らない（エラーや撮影中のときだけ出る） */}
+      <p
+        className={`status-text ${statusQuiet ? "is-quiet" : ""}`}
+        role="status"
+        title={status ?? undefined}
+      >
         {status}
       </p>
 

@@ -103,6 +103,20 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     expect(root.right - gear.right).toBeLessThan(20)
   })
 
+  test("リサイズの成功はメッセージを見せないが、エラーは見せる", async ({
+    openTarget,
+    openPopup
+  }) => {
+    const popup = await openPopup(await openTarget("/"))
+    const status = popup.locator(".status-text")
+    await popup.getByRole("button", { name: "Window-based" }).click()
+    await popup.locator('button.preset-button[data-size="800x600"]').click()
+    await expect(status).toHaveText("Resized to 800 x 600.")
+    await expect(status).toHaveClass(/is-quiet/)
+    const box = await status.boundingBox()
+    expect(box?.height).toBeLessThanOrEqual(1)
+  })
+
   test("見た目: プリセットは同じ大きさ、角なし、タイマーは撮影の行の最後", async ({
     openTarget,
     openPopup
@@ -118,9 +132,30 @@ test.describe("ポップアップのUI（アイコンボタン・共有・高さ
     expect(new Set(sizes).size).toBe(1)
 
     const radius = await popup
-      .locator("button, select, input, .current-size-section")
+      .locator("button:not(.delay-option), select, input, .current-size-section")
       .evaluateAll((els) => els.map((el) => getComputedStyle(el).borderTopLeftRadius))
     expect(new Set(radius)).toEqual(new Set(["0px"]))
+
+    // タイマーはすき間なしでつながり、両端の外側だけが丸い
+    const delay = await popup.locator(".delay-option").evaluateAll((els) =>
+      els.map((el) => {
+        const s = getComputedStyle(el)
+        const r = el.getBoundingClientRect()
+        return {
+          left: r.left,
+          right: r.right,
+          tl: s.borderTopLeftRadius,
+          tr: s.borderTopRightRadius
+        }
+      })
+    )
+    expect(delay).toHaveLength(4)
+    for (let i = 1; i < 4; i++) expect(delay[i].left).toBe(delay[i - 1].right)
+    expect(delay[0].tl).not.toBe("0px")
+    expect(delay[0].tr).toBe("0px")
+    expect(delay[1].tl).toBe("0px")
+    expect(delay[3].tl).toBe("0px")
+    expect(delay[3].tr).not.toBe("0px")
 
     const order = await popup
       .locator(".capture-section .capture-row")

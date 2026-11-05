@@ -97,9 +97,9 @@ body {
 }
 
 .popup-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   color: var(--accent-color);
 }
 
@@ -108,8 +108,8 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   background-color: var(--accent-soft);
-  padding: 8px 0;
-  margin-bottom: 8px;
+  padding: 7px 0;
+  margin-bottom: 6px;
   cursor: default;
 }
 
@@ -126,7 +126,7 @@ body {
 }
 
 .size-value {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
   color: var(--text-color);
@@ -134,7 +134,7 @@ body {
 
 .size-times {
   margin: 0 2px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 400;
   color: var(--subtitle-color);
 }
@@ -142,7 +142,7 @@ body {
 .mode-toggle {
   display: flex;
   gap: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .mode-button {
@@ -151,9 +151,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 7px 4px;
+  padding: 6px 4px;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 11px;
   border: 0;
   background-color: var(--panel-bg);
   color: var(--text-color);
@@ -173,18 +173,18 @@ body {
 .preset-groups {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .preset-group-title {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--subtitle-color);
-  margin: 0 0 4px 0;
+  margin: 0 0 3px 0;
 }
 
 .preset-grid {
@@ -212,8 +212,8 @@ body {
 .preset-screen text {
   fill: var(--accent-color);
   font-family: inherit;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 400;
 }
 
 .preset-button:hover:not(:disabled) .preset-screen rect {
@@ -243,7 +243,7 @@ body {
 }
 
 .custom-size-section {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .custom-size-apply:hover {
@@ -251,14 +251,14 @@ body {
 }
 
 .custom-size-manager {
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .link-button {
   background: none;
   border: none;
   color: var(--accent-color);
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   padding: 2px 0;
 }
@@ -270,7 +270,7 @@ body {
 }
 
 .custom-size-list {
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .empty-hint {
@@ -283,7 +283,7 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .custom-size-row.is-editing {
@@ -296,7 +296,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 8px;
+  padding: 5px 8px;
   font-family: inherit;
   font-size: 11px;
   border: 0;
@@ -445,26 +445,26 @@ body {
 }
 
 .capture-section {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .section-title {
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--subtitle-color);
-  margin: 0 0 4px 0;
+  margin: 0 0 3px 0;
 }
 
 /* タイマーは1クリックで切り替えるスイッチ */
 .capture-delay {
   display: inline-flex;
   flex-shrink: 0;
-  gap: 2px;
+  gap: 0;
 }
 
 .delay-option {
   width: 28px;
-  height: 28px;
+  height: 26px;
   padding: 0;
   font-family: inherit;
   font-size: 11px;
@@ -473,6 +473,15 @@ body {
   background-color: var(--panel-bg);
   color: var(--subtitle-color);
   cursor: pointer;
+}
+
+/* つながった1本のスイッチに見えるよう、両端の外側だけを丸める */
+.delay-option:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.delay-option:last-child {
+  border-radius: 0 6px 6px 0;
 }
 
 .delay-option:hover:not(.active):not(:disabled) {
@@ -490,7 +499,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 3px 0;
+  padding: 1px 0;
 }
 
 .capture-scope {
@@ -498,7 +507,7 @@ body {
   align-items: center;
   gap: 6px;
   min-width: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-color);
 }
 
@@ -535,7 +544,7 @@ body {
   align-items: center;
   justify-content: center;
   width: 34px;
-  height: 28px;
+  height: 26px;
   padding: 0;
   border: 0;
   background-color: var(--accent-soft);
@@ -571,7 +580,6 @@ body {
 }
 
 .status-text {
-  min-height: 16px;
   font-size: 11px;
   line-height: 16px;
   color: var(--subtitle-color);
@@ -580,6 +588,24 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.status-text:empty {
+  display: none;
+}
+
+/* リサイズの成功は今のサイズの表示で分かるので見せず、読み上げ用にだけ残す */
+.status-text.is-quiet {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  clip-path: inset(50%);
+}
+
+.link-button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
 /* 寄付の下の行。左に共有先（これから増やせる）、右に設定 */
