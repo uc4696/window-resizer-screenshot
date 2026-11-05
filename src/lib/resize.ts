@@ -318,18 +318,52 @@ export async function getCurrentWindowSize(): Promise<DisplayBounds> {
   return { width: win.width ?? 0, height: win.height ?? 0 }
 }
 
-/** 現在のアクティブタブのビューポートサイズを取得する */
+/**
+ * ページに注入して、ビューポートのサイズを小数まで測る。
+ * innerWidth は拡大中に整数へ丸められ、拡大率を掛けて戻すと 1〜3px ズレる
+ * （拡大率 300% で 1280 が 1278 になる）。メディアクエリの判定は丸められないので、二分探索で求める。
+ * 外部を参照せず、この中だけで完結させる。
+ */
+function measureViewportExact(): DisplayBounds {
+  const search = (feature: string, max: number) => {
+    let low = 0
+    let high = max + 2
+    for (let i = 0; i < 24; i++) {
+      const middle = (low + high) / 2
+      if (window.matchMedia(`(${feature}: ${middle}px)`).matches) low = middle
+      else high = middle
+    }
+    return low
+  }
+  return {
+    width: search("min-width", window.innerWidth),
+    height: search("min-height", window.innerHeight)
+  }
+}
+
+/**
+ * 現在のアクティブタブのビューポートサイズを取得する。
+ * ページの拡大率に左右されない、ウィンドウの中の表示エリアの実サイズを返す
+ * （1280x720 のビューポートは、拡大率 150% でも 80% でも 1280x720）。
+ */
 export async function getCurrentViewportSize(): Promise<DisplayBounds> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   if (!tab?.id || isRestrictedUrl(tab.url)) {
     return { width: 0, height: 0 }
   }
   try {
-    const [{ result }] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: () => ({ width: window.innerWidth, height: window.innerHeight })
-    })
-    return result ?? { width: 0, height: 0 }
+    const [zoom, [{ result }]] = await Promise.all([
+      chrome.tabs.getZoom(tab.id),
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: measureViewportExact
+      })
+    ])
+    if (!result) return { width: 0, height: 0 }
+    return {
+      width: Math.round(result.width * zoom),
+      height: Math.round(result.height * zoom)
+    }
   } catch {
     return { width: 0, height: 0 }
   }

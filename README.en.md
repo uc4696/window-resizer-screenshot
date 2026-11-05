@@ -212,6 +212,7 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 - When the page zoom is not 100%, the measured viewport changes with the zoom and the size does not come out as intended. So when you resize a tab whose zoom is not 100%, the zoom is reset to 100% before resizing.
 - By default, a confirmation message is shown before resetting (Cancel leaves both the zoom and the size unchanged). Turn off "Ask for confirmation before resetting the zoom" in the settings to reset to 100% without asking.
 - Chrome remembers zoom per site (origin), so resetting to 100% also affects other tabs of the same site.
+- The viewport size shown in the popup does not depend on the zoom level. A 1280x720 viewport is shown as 1280 x 720 at 150% or 80% zoom.
 
 ### 4. What the screenshots capture
 - Both screenshot features ("Visible area" and "Full page") capture **only the web page content inside the tab (the viewport area)**.

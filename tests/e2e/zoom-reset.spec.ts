@@ -110,3 +110,31 @@ test.describe("拡大縮小されたページのリサイズ", () => {
     await expect.poll(() => getViewportSize(target)).toEqual({ width: 1024, height: 768 })
   })
 })
+
+test.describe("拡大中のページの今のサイズ", () => {
+  for (const zoom of [1.5, 0.8, 3]) {
+    test(`拡大率 ${zoom * 100}% でも、ビューポートは 1280x720 と表示・入力される`, async ({
+      openTarget,
+      openPopup,
+      serviceWorker
+    }) => {
+      const target = await openTarget("/long")
+      let popup = await openPopup(target)
+      await popup.getByRole("button", { name: "Viewport-based" }).click()
+      await presetButton(popup, 1280, 720).click()
+      await waitForFinalStatus(popup)
+      await popup.close()
+
+      await setTargetZoom(serviceWorker, target, zoom)
+      await target.waitForTimeout(300)
+      popup = await openPopup(target)
+
+      await expect(popup.locator(".size-value").nth(1)).toHaveText("1280×720")
+      await expect(presetButton(popup, 1280, 720)).toHaveAttribute("aria-current", "true")
+      await popup.getByRole("button", { name: "Add a custom size" }).click()
+      await popup.getByRole("button", { name: "Use current size" }).click()
+      await expect(popup.getByPlaceholder("Width", { exact: true })).toHaveValue("1280")
+      await expect(popup.getByPlaceholder("Height", { exact: true })).toHaveValue("720")
+    })
+  }
+})
