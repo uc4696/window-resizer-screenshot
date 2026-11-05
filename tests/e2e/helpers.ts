@@ -37,6 +37,14 @@ export async function waitForFinalStatus(popup: Page, timeout = 30_000): Promise
 }
 
 /**
+ * popup が閉じるのを待つ。操作の直後に閉じると close イベントはもう来ないため、
+ * 閉じていれば待たない（isClosed の確認と待ちの開始の間に割り込まれることはない）。
+ */
+export async function waitForPopupClosed(popup: Page, timeout = 5_000): Promise<void> {
+  if (!popup.isClosed()) await popup.waitForEvent("close", { timeout })
+}
+
+/**
  * 保存ボタン押下後の流れを待つ: popup が閉じ、対象タブのバッジが撮影結果（OK / !）になる。
  * 結果のバッジ文言を返す（数秒で消えるため、出た時点の値を返す）。
  */

@@ -4,7 +4,8 @@ import {
   readPngSize,
   recordDownloadRequests,
   waitForCaptureBadge,
-  waitForCompletedDownload
+  waitForCompletedDownload,
+  waitForPopupClosed
 } from "./helpers"
 import {
   INNER_SCROLL_CONTENT_HEIGHT,
@@ -118,7 +119,7 @@ test.describe("範囲を選んで撮影", () => {
   /** popup の［選択］を押して範囲選択を開始し、一覧（.list）の中央をクリックしてメニューを出す。 */
   async function pickList(target: Page, popup: Page) {
     await popup.getByRole("button", { name: PICK }).click()
-    await popup.waitForEvent("close", { timeout: 5_000 })
+    await waitForPopupClosed(popup)
     await target.bringToFront()
     await expect(
       target.getByText("Click the area to capture (Esc to cancel)")

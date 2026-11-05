@@ -1,5 +1,10 @@
 import { expect, test, type Page } from "./fixtures"
-import { getDownloadRequests, recordDownloadRequests, selectImageFormat } from "./helpers"
+import {
+  getDownloadRequests,
+  recordDownloadRequests,
+  selectImageFormat,
+  waitForPopupClosed
+} from "./helpers"
 
 const COPY_VISIBLE = "Copy screenshot of visible area to clipboard"
 const COPY_FULL = "Copy screenshot of full page to clipboard"
@@ -52,7 +57,7 @@ test.describe("クリップボードへのコピー", () => {
     expect(await button.innerHTML()).not.toBe(normalIcon)
 
     // 少し間を置いて popup が閉じる
-    await popup.waitForEvent("close", { timeout: 5_000 })
+    await waitForPopupClosed(popup)
 
     const clip = await readClipboard(target)
     expect(clip.types).toContain("image/png")
@@ -78,7 +83,7 @@ test.describe("クリップボードへのコピー", () => {
     await target.bringToFront()
     await popup.getByRole("button", { name: COPY_VISIBLE }).click()
     await expect(popup.locator(".status-text")).toHaveText("Copied to clipboard.")
-    await popup.waitForEvent("close", { timeout: 5_000 })
+    await waitForPopupClosed(popup)
 
     expect((await readClipboard(target)).types).toEqual(["image/png"])
   })
@@ -97,7 +102,7 @@ test.describe("クリップボードへのコピー", () => {
     await expect(popup.locator(".status-text")).toHaveText("Copied to clipboard.", {
       timeout: 60_000
     })
-    await popup.waitForEvent("close", { timeout: 5_000 })
+    await waitForPopupClosed(popup)
 
     const clip = await readClipboard(target)
     expect(clip.height).toBeGreaterThan(clip.width / 10)
