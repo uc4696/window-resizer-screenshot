@@ -1,7 +1,7 @@
 {
   "name": "window-resizer-screenshot",
   "displayName": "__MSG_extensionName__",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "__MSG_extensionDescription__",
   "author": "uc4696",
   "packageManager": "npm@11.19.0",
@@ -77,14 +77,14 @@
       "resize-preset-hd": {
         "description": "__MSG_cmdResizeHd__"
       },
+      "resize-preset-wxga": {
+        "description": "__MSG_cmdResizeWxga__"
+      },
+      "resize-preset-hdplus": {
+        "description": "__MSG_cmdResizeHdplus__"
+      },
       "resize-preset-fhd": {
         "description": "__MSG_cmdResizeFhd__"
-      },
-      "resize-preset-wqhd": {
-        "description": "__MSG_cmdResizeWqhd__"
-      },
-      "resize-preset-4k": {
-        "description": "__MSG_cmdResize4k__"
       },
       "resize-preset-vga": {
         "description": "__MSG_cmdResizeVga__"

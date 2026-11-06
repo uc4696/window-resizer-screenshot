@@ -10,7 +10,13 @@ import type {
 } from "~lib/messages"
 import { startCopyInPage } from "~lib/page-copy"
 import { startPicker } from "~lib/picker"
-import { isZoomed, resetTabZoom, resizeViewport, resizeWindow } from "~lib/resize"
+import { exceedsDisplay } from "~lib/placement"
+import {
+  getWindowFrame,
+  readDisplayFromTab,
+  resizeViewport,
+  resizeWindow
+} from "~lib/resize"
 import {
   ensureInstalledAt,
   markReviewPromptOnUse,
@@ -273,41 +279,24 @@ async function resolveResizeSize(command: ResizeCommand): Promise<{
   }
 }
 
-/**
- * 拡大率が 100% 以外なら 100% に戻す。確認の設定が有効なら、popup がないのでページで確認する。
- * キャンセルされたら false を返す。確認を出せない特殊なページでは拡大率を変えずに進める。
- */
-async function resetZoomForShortcut(tabId: number): Promise<boolean> {
-  const zoom = await chrome.tabs.getZoom(tabId).catch(() => null)
-  if (zoom === null || !isZoomed(zoom)) return true
-  const { zoomResetConfirm } = await getSettings()
-  if (zoomResetConfirm) {
-    const message = t("zoomConfirmMessage", { zoom: Math.round(zoom * 100) })
-    const answer = await chrome.scripting
-      .executeScript({
-        target: { tabId },
-        func: (text: string) => window.confirm(text),
-        args: [message]
-      })
-      .then(
-        ([{ result }]) => result,
-        () => null
-      )
-    if (answer === null) return true
-    if (!answer) return false
-  }
-  await resetTabZoom(tabId)
-  return true
-}
-
 async function handleResizeCommand(
   command: ResizeCommand,
   tab: chrome.tabs.Tab
 ): Promise<void> {
   const tabId = tab.id as number
   const size = await resolveResizeSize(command)
-  if (!(await resetZoomForShortcut(tabId))) return
-  const target = { tabId, windowId: tab.windowId, url: tab.url }
+  // popup と同じく、ディスプレイを超えるサイズにはしない（読めない特殊なページではそのまま進める）
+  const display = await readDisplayFromTab(tabId)
+  const isViewport = size.mode === "viewport"
+  const frame = isViewport
+    ? await getWindowFrame(await chrome.tabs.get(tabId))
+    : undefined
+  if (display && exceedsDisplay(size, display, frame)) {
+    throw new Error(
+      t(isViewport ? "viewportOverDisplay" : "sizeOverDisplay", { ...display })
+    )
+  }
+  const target = { tabId, windowId: tab.windowId }
   if (size.mode === "window") {
     await resizeWindow(
       size.width,
@@ -346,7 +335,7 @@ async function handleCapture(
 
   const dataUrl =
     message.mode === "visible"
-      ? await captureVisibleTab(tab.windowId, format)
+      ? await captureVisibleTab(tab.id, tab.windowId, format)
       : await captureFullPage(tab.id, tab.windowId, format, {
           picked: message.mode === "picked",
           includeFrame: settings.scrollAreaIncludeFrame

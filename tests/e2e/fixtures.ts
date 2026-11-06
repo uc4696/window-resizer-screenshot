@@ -76,6 +76,8 @@ chrome.commands.onCommand.addListener = (listener) => {
 }
 
 type TestFixtures = {
+  /** 表示スケール（test.use で指定する）。省略時は環境のまま。 */
+  displayScale: number | undefined
   context: BrowserContext
   serviceWorker: Worker
   extensionId: string
@@ -100,9 +102,10 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     { scope: "worker" }
   ],
 
+  displayScale: [undefined, { option: true }],
+
   // 拡張機能を読み込んだ永続コンテキスト（テストごとに新しいプロファイルを使う）
-  // eslint-disable-next-line no-empty-pattern
-  context: async ({}, use) => {
+  context: async ({ displayScale }, use) => {
     const workDir = mkdtempSync(path.join(tmpdir(), "wvr-e2e-"))
     const extensionPath = createTestExtension(workDir)
     const context = await chromium.launchPersistentContext(
@@ -119,7 +122,8 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
           // 画面文言の検証を安定させるため、UI言語を英語に固定する
           "--lang=en-US",
           "--no-first-run",
-          "--no-default-browser-check"
+          "--no-default-browser-check",
+          ...(displayScale ? [`--force-device-scale-factor=${displayScale}`] : [])
         ]
       }
     )

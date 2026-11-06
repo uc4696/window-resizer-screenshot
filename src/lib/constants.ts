@@ -36,15 +36,9 @@ export const PRESET_GROUPS: PresetGroup[] = [
     labelKey: "presetGroup169",
     presets: [
       { id: "hd", short: "720p", label: "HD (1280×720)", width: 1280, height: 720 },
-      { id: "fhd", short: "1080p", label: "FHD (1920×1080)", width: 1920, height: 1080 },
-      {
-        id: "wqhd",
-        short: "1440p",
-        label: "WQHD (2560×1440)",
-        width: 2560,
-        height: 1440
-      },
-      { id: "4k", short: "4K", label: "4K (3840×2160)", width: 3840, height: 2160 }
+      { id: "wxga", short: "768p", label: "WXGA (1366×768)", width: 1366, height: 768 },
+      { id: "hdplus", short: "900p", label: "HD+ (1600×900)", width: 1600, height: 900 },
+      { id: "fhd", short: "1080p", label: "FHD (1920×1080)", width: 1920, height: 1080 }
     ]
   },
   {
@@ -84,8 +78,6 @@ export const DEFAULT_SETTINGS = {
   imageFormat: "png" as ImageFormat,
   /** スクロール領域を撮るとき、外枠（最初の1画面）と領域の下の部分も含めるか。 */
   scrollAreaIncludeFrame: false,
-  /** 拡大率が100%以外のページをリサイズするとき、100%に戻す前に確認するか。 */
-  zoomResetConfirm: true,
   /** リサイズで画面からはみ出すときに、位置をずらして画面内に収めるか。 */
   keepWindowOnScreen: true,
   /** ショートカットの枠に割り当てたカスタムサイズの id（空き枠は ""）。 */

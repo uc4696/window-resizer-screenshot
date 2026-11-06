@@ -143,64 +143,74 @@ test.describe("リサイズでウィンドウを画面内に収める", () => {
     expect(bounds.top! + bounds.height!).toBeLessThanOrEqual(area.top + area.height)
   })
 
-  test("画面より大きいサイズ: サイズは変えず、右上に合わせる", async ({
+  test("ビューポート基準は枠の分も比べる: 画面と同じサイズは押せず、理由をツールチップで知らせる", async ({
     openTarget,
-    openPopup,
-    serviceWorker
+    openPopup
   }) => {
     const target = await openTarget("/")
-    const area = await moveToBottomRight(serviceWorker, target)
-    // 画面より少しだけ大きいカスタムサイズ（面積の半分以上が画面に残る大きさ）
-    const width = Math.round(area.width * 1.2)
-    const height = Math.round(area.height * 1.2)
-    await serviceWorker.evaluate(
-      ({ width, height }) =>
-        chrome.storage.local.set({
-          "custom-sizes": JSON.stringify([
-            { id: "custom-window-big", label: "Big", width, height, mode: "window" }
-          ])
-        }),
-      { width, height }
-    )
     const popup = await openPopup(target)
+    const size = await popup.evaluate(() => ({
+      width: screen.width,
+      height: screen.height
+    }))
     await popup.getByRole("button", { name: "Window-based" }).click()
-    await popup.locator(".custom-size-apply").click()
-    await waitForFinalStatus(popup)
-
-    await expect
-      .poll(() => getBounds(serviceWorker, target))
-      .toEqual({
-        left: area.left + area.width - width,
-        top: area.top,
-        width,
-        height
-      })
+    if (size.width === 1920 && size.height === 1080) {
+      await expect(presetButton(popup, 1920, 1080)).toBeEnabled()
+    }
+    await popup.getByRole("button", { name: "Viewport-based" }).click()
+    if (size.width === 1920 && size.height === 1080) {
+      await expect(presetButton(popup, 1920, 1080)).toBeDisabled()
+      await expect(presetButton(popup, 1920, 1080)).toHaveAttribute(
+        "title",
+        /With the browser frame/
+      )
+    }
+    await expect(presetButton(popup, 640, 480)).toBeEnabled()
   })
 
-  test("Chrome が受け付けない大きさ（画面の2倍を超える面積）は分かる言葉で知らせる", async ({
+  test("ディスプレイを超えるプリセットとカスタムサイズは押せず、理由をツールチップで知らせる", async ({
     openTarget,
     openPopup,
     serviceWorker
   }) => {
     const target = await openTarget("/")
     const area = await getWorkArea(target)
-    const width = area.width * 2
-    const height = area.height * 2
     await serviceWorker.evaluate(
-      ({ width, height }) =>
+      ({ width }) =>
         chrome.storage.local.set({
           "custom-sizes": JSON.stringify([
-            { id: "custom-window-huge", label: "Huge", width, height, mode: "window" }
+            { id: "over", label: "Over", width: width + 1, height: 100, mode: "window" },
+            { id: "fit", label: "Fit", width: 800, height: 600, mode: "window" }
           ])
         }),
-      { width, height }
+      { width: area.width }
     )
     const popup = await openPopup(target)
     await popup.getByRole("button", { name: "Window-based" }).click()
-    await popup.locator(".custom-size-apply").click()
-    const status = await waitForFinalStatus(popup)
-    expect(status).toContain(`${width} x ${height}`)
-    expect(status).toContain("at least half")
+
+    // xvfb の画面は 1920x1080。Windows で動かすときは画面の大きさで結果が変わる
+    const size = await popup.evaluate(() => ({
+      width: screen.width,
+      height: screen.height
+    }))
+    const presets = await popup
+      .locator("button.preset-button")
+      .evaluateAll((els) =>
+        els.map((el) => [
+          el.getAttribute("data-size"),
+          (el as HTMLButtonElement).disabled
+        ])
+      )
+    for (const [dataSize, disabled] of presets as [string, boolean][]) {
+      const [w, h] = dataSize.split("x").map(Number)
+      expect(disabled).toBe(w > size.width || h > size.height)
+    }
+    await expect(presetButton(popup, 1600, 1200)).toHaveAttribute(
+      "title",
+      /Larger than this display/
+    )
+    await expect(popup.locator(".custom-size-apply", { hasText: "Over" })).toBeDisabled()
+    await expect(popup.locator(".custom-size-apply", { hasText: "Fit" })).toBeEnabled()
   })
 
   test("収める設定をオフにすると、位置は変えない", async ({

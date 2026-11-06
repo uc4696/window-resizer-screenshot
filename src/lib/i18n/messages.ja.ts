@@ -3,7 +3,6 @@ import type { MessageKey } from "./messages.en"
 /** 日本語メッセージ辞書。英語辞書と同じキーを必須とする（追加漏れは型エラーになる）。 */
 export const ja: Record<MessageKey, string> = {
   // ---- popup ----
-  sizeUnavailable: "このページではサイズを読み取れません",
   currentWindowSize: "今のウィンドウのサイズ",
   currentViewportSize: "今のビューポートのサイズ（ページが表示される部分）",
   modeWindow: "ウィンドウ基準",
@@ -42,9 +41,6 @@ export const ja: Record<MessageKey, string> = {
   shareHashtags: "#Chrome拡張機能 #Web制作",
   statusResized: "サイズを {width} x {height} に変更しました。",
   statusError: "エラー: {message}",
-  zoomConfirmMessage:
-    "このページは {zoom}% に拡大縮小されています。意図したサイズにならないため、拡大率を 100% に戻してからリサイズします。",
-  zoomConfirmOk: "100% に戻してリサイズ",
   statusCapturingFullPage: "ページ全体を撮影中...",
   statusCapturing: "撮影中...",
   errCaptureFailed: "撮影に失敗しました。",
@@ -117,10 +113,6 @@ export const ja: Record<MessageKey, string> = {
   keepOnScreenHint:
     "リサイズで画面からはみ出すときは、サイズはそのままで、はみ出す分だけ位置をずらします。画面より大きいサイズは、ツールバーのアイコンに触れるよう右上に合わせます。複数のモニターにまたがって使うときはオフにしてください。",
   keepOnScreenCheckbox: "はみ出すときはウィンドウの位置をずらす",
-  zoomResetLabel: "拡大縮小されたページのリサイズ",
-  zoomResetHint:
-    "ページの拡大率が 100% 以外のときは、意図したサイズになるよう拡大率を 100% に戻してからリサイズします。",
-  zoomResetConfirmCheckbox: "拡大率を戻す前に確認メッセージを表示する",
   shortcutsLabel: "キーボードショートカット",
   shortcutsHint:
     "既定では何も割り当てていません。使うものだけ、Chrome のショートカットの画面で割り当ててください。プリセットは popup で最後に選んだ基準（ウィンドウ／ビューポート）で、カスタムサイズはそのサイズの基準でリサイズします。結果はツールバーのアイコンに出ます。コピーは https のページと localhost だけで動きます。chrome:// などの特殊なページで使えるのは、表示部分のダウンロードだけです。",
@@ -160,9 +152,6 @@ export const ja: Record<MessageKey, string> = {
   errOffsetRange: "オフセット値は -500px 〜 500px の範囲で指定してください。",
   errWindowInfo: "現在のウィンドウ情報を取得できませんでした。",
   errNoActiveTab: "アクティブなタブが見つかりませんでした。",
-  errRestrictedPage:
-    "Chromeの仕様上、特殊ページ（chrome:// など）ではビューポートサイズを取得できません。通常のWebページを開いた状態で実行してください。",
-  errViewportFailed: "ビューポートサイズの取得に失敗しました: {message}",
   errViewportUnavailable: "ビューポートサイズを取得できませんでした。",
   errPageSize: "ページサイズの取得に失敗しました。",
   errPageTooLarge:
@@ -176,5 +165,8 @@ export const ja: Record<MessageKey, string> = {
   errBoundsRejected:
     "この画面では {width} x {height} のウィンドウにできません（Chrome は、ウィンドウの半分以上が画面内にあることを求めます）。",
   errDelayTabChanged: "タイマーの間にタブが切り替わったので撮影しませんでした。",
+  sizeOverDisplay: "このディスプレイ（{width} x {height}）より大きいサイズです",
+  viewportOverDisplay:
+    "ブラウザの枠を含めると、このディスプレイ（{width} x {height}）より大きくなります",
   errPickedAreaMissing: "選んだ範囲が見つかりませんでした。もう一度選んでください。"
 }

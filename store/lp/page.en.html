@@ -74,9 +74,9 @@
         <caption>16:9</caption>
         <tr><th>Name</th><th>Size</th></tr>
         <tr><td>HD</td><td>1280 × 720</td></tr>
+        <tr><td>WXGA</td><td>1366 × 768</td></tr>
+        <tr><td>HD+</td><td>1600 × 900</td></tr>
         <tr><td>FHD</td><td>1920 × 1080</td></tr>
-        <tr><td>WQHD</td><td>2560 × 1440</td></tr>
-        <tr><td>4K</td><td>3840 × 2160</td></tr>
       </table>
       <table class="mono">
         <caption>4:3</caption>
@@ -115,7 +115,7 @@
     <p class="sec-lead">&nbsp;</p>
     <ul class="minor">
       <li>Save as PNG, WebP or JPEG</li>
-      <li>Resets the page zoom to 100% before resizing (with an optional confirmation)</li>
+      <li>Resizes zoomed pages to the size you set without changing the zoom</li>
       <li>Choose whether to include the surrounding frame when capturing a scrollable area</li>
       <li>The toolbar icon shows the capture result</li>
       <li>Choose the download folder name</li>
@@ -145,7 +145,7 @@
     <details open><summary>It doesn't work on some pages</summary><p>Chrome doesn't allow extensions to resize or capture special pages, such as those starting with chrome:// or the Chrome Web Store.</p></details>
     <details><summary>The size is off by a few pixels</summary><p>This comes from your OS display scaling or window borders. You can correct it with the per-preset offsets in the settings.</p></details>
     <details><summary>Are the browser toolbars captured too?</summary><p>No. Only the web page itself is captured, without the toolbars or the OS window frame.</p></details>
-    <details><summary>The size is wrong when the page is zoomed</summary><p>If the page zoom is not 100%, it is reset to 100% before resizing. You can turn off the confirmation message in the settings.</p></details>
+    <details><summary>What size do I get when the page is zoomed?</summary><p>Zoom does not affect the viewport size. The page stays zoomed at the size you set, and the captured image has the same size. A full-page image is as tall as the zoomed page.</p></details>
     <details><summary>Full-page capture only takes one screen</summary><p>On pages where only an inner area scrolls, the main scrollable area is detected and captured automatically. If that doesn't work, press the area-picking button (the cursor icon) in the "Full page" row of the popup, then click the area you want.</p></details>
     <details><summary>"Copy" doesn't appear after picking an area</summary><p>On pages where the browser doesn't allow writing to the clipboard, such as http pages, Copy is not shown. Please use Download instead.</p></details>
   </section>

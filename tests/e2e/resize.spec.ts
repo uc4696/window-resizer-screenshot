@@ -23,9 +23,9 @@ test.describe("リサイズ機能（正常系）", () => {
     await expect(popup.locator("button.preset-button")).toHaveCount(8)
     for (const [w, h] of [
       [1280, 720],
+      [1366, 768],
+      [1600, 900],
       [1920, 1080],
-      [2560, 1440],
-      [3840, 2160],
       [640, 480],
       [800, 600],
       [1024, 768],

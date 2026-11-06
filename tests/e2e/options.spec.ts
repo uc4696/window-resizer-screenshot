@@ -116,6 +116,16 @@ test.describe("設定画面（正常系）", () => {
     const target = await openTarget("/")
     let popup = await openPopup(target)
     await expect.poll(() => colors(popup)).toBe("#1f2937")
+    // ダークの薄い地のボタンは、文字をアプリカラーより明るくする
+    await expect
+      .poll(() =>
+        popup.evaluate(
+          () =>
+            getComputedStyle(document.querySelector(".preset-screen text") as Element)
+              .fill
+        )
+      )
+      .toBe("rgb(180, 189, 253)")
     await popup.close()
 
     await options.bringToFront()

@@ -78,6 +78,18 @@ test.describe("キーボードショートカット", () => {
       .toEqual({ width: 1024, height: 768 })
   })
 
+  test("ディスプレイを超えるプリセットはリサイズせず、! とツールチップで知らせる", async ({
+    openTarget,
+    serviceWorker
+  }) => {
+    const target = await openTarget("/")
+    const before = await getWindowSize(serviceWorker, target)
+    await runCommand(serviceWorker, target, "resize-preset-uxga")
+    await expect.poll(() => getBadge(serviceWorker, target)).toBe("!")
+    expect(await getTitle(serviceWorker, target)).toContain("Larger than this display")
+    expect(await getWindowSize(serviceWorker, target)).toEqual(before)
+  })
+
   test("カスタムサイズの枠: 割り当てがなければ ! とツールチップで知らせ、割り当てるとそのサイズにする", async ({
     context,
     extensionId,
@@ -178,7 +190,7 @@ test.describe("キーボードショートカット", () => {
     await expect.poll(() => getBadge(serviceWorker, short)).toBe("!")
   })
 
-  test("拡大中のページ: ページで確認し、キャンセルなら何も変えず、OK なら 100% に戻してリサイズする", async ({
+  test("拡大中のページ: 拡大率を変えず、確認も出さずにリサイズする", async ({
     openTarget,
     serviceWorker
   }) => {
@@ -188,23 +200,15 @@ test.describe("キーボードショートカット", () => {
       await chrome.tabs.setZoom(tab.id as number, 1.5)
       return tab.id as number
     }, target.url())
-    const before = await getWindowSize(serviceWorker, target)
-
-    target.once("dialog", (dialog) => dialog.dismiss())
-    await runCommand(serviceWorker, target, "resize-preset-svga")
-    await target.waitForTimeout(300)
-    expect(await serviceWorker.evaluate((id) => chrome.tabs.getZoom(id), tabId)).toBe(1.5)
-    expect(await getWindowSize(serviceWorker, target)).toEqual(before)
-
-    target.once("dialog", (dialog) => {
-      expect(dialog.message()).toContain("150%")
-      void dialog.accept()
+    target.once("dialog", () => {
+      throw new Error("確認は出さない")
     })
+
     await runCommand(serviceWorker, target, "resize-preset-svga")
     await expect
       .poll(() => getWindowSize(serviceWorker, target))
       .toEqual({ width: 800, height: 600 })
-    expect(await serviceWorker.evaluate((id) => chrome.tabs.getZoom(id), tabId)).toBe(1)
+    expect(await serviceWorker.evaluate((id) => chrome.tabs.getZoom(id), tabId)).toBe(1.5)
   })
 
   test("設定画面: 割り当ての案内があり、今の割り当てを未設定と表示する", async ({

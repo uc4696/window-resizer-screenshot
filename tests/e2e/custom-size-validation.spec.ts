@@ -57,7 +57,7 @@ test.describe("カスタムサイズ（入力チェック）", () => {
     await expect(popup.locator(".error-text")).toHaveText(/between -500px and 500px/)
   })
 
-  test("制限ページ(chrome://)ではビューポート基準のリサイズがエラーになる", async ({
+  test("chrome:// のページでもビューポート基準のリサイズができ、今のサイズが出る", async ({
     context,
     openPopup
   }) => {
@@ -66,10 +66,12 @@ test.describe("カスタムサイズ（入力チェック）", () => {
     const popup = await openPopup(restricted)
     await popup.getByRole("button", { name: "Viewport-based" }).click()
     await popup.locator('button.preset-button[data-size="1024x768"]').click()
-    await expect(popup.locator(".status-text")).toHaveText(
-      /^Error: Due to Chrome restrictions/
-    )
-    // 読み取れないサイズは 0 ではなく — で出す
-    await expect(popup.locator(".size-value").nth(1)).toHaveText("—×—")
+    await expect(popup.locator(".status-text")).toHaveText("Resized to 1024 x 768.")
+    await popup.close()
+
+    // 裏のタブのサイズは更新されないので、前面に戻して確かめる（実際の popup では対象のタブが前面にある）
+    await restricted.bringToFront()
+    const reopened = await openPopup(restricted)
+    await expect(reopened.locator(".size-value").nth(1)).toHaveText("1024×768")
   })
 })

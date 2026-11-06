@@ -6,7 +6,6 @@
  */
 export const en = {
   // ---- popup ----
-  sizeUnavailable: "This size cannot be read on this page",
   currentWindowSize: "Current window size",
   currentViewportSize: "Current viewport size (the area that shows the page)",
   modeWindow: "Window-based",
@@ -45,9 +44,6 @@ export const en = {
   shareHashtags: "#ChromeExtension #WebDev",
   statusResized: "Resized to {width} x {height}.",
   statusError: "Error: {message}",
-  zoomConfirmMessage:
-    "This page is zoomed to {zoom}%. The size will not match as intended, so the zoom will be reset to 100% before resizing.",
-  zoomConfirmOk: "Reset to 100% and resize",
   statusCapturingFullPage: "Capturing full page...",
   statusCapturing: "Capturing...",
   errCaptureFailed: "Failed to capture the screenshot.",
@@ -120,10 +116,6 @@ export const en = {
   keepOnScreenHint:
     "When a resize would push the window off the screen, it is moved just enough to stay on the screen; the size does not change. A window larger than the screen is aligned to the top right so the toolbar icons stay reachable. Turn this off if you want a window to span several monitors.",
   keepOnScreenCheckbox: "Move the window to keep it on screen",
-  zoomResetLabel: "Resizing a zoomed page",
-  zoomResetHint:
-    "When the page is not at 100% zoom, the zoom is reset to 100% before resizing so the size comes out as intended.",
-  zoomResetConfirmCheckbox: "Ask for confirmation before resetting the zoom",
   shortcutsLabel: "Keyboard shortcuts",
   shortcutsHint:
     "No keys are assigned by default. Assign only the ones you want on Chrome's shortcuts page. Presets use the base (window or viewport) last selected in the popup; custom sizes use their own. Results appear on the toolbar icon. Copying works only on https pages and localhost. On special pages such as chrome://, only downloading the visible area works.",
@@ -163,9 +155,6 @@ export const en = {
   errOffsetRange: "Offset values must be between -500px and 500px.",
   errWindowInfo: "Could not get the current window information.",
   errNoActiveTab: "No active tab was found.",
-  errRestrictedPage:
-    "Due to Chrome restrictions, the viewport size cannot be read on special pages (such as chrome://). Please run this on a regular web page.",
-  errViewportFailed: "Failed to get the viewport size: {message}",
   errViewportUnavailable: "Could not get the viewport size.",
   errPageSize: "Failed to get the page size.",
   errPageTooLarge:
@@ -180,6 +169,9 @@ export const en = {
     "Chrome does not allow a {width} x {height} window on this screen, because at least half of the window must be on screen.",
   errDelayTabChanged:
     "The screenshot was not taken because the tab was switched during the timer.",
+  sizeOverDisplay: "Larger than this display ({width} x {height})",
+  viewportOverDisplay:
+    "With the browser frame, this is larger than this display ({width} x {height})",
   errPickedAreaMissing: "The selected area was not found. Please choose it again."
 }
 
