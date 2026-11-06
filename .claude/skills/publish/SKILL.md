@@ -45,6 +45,7 @@ LP は本番の固定ページ **10268**（https://www.ushiblo.com/window-viewpo
 1. **本文の取り込み**: `scripts/wp.sh prod post get <ID> --field=post_content` で日英の現行版を取得し、`store/lp/page.ja.html` / `page.en.html`（LP の正本）と比べる。差分があれば人がエディタで直したものなので、取得した版で上書きしてコミットしてから作業する。
 2. **変更点の洗い出しと文案**: 手順 1 の変更一覧と突き合わせ、変える箇所を `store/lp/<version>.md` に日英でまとめる（場所 → 操作 → 文案。前回分を書式の手本にする）。ユーザーに確認してもらう。
 3. **画像**: ポップアップやアイコンの見た目が変わったときは、`store/lp/shoot-lp.cjs` → `store/lp/render-lp.cjs` で差し替え画像（冒頭のポップアップ・ステップ2・3、日英）を `store/lp/images/` に作る。ステップ画像は LP の旧画像のポップアップ部分を覆って作るので、旧画像を LP からダウンロードして作業フォルダに置く（詳細は直近の `store/lp/<version>.md` の「画像」節）。
+   デモ動画（`wvr-demo{,-en}.mp4`）にもポップアップが写るので、見た目が変わったら作り直す。`npm run build` の後、`node store/lp/demo/shoot.cjs "$PWD" <work>` → `node store/lp/demo/render.cjs "$PWD" <work> store/lp/images C:/Tools/video/ffmpeg-lastest/bin/ffmpeg.exe`（`--check` を付けると確認用のコマだけ）。プリセットの名前やボタンの位置が変わったら `store/lp/demo/scene.html` のカーソルの行き先も確かめる。
 4. **本文の修正**: 文案を `store/lp/page.*.html` に反映する。差し替え画像の URL は取り込み後の名前（`…/images/<年>/<月>/<名前>-<版>.webp`）にする。「最新バージョン」の行を更新する。説明は `store/description.*.txt` と表現をそろえる。機能カードは2列、ペルソナは4列の前提の CSS。
 5. **本番での下書き作成**（ai-ushiblo の「公開済みの記事の修正」と「画像の取り込みと差し込み」の手順）:
    1. 既存の Rewrite & Republish のコピーがないか確かめる（あれば人が作業中かもしれないので、触る前にユーザーに確認）
