@@ -84,7 +84,7 @@ test.describe("キーボードショートカット", () => {
   }) => {
     const target = await openTarget("/")
     const before = await getWindowSize(serviceWorker, target)
-    await runCommand(serviceWorker, target, "resize-preset-4k")
+    await runCommand(serviceWorker, target, "resize-preset-uxga")
     await expect.poll(() => getBadge(serviceWorker, target)).toBe("!")
     expect(await getTitle(serviceWorker, target)).toContain("Larger than this display")
     expect(await getWindowSize(serviceWorker, target)).toEqual(before)

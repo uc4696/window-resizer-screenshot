@@ -11,7 +11,7 @@ export const CUSTOM_SLOT_COUNT = 5
 export const DELAY_SECONDS = [3, 5, 10]
 
 /** package.json の manifest.commands と同じプリセット（constants.ts の id）。 */
-const PRESET_IDS = ["hd", "fhd", "wqhd", "4k", "vga", "svga", "xga", "uxga"]
+const PRESET_IDS = ["hd", "wxga", "hdplus", "fhd", "vga", "svga", "xga", "uxga"]
 
 export type ShortcutCommand =
   | { kind: "resize-preset"; presetId: string }

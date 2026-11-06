@@ -35,9 +35,9 @@ test("すべてのコマンドの説明が en / ja の両方にある", () => {
 })
 
 test("コマンド名を中身に変換する", () => {
-  assert.deepEqual(parseCommand("resize-preset-4k"), {
+  assert.deepEqual(parseCommand("resize-preset-hdplus"), {
     kind: "resize-preset",
-    presetId: "4k"
+    presetId: "hdplus"
   })
   assert.deepEqual(parseCommand("resize-custom-5"), { kind: "resize-custom", slot: 5 })
   assert.deepEqual(parseCommand("capture-full-page-copy"), {

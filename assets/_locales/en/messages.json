@@ -23,14 +23,14 @@
   "cmdResizeHd": {
     "message": "Resize: HD (1280 x 720)"
   },
+  "cmdResizeWxga": {
+    "message": "Resize: WXGA (1366 x 768)"
+  },
+  "cmdResizeHdplus": {
+    "message": "Resize: HD+ (1600 x 900)"
+  },
   "cmdResizeFhd": {
     "message": "Resize: FHD (1920 x 1080)"
-  },
-  "cmdResizeWqhd": {
-    "message": "Resize: WQHD (2560 x 1440)"
-  },
-  "cmdResize4k": {
-    "message": "Resize: 4K (3840 x 2160)"
   },
   "cmdResizeVga": {
     "message": "Resize: VGA (640 x 480)"

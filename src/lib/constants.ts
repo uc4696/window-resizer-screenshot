@@ -36,15 +36,9 @@ export const PRESET_GROUPS: PresetGroup[] = [
     labelKey: "presetGroup169",
     presets: [
       { id: "hd", short: "720p", label: "HD (1280×720)", width: 1280, height: 720 },
-      { id: "fhd", short: "1080p", label: "FHD (1920×1080)", width: 1920, height: 1080 },
-      {
-        id: "wqhd",
-        short: "1440p",
-        label: "WQHD (2560×1440)",
-        width: 2560,
-        height: 1440
-      },
-      { id: "4k", short: "4K", label: "4K (3840×2160)", width: 3840, height: 2160 }
+      { id: "wxga", short: "768p", label: "WXGA (1366×768)", width: 1366, height: 768 },
+      { id: "hdplus", short: "900p", label: "HD+ (1600×900)", width: 1600, height: 900 },
+      { id: "fhd", short: "1080p", label: "FHD (1920×1080)", width: 1920, height: 1080 }
     ]
   },
   {
