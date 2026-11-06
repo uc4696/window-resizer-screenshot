@@ -24,10 +24,10 @@ export const ja: Record<MessageKey, string> = {
   captureDelayNone: "なし",
   captureDelaySeconds: "{seconds}秒",
   captureNoCopyWithDelay:
-    "タイマーではコピーと範囲選択を使えません。待つ間に popup が閉じるので、保存だけになります。",
+    "タイマーではコピーとスクロール付きの部分の選択を使えません。待つ間に popup が閉じるので、保存だけになります。",
   capturePick: "一覧など、枠の中だけスクロールする部分を選んで、全体を撮影します",
   capturePickUnavailable: "このページには、枠の中だけスクロールする部分がありません",
-  pickerBanner: "撮影する範囲をクリック（Esc でキャンセル）",
+  pickerBanner: "撮影するスクロール付きの部分をクリック（Esc でキャンセル）",
   pickerContent: "内容 {height}px",
   pickerSave: "ダウンロード",
   pickerCopy: "コピー",
@@ -105,10 +105,10 @@ export const ja: Record<MessageKey, string> = {
   imageFormatLabel: "スクリーンショットの既定形式",
   imageFormatHint:
     "ダウンロード保存時の形式です。クリップボードへのコピーは常にPNG形式になります。",
-  scrollAreaFrameLabel: "スクロール範囲の撮影",
+  scrollAreaFrameLabel: "スクロール付きの部分の撮影",
   scrollAreaFrameHint:
-    "内側の範囲だけがスクロールするページでは、ページ全体の撮影はその範囲だけを撮ります。有効にすると、最初の1画面の外枠（ヘッダー・サイドバー等）を残し、範囲の下にある部分を最後に付け足します。サイドバー等は伸びないため、最初の1画面分だけが写ります。",
-  scrollAreaFrameCheckbox: "外枠と範囲の下の部分も含める",
+    "内側だけがスクロールするページでは、ページ全体の撮影はスクロール付きの部分だけを撮ります。有効にすると、最初の1画面の外枠（ヘッダー・サイドバー等）を残し、その下にある部分を最後に付け足します。サイドバー等は伸びないため、最初の1画面分だけが写ります。",
+  scrollAreaFrameCheckbox: "外枠とその下の部分も含める",
   keepOnScreenLabel: "ウィンドウを画面内に収める",
   keepOnScreenHint:
     "リサイズで画面からはみ出すときは、サイズはそのままで、はみ出す分だけ位置をずらします。画面より大きいサイズは、ツールバーのアイコンに触れるよう右上に合わせます。複数のモニターにまたがって使うときはオフにしてください。",
@@ -133,7 +133,7 @@ export const ja: Record<MessageKey, string> = {
   offsetHeightShort: "高さ補正",
   resetLabel: "ファクトリーリセット（設定の初期化）",
   resetHint:
-    "保存先フォルダ名・スクリーンショット形式・スクロール範囲の撮影設定・ストレージ領域・言語・カスタムサイズ・プリセットのオフセットをすべて初期状態に戻します。",
+    "保存先フォルダ名・スクリーンショット形式・スクロール付きの部分の撮影設定・ストレージ領域・言語・カスタムサイズ・プリセットのオフセットをすべて初期状態に戻します。",
   resetButton: "設定を初期化する",
   resetDone: "設定を初期化しました。",
   resetConfirm:
@@ -168,5 +168,5 @@ export const ja: Record<MessageKey, string> = {
   sizeOverDisplay: "このディスプレイ（{width} x {height}）より大きいサイズです",
   viewportOverDisplay:
     "ブラウザの枠を含めると、このディスプレイ（{width} x {height}）より大きくなります",
-  errPickedAreaMissing: "選んだ範囲が見つかりませんでした。もう一度選んでください。"
+  errPickedAreaMissing: "選んだ部分が見つかりませんでした。もう一度選んでください。"
 }
