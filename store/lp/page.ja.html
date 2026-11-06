@@ -15,7 +15,7 @@
     </div>
     <div class="hero-visual">
       <img class="hero-bg" src="https://www.ushiblo.com/images/2026/10/wvr-hero-bg.webp" alt="" width="1600" height="1000">
-      <img class="hero-popup" src="https://www.ushiblo.com/images/2026/10/wvr-popup-ja-040.webp" alt="拡張機能のポップアップ画面" width="300" height="552">
+      <img class="hero-popup" src="https://www.ushiblo.com/images/2026/11/wvr-popup-ja-100.webp" alt="拡張機能のポップアップ画面" width="300" height="511">
     </div>
   </section>
 
@@ -104,8 +104,8 @@
     <p class="sec-lead">&nbsp;</p>
     <div class="steps">
       <div class="step"><img class="step-img" src="https://www.ushiblo.com/images/2026/10/wvr-step-1.png" alt="拡張機能メニューからピン留めする画面" width="1200" height="750"><h3>インストール</h3><p>Chrome ウェブストアから追加し、ツールバーにピン留め。</p></div>
-      <div class="step"><img class="step-img" src="https://www.ushiblo.com/images/2026/10/wvr-step-2-040.webp" alt="ポップアップで基準とサイズを選ぶ画面" width="1200" height="750"><h3>サイズを選ぶ</h3><p>ポップアップから基準とサイズを選んでリサイズ。</p></div>
-      <div class="step"><img class="step-img" src="https://www.ushiblo.com/images/2026/10/wvr-step-3-040.webp" alt="スクリーンショットを保存した画面" width="1200" height="750"><h3>撮影して保存</h3><p>表示範囲かページ全体を選んで、保存またはコピー。結果はツールバーのアイコンに「OK」と表示されます。</p></div>
+      <div class="step"><img class="step-img" src="https://www.ushiblo.com/images/2026/11/wvr-step-2-100.webp" alt="ポップアップで基準とサイズを選ぶ画面" width="1200" height="750"><h3>サイズを選ぶ</h3><p>ポップアップから基準とサイズを選んでリサイズ。</p></div>
+      <div class="step"><img class="step-img" src="https://www.ushiblo.com/images/2026/11/wvr-step-3-100.webp" alt="スクリーンショットを保存した画面" width="1200" height="750"><h3>撮影して保存</h3><p>表示範囲かページ全体を選んで、保存またはコピー。結果はツールバーのアイコンに「OK」と表示されます。</p></div>
     </div>
   </section>
 
@@ -118,10 +118,13 @@
       <li>拡大表示中のページも、拡大率を変えずに指定のサイズへリサイズ</li>
       <li>スクロール範囲の撮影で、外枠を含めるか選べる</li>
       <li>撮影の結果をツールバーのアイコンでお知らせ</li>
+      <li>3・5・10秒のタイマー撮影で、ホバーで開くメニューも撮れる</li>
+      <li>キーボードショートカットを自由に割り当て</li>
+      <li>ウィンドウが画面からはみ出さないよう位置を自動で調整</li>
       <li>保存先フォルダ名を指定できる</li>
       <li>前回の基準・モードを記憶</li>
       <li>環境ごとのズレを補正オフセットで調整</li>
-      <li>ダークモード対応のポップアップ</li>
+      <li>ライト / ダーク / 自動から選べるテーマ</li>
       <li>日本語 / English 切り替え（ブラウザ言語に追従も可）</li>
     </ul>
   </section>
@@ -143,7 +146,7 @@
     <h2 class="sec-title">よくある質問</h2>
     <p class="sec-lead">&nbsp;</p>
     <details open=""><summary>動かないページがあります</summary><p>chrome:// で始まるページや Chrome ウェブストアなどの特殊なページでは、Chrome の仕様によりリサイズやキャプチャができません。</p></details>
-    <details><summary>指定したサイズと数 px ずれます</summary><p>OS の表示倍率やウィンドウ枠の影響です。設定画面のプリセットごとの補正オフセットで調整できます。</p></details>
+    <details><summary>指定したサイズと数 px ずれませんか？</summary><p>ビューポート基準では、OS の表示倍率が 125% などでも、指定したサイズと画像のサイズが同じになります。ウィンドウ基準では OS の表示倍率やウィンドウ枠の影響でずれることがあり、設定画面のプリセットごとの補正オフセットで調整できます。</p></details>
     <details><summary>ブラウザのツールバーも写りますか？</summary><p>いいえ。キャプチャされるのは Web ページの部分のみで、ツールバーや OS のウィンドウ枠は含まれません。</p></details>
     <details><summary>ページを拡大表示しているときのサイズは？</summary><p>拡大率はビューポートのサイズに影響しません。拡大したまま指定のサイズになり、撮影した画像も同じサイズになります。ページ全体の画像の高さは、拡大後のページの高さです。</p></details>
     <details><summary>ページ全体を撮っても1画面分しか撮れません</summary><p>ページの内側だけがスクロールする画面では、メインのスクロール範囲を自動で判定して撮影します。うまく判定できないときは、ポップアップの「ページ全体」の行にある範囲選択ボタン（カーソルのアイコン）を押し、撮りたい範囲をクリックして選んでください。</p></details>
@@ -153,7 +156,7 @@
   <!-- 11. GitHub -->
   <section class="sec">
     <h2 class="sec-title">更新情報・不具合報告</h2>
-    <p class="sec-lead">ソースコードは GitHub で公開しています。<br>最新バージョン：0.4.0（2026年10月31日）</p>
+    <p class="sec-lead">ソースコードは GitHub で公開しています。<br>最新バージョン：1.0.0（2026年11月6日）</p>
     <div class="gh">
       <a class="btn-ghost" href="https://github.com/uc4696/window-resizer-screenshot#バージョン管理変更履歴changelog" target="_blank" rel="noopener">📝 更新履歴を見る</a>
       <a class="btn-ghost" href="https://github.com/uc4696/window-resizer-screenshot/issues" target="_blank" rel="noopener">🐞 不具合・要望を送る（Issues）</a>

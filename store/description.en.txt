@@ -6,7 +6,9 @@ With a single click, you can switch the screen (window/viewport) to your target 
 - Built-in resolution presets for 16:9 (HD / WXGA / HD+ / FHD) and 4:3 (VGA / SVGA / XGA / UXGA).
 - Customizable offset (margin) values for each preset, in both Window and Viewport modes.
 - Remembers your last selected size mode (Window / Viewport) and restores it the next time you open the popup.
-- When the page is zoomed (not 100%), the zoom is reset to 100% before resizing so the size comes out as intended (the confirmation message can be turned on or off in the settings).
+- The size you set with Viewport mode is the size of the captured image, whatever the page zoom or OS display scale.
+- Zoomed pages are resized to the size you set without changing the zoom.
+- The window is moved automatically so it stays on the screen (can be turned off in the settings).
 
 ◆ Custom Size Management
 - Register your preferred dimensions (e.g., 1280x720, 1024x768). Add, edit, and delete are all supported.
@@ -23,9 +25,14 @@ With a single click, you can switch the screen (window/viewport) to your target 
 - Customizable save directory name.
 - Simple icon buttons let you download or copy with a single click.
 - The popup closes as soon as you press download, and the result is shown as a badge on the toolbar icon ("..." while capturing / "OK" on success / "!" on failure).
+- A 3, 5 or 10 second timer lets you capture things like menus that open on hover.
+
+◆ Keyboard Shortcuts
+- Assign your own keys to resizing to presets or custom sizes (5 slots) and to each kind of capture. No keys are assigned by default.
 
 ◆ Option Settings
-- Dark mode supported popup UI.
+- Choose a light, dark or automatic theme.
+- Settings are saved as soon as you change them.
 - Reset feature to restore settings and custom sizes to default states.
 - Multilingual support (English / Japanese) with automatic browser language detection.
 
@@ -35,7 +42,16 @@ With a single click, you can switch the screen (window/viewport) to your target 
 
 [Notes]
 - Screenshots cover the web page content inside the tab only. The full window, including the browser toolbar and OS title bar, cannot be captured.
-- Due to Chrome's security restrictions, Viewport-based resizing and capture may not work on special pages such as chrome:// pages or the Chrome Web Store.
-- Depending on OS display scaling and window borders, the measured window size may differ from the specified size by a few pixels. You can compensate with the offset setting for custom sizes.
+- Due to Chrome's security restrictions, some capture features may not work on special pages such as chrome:// pages or the Chrome Web Store.
+- Sizes larger than the display cannot be selected. In Viewport mode, the size must fit on the display together with the browser frame.
+- In Window mode, depending on OS display scaling and window borders, the measured window size may differ from the specified size by a few pixels. You can compensate with the offset setting for custom sizes.
+- On high-density displays, images are scaled down so they have the size you set.
 
-*Please note: This extension is currently provided as a beta version.
+[Changelog]
+- 1.0.0: First stable release. The size you set with Viewport mode is now the size of the captured image. Resizing no longer changes the page zoom. The 16:9 presets are now HD / WXGA / HD+ / FHD (WQHD and 4K were removed). Added keyboard shortcuts, a capture timer, keeping the window on screen and a theme setting, and more services to share to. Sizes that do not fit on the display can no longer be selected. Made the popup and settings page easier to use. Fixed lines at the seams in full-page captures of zoomed pages.
+- 0.4.0: Added support for resizing pages whose zoom is not 100%. Made the toolbar icon easier to see.
+- 0.3.0: Added capturing pages that scroll inside, and picking an area to capture.
+- 0.2.1: Fixed icon display and remembered the last selected size mode.
+- 0.2.0: Added save formats (PNG / WebP / JPEG) and copying to the clipboard.
+- 0.1.1: Reduced the required permissions.
+- First release (beta).

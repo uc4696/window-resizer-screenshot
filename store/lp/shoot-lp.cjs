@@ -14,9 +14,25 @@ const ext = path.join(ROOT, "build/chrome-mv3-prod")
 
 // state: [表示するウィンドウ値, ビューポート値, ホバーするボタン]
 const STATES = {
-  hero: ["1936 x 1175", "1920 x 1080", null],
-  step2: ["1936 x 1096", "1920 x 993", "FHD"],
-  step3: ["1936 x 1096", "1920 x 993", null]
+  hero: ["1936x1175", "1920x1080", null],
+  step2: ["1936x1096", "1920x993", "FHD"],
+  step3: ["1936x1096", "1920x993", null]
+}
+
+// 撮影する PC の画面に左右されないよう、広い画面として押せるプリセットを揃える
+const fakeScreen = () => {
+  const v = { width: 2560, height: 1440, availWidth: 2560, availHeight: 1392 }
+  for (const k of Object.keys(v)) Object.defineProperty(screen, k, { get: () => v[k] })
+}
+// 今のサイズの数字を差し替える（size-value は 数字・×・数字 の並び）
+const setSizes = ([win, vp]) => {
+  document.querySelectorAll(".size-value").forEach((el, i) => {
+    const [w, h] = (i === 0 ? win : vp).split("x")
+    el.firstChild.textContent = w
+    el.lastChild.textContent = h
+  })
+  const cur = document.querySelector(`[data-size="${vp}"]`)
+  if (cur) cur.classList.add("is-current")
 }
 
 ;(async () => {
@@ -30,6 +46,7 @@ const STATES = {
       deviceScaleFactor: 3,
       args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, `--lang=${lang}`, "--no-first-run"]
     })
+    await ctx.addInitScript(fakeScreen)
     let [w] = ctx.serviceWorkers()
     if (!w) w = await ctx.waitForEvent("serviceworker")
     const id = new URL(w.url()).host
@@ -40,16 +57,7 @@ const STATES = {
       await p.waitForTimeout(1000)
       await p.getByRole("button", { name: lang === "ja" ? "ビューポート基準" : "Viewport-based" }).click()
       await p.waitForTimeout(500)
-      await p.evaluate(
-        ([win, vp]) => {
-          const vals = [...document.querySelectorAll("*")].filter(
-            (el) => el.children.length === 0 && /^[0-9]+ x [0-9]+$/.test(el.textContent.trim())
-          )
-          if (vals[0]) vals[0].textContent = win
-          if (vals[1]) vals[1].textContent = vp
-        },
-        [win, vp]
-      )
+      await p.evaluate(setSizes, [win, vp])
       const root = await p.$(".popup-root")
       const rb = await root.boundingBox()
       const rel = async (loc) => {

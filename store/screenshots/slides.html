@@ -47,7 +47,7 @@
     1: {
       title: "Resize to an exact size, then capture",
       desc: "Switch the window or the viewport to a preset or your own size in one click, then save the visible area or the whole page.",
-      extra: `<div class="chips">${["HD", "FHD", "WQHD", "4K", "VGA", "SVGA", "XGA", "UXGA", "Custom sizes"].map((c) => `<span class="chip">${c}</span>`).join("")}</div>`,
+      extra: `<div class="chips">${["HD", "WXGA", "HD+", "FHD", "VGA", "SVGA", "XGA", "UXGA", "Custom sizes"].map((c) => `<span class="chip">${c}</span>`).join("")}</div>`,
       stage: `<img class="shot" src="wvr-step-2-en.png" style="width:820px">`
     },
     2: {
@@ -64,17 +64,16 @@
       stage: `<img class="shot" src="picker.png" style="width:820px">`
     },
     4: {
-      title: "Zoomed page? Back to 100% first",
-      desc: "When the page zoom isn't 100%, the size would come out wrong. The zoom is reset to 100% before resizing.",
-      extra: `<ul><li>Works in both window-based and viewport-based modes</li><li>The confirmation can be turned off in the settings</li></ul>`,
-      stage: `<div style="position:relative"><img class="shot" src="zoom.png" style="height:660px">
-              <div class="tag" style="left:-150px;top:120px">125% &rarr; 100%</div></div>`
+      title: "The size you set is the image size",
+      desc: "Set the viewport to 1280 x 720 and the image is 1280 x 720, whatever the page zoom or OS display scale.",
+      extra: `<ul><li>Keyboard shortcuts for resizing and capturing</li><li>A 3, 5 or 10 second timer for menus that open on hover</li></ul>`,
+      stage: `<div style="position:relative"><img class="shot" src="popup.png" style="height:660px"></div>`
     },
     5: {
       title: "Save it your way",
       desc: "",
       extra: `<ul><li>PNG, WebP or JPEG</li><li>Copy to the clipboard as PNG</li><li>Choose the save folder name</li>
-              <li>The result appears as a badge on the toolbar icon</li><li>Dark mode, English / Japanese</li>
+              <li>The result appears as a badge on the toolbar icon</li><li>Light and dark themes, English / Japanese</li>
               <li>Only 4 permissions. Your screenshots and settings never leave your browser</li></ul>`,
       stage: `<img class="shot" src="options-crop.png" style="height:690px">`
     }

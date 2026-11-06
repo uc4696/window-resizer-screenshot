@@ -1,5 +1,5 @@
 // ストア用スクリーンショット（1280×800、5枚）を書き出す。
-// <作業フォルダ> には shoot-store.cjs の出力（picker.png / zoom.png / options.png）と、
+// <作業フォルダ> には shoot-store.cjs の出力（picker.png / popup.png / options.png）と、
 // LP の図解（wvr-diagram-window.png / wvr-diagram-viewport.png）を置いておく。
 // 使い方: node store/screenshots/render-slides.cjs <リポジトリのルート> <作業フォルダ> <出力フォルダ>
 const path = require("path")

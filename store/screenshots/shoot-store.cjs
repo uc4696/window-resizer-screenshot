@@ -1,7 +1,7 @@
 // ストア用スクリーンショットの素材を撮る（英語 UI）。
 // E2E と同じく、本番ビルドの複製に host_permissions だけを足して読み込む（配布物は変更しない）。
 // 使い方: node store/screenshots/shoot-store.cjs <リポジトリのルート> <出力フォルダ>
-// 出力: picker.png（範囲選択 UI）/ zoom.png（拡大率の確認）/ options.png（設定画面）
+// 出力: picker.png（範囲選択 UI）/ popup.png（ポップアップ）/ options.png（設定画面）
 const path = require("path")
 const fs = require("fs")
 const os = require("os")
@@ -9,6 +9,22 @@ const http = require("http")
 const [ROOT, OUT] = process.argv.slice(2)
 const { chromium } = require(path.join(ROOT, "node_modules/@playwright/test"))
 const exe = path.join(ROOT, ".chrome-for-testing/chrome/win64-155.0.8059.84/chrome-win64/chrome.exe")
+
+// 撮影する PC の画面に左右されないよう、広い画面として押せるプリセットを揃える
+const fakeScreen = () => {
+  const v = { width: 2560, height: 1440, availWidth: 2560, availHeight: 1392 }
+  for (const k of Object.keys(v)) Object.defineProperty(screen, k, { get: () => v[k] })
+}
+// 今のサイズの数字を差し替える（size-value は 数字・×・数字 の並び）
+const setSizes = ([win, vp]) => {
+  document.querySelectorAll(".size-value").forEach((el, i) => {
+    const [w, h] = (i === 0 ? win : vp).split("x")
+    el.firstChild.textContent = w
+    el.lastChild.textContent = h
+  })
+  const cur = document.querySelector(`[data-size="${vp}"]`)
+  if (cur) cur.classList.add("is-current")
+}
 
 ;(async () => {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), "wvr-store-"))
@@ -33,6 +49,7 @@ const exe = path.join(ROOT, ".chrome-for-testing/chrome/win64-155.0.8059.84/chro
     deviceScaleFactor: 2,
     args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, "--lang=en-US", "--no-first-run"]
   })
+  await ctx.addInitScript(fakeScreen)
   let [sw] = ctx.serviceWorkers()
   if (!sw) sw = await ctx.waitForEvent("serviceworker")
   const id = new URL(sw.url()).host
@@ -63,7 +80,7 @@ const exe = path.join(ROOT, ".chrome-for-testing/chrome/win64-155.0.8059.84/chro
   await target.waitForTimeout(500)
   {
     const { popup } = await openPopup(target)
-    await popup.getByRole("button", { name: "Choose a scrollable area to capture" }).click()
+    await popup.getByRole("button", { name: "Capture all of a section that scrolls on its own, such as a list" }).click()
     await target.bringToFront()
     await target.waitForTimeout(800)
     await target.mouse.move(640, 300)
@@ -75,25 +92,16 @@ const exe = path.join(ROOT, ".chrome-for-testing/chrome/win64-155.0.8059.84/chro
     if (!popup.isClosed()) await popup.close()
   }
 
-  // 2. 拡大率の確認（対象タブを 125% にしてからプリセットを押す）
+  // 2. ポップアップ（ビューポート基準で 1280x720）
   {
-    const { popup, info } = await openPopup(target)
-    await sw.evaluate((tabId) => chrome.tabs.setZoom(tabId, 1.25), info.tabId)
-    await popup.reload()
-    await popup.waitForTimeout(800)
-    // 撮影用ウィンドウの実寸は不自然なので、表示値だけそれらしい値に差し替える
-    await popup.evaluate(() => {
-      const vals = [...document.querySelectorAll("*")].filter(
-        (el) => el.children.length === 0 && /^[0-9]+ x [0-9]+$/.test(el.textContent.trim())
-      )
-      if (vals[0]) vals[0].textContent = "1536 x 864"
-      if (vals[1]) vals[1].textContent = "1229 x 595"
-    })
-    await popup.getByRole("button", { name: /^HD/ }).first().click()
-    await popup.waitForTimeout(600)
-    await popup.locator(".popup-root").screenshot({ path: path.join(OUT, "zoom.png") })
+    const { popup } = await openPopup(target)
+    await popup.getByRole("button", { name: "Viewport-based" }).click()
+    await popup.waitForTimeout(300)
+    await popup.evaluate(setSizes, ["1296x815", "1280x720"])
+    await popup.mouse.move(0, 0)
+    await popup.waitForTimeout(200)
+    await popup.locator(".popup-root").screenshot({ path: path.join(OUT, "popup.png") })
     await popup.close()
-    await sw.evaluate((tabId) => chrome.tabs.setZoom(tabId, 1), info.tabId)
   }
 
   // 3. 設定画面

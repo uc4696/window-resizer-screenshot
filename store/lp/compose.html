@@ -16,6 +16,7 @@
 </head>
 <body>
 <img class="layer" id="bg">
+<canvas class="layer" id="patch" width="1200" height="750"></canvas>
 <div id="frame"></div>
 <img id="popup">
 <div id="tip">1920 x 1080</div>
@@ -52,8 +53,8 @@
   })
   if (step === "2") {
     // FHD ボタンを囲む楕円（右下から始まり一周して少し行き過ぎる）
-    const f = at(b.fhd), cx = f.x + f.w / 2 - 6, cy = f.y + f.h / 2 + 2
-    const rx = 132, ry = 42
+    const f = at(b.fhd), cx = f.x + f.w / 2, cy = f.y + f.h / 2 + 1
+    const rx = 62, ry = 34
     const pts = []
     for (let t = 0.25; t <= 2 * Math.PI + 0.75; t += 0.05) {
       const a = -0.09, x = rx * Math.cos(t) * (1 + 0.04 * Math.sin(3 * t)), y = ry * Math.sin(t)
@@ -62,32 +63,28 @@
     mark.setAttribute("d", "M" + pts.map((p) => p.map((v) => v.toFixed(1)).join(" ")).join(" L"))
     Object.assign(tip.style, { display: "block", left: S.tip[0] + "px", top: S.tip[1] + "px" })
   } else {
-    // 表示部分のダウンロードボタンを囲み、そのまま右のエクスプローラーへ矢印を伸ばす
-    const d = at(b.visibleDownload), cx = d.x + d.w / 2 + 1, cy = d.y + d.h / 2 + 3
-    const rx = 48, ry = 30, pts = []
-    for (let t = -0.6; t <= 2 * Math.PI - 0.9; t += 0.05) {
+    // 旧画像に焼き込まれた矢印を、すぐ上の何もない帯を引き伸ばして消す
+    bg.onload = () => {
+      const ctx = patch.getContext("2d")
+      ctx.drawImage(bg, 430, 346, 176, 24, 430, 396, 176, 100) // ポップアップの右〜サムネイルの左
+      ctx.drawImage(bg, 606, 382, 44, 18, 606, 400, 44, 96) // サムネイルの上
+    }
+    // 表示部分のダウンロードボタンを囲み、行の間を通るまっすぐな矢印でエクスプローラーへ伸ばす
+    const d = at(b.visibleDownload), cx = d.x + d.w / 2, cy = d.y + d.h / 2
+    const rx = 32, ry = 24, pts = []
+    for (let t = 0.2; t <= 2 * Math.PI + 0.5; t += 0.05) {
       const a = -0.12, x = rx * Math.cos(t), y = ry * Math.sin(t)
       pts.push([cx + x * Math.cos(a) - y * Math.sin(a), cy + x * Math.sin(a) + y * Math.cos(a)])
     }
-    // 旧画像に残る矢印の軸（ポップアップの外、x=436〜584）を実測した中心線。
-    // この上を同じ太さでなぞり直し、楕円から一本の線としてつなげる（矢じりは旧画像のまま）。
-    const shaft = [[436, 450.5], [448, 445], [460, 441], [472, 438.5], [484, 435.5], [496, 434.5],
-      [508, 433.5], [520, 433.5], [544, 432.5], [568, 433.5], [584, 434.5]]
-    const last = pts[pts.length - 1], [s0, s1] = shaft
-    const tx = s1[0] - s0[0], ty = s1[1] - s0[1], tl = Math.hypot(tx, ty)
-    const c1 = [last[0] + 28, last[1] - 6]
-    const c2 = [s0[0] - (tx / tl) * 32, s0[1] - (ty / tl) * 32]
-    const smooth = shaft.slice(1).map((p, i) => {
-      const prev = shaft[i], mid = [(prev[0] + p[0]) / 2, (prev[1] + p[1]) / 2]
-      return `Q ${prev[0]} ${prev[1]} ${mid[0]} ${mid[1]}`
-    }).join(" ")
+    const start = [cx + rx * 0.8, cy + ry * 0.8], tip = [632, 444]
+    const angle = Math.atan2(tip[1] - start[1], tip[0] - start[0])
+    const barb = (d) => [tip[0] - 38 * Math.cos(angle + d), tip[1] - 38 * Math.sin(angle + d)]
     mark.setAttribute(
       "d",
       "M" + pts.map((p) => p.map((v) => v.toFixed(1)).join(" ")).join(" L") +
-        ` C ${c1.join(" ")} ${c2.join(" ")} ${s0.join(" ")} ${smooth} L ${shaft[shaft.length - 1].join(" ")}`
+        ` M ${start.join(" ")} L ${tip.join(" ")} M ${barb(0.65).join(" ")} L ${tip.join(" ")} L ${barb(-0.65).join(" ")}`
     )
     mark.setAttribute("stroke", "rgb(124, 114, 238)")
-    mark.setAttribute("stroke-width", "11")
   }
 </script>
 </body>
