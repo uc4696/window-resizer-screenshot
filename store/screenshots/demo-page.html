@@ -40,6 +40,16 @@
   <div class="card"><table id="rows"><tr><th>Page</th><th>Views</th><th>Users</th><th>Bounce</th></tr></table></div>
 </main>
 <script>
+  // 日本語版のストア画像では、デモの画面も日本語にする
+  if (new URLSearchParams(location.search).get("lang") === "ja") {
+    document.documentElement.lang = "ja"
+    const JA = { Dashboard: "ダッシュボード", Reports: "レポート", Customers: "顧客", Products: "商品", Settings: "設定", Visitors: "訪問者", Conversions: "コンバージョン", Revenue: "売上", "Avg. session": "平均滞在", Page: "ページ", Views: "表示回数", Users: "ユーザー", Bounce: "直帰率" }
+    addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll("nav div, h1, small, th").forEach((el) => {
+        el.textContent = JA[el.textContent] ?? el.textContent
+      })
+    })
+  }
   const h = [42, 55, 48, 63, 70, 58, 76, 82, 69, 88, 94, 79]
   chart.innerHTML = h.map((v) => `<span style="height:${v}%"></span>`).join("")
   const pages = ["/", "/pricing", "/blog", "/docs", "/signup", "/features", "/about", "/contact"]

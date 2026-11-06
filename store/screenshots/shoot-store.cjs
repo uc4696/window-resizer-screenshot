@@ -1,12 +1,12 @@
 // ストア用スクリーンショットの素材を撮る（英語 UI）。
 // E2E と同じく、本番ビルドの複製に host_permissions だけを足して読み込む（配布物は変更しない）。
-// 使い方: node store/screenshots/shoot-store.cjs <リポジトリのルート> <出力フォルダ>
-// 出力: picker.png（範囲選択 UI）/ popup.png（ポップアップ）/ options.png（設定画面）
+// 使い方: node store/screenshots/shoot-store.cjs <リポジトリのルート> <出力フォルダ> <en|ja>
+// 出力: picker-<lang>.png（範囲選択 UI）/ popup-<lang>.png（ポップアップ）/ options-<lang>.png（設定画面）
 const path = require("path")
 const fs = require("fs")
 const os = require("os")
 const http = require("http")
-const [ROOT, OUT] = process.argv.slice(2)
+const [ROOT, OUT, LANG = "en"] = process.argv.slice(2)
 const { chromium } = require(path.join(ROOT, "node_modules/@playwright/test"))
 const exe = path.join(ROOT, ".chrome-for-testing/chrome/win64-155.0.8059.84/chrome-win64/chrome.exe")
 
@@ -40,14 +40,14 @@ const setSizes = ([win, vp]) => {
     res.end(page)
   })
   await new Promise((r) => server.listen(0, "127.0.0.1", r))
-  const url = `http://127.0.0.1:${server.address().port}/`
+  const url = `http://127.0.0.1:${server.address().port}/?lang=${LANG}`
 
   const ctx = await chromium.launchPersistentContext(path.join(work, "profile"), {
     executablePath: exe,
     headless: false,
     viewport: { width: 1100, height: 680 },
     deviceScaleFactor: 2,
-    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, "--lang=en-US", "--no-first-run"]
+    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, `--lang=${LANG === "ja" ? "ja" : "en-US"}`, "--no-first-run"]
   })
   await ctx.addInitScript(fakeScreen)
   let [sw] = ctx.serviceWorkers()
@@ -80,14 +80,14 @@ const setSizes = ([win, vp]) => {
   await target.waitForTimeout(500)
   {
     const { popup } = await openPopup(target)
-    await popup.getByRole("button", { name: "Capture all of a section that scrolls on its own, such as a list" }).click()
+    await popup.locator(".icon-button").last().click()
     await target.bringToFront()
     await target.waitForTimeout(800)
     await target.mouse.move(640, 300)
     await target.waitForTimeout(400)
     await target.mouse.click(640, 300)
     await target.waitForTimeout(600)
-    await target.screenshot({ path: path.join(OUT, "picker.png") })
+    await target.screenshot({ path: path.join(OUT, `picker-${LANG}.png`) })
     await target.keyboard.press("Escape")
     if (!popup.isClosed()) await popup.close()
   }
@@ -95,12 +95,12 @@ const setSizes = ([win, vp]) => {
   // 2. ポップアップ（ビューポート基準で 1280x720）
   {
     const { popup } = await openPopup(target)
-    await popup.getByRole("button", { name: "Viewport-based" }).click()
+    await popup.locator(".mode-button").nth(1).click()
     await popup.waitForTimeout(300)
     await popup.evaluate(setSizes, ["1296x815", "1280x720"])
     await popup.mouse.move(0, 0)
     await popup.waitForTimeout(200)
-    await popup.locator(".popup-root").screenshot({ path: path.join(OUT, "popup.png") })
+    await popup.locator(".popup-root").screenshot({ path: path.join(OUT, `popup-${LANG}.png`) })
     await popup.close()
   }
 
@@ -110,7 +110,7 @@ const setSizes = ([win, vp]) => {
     await opt.setViewportSize({ width: 900, height: 1400 })
     await opt.goto(`chrome-extension://${id}/options.html`)
     await opt.waitForTimeout(800)
-    await opt.screenshot({ path: path.join(OUT, "options.png"), fullPage: true })
+    await opt.screenshot({ path: path.join(OUT, `options-${LANG}.png`), fullPage: true })
   }
 
   await ctx.close()

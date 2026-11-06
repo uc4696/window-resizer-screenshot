@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
 <meta charset="utf-8">
 <style>
   * { margin: 0; box-sizing: border-box }
   html, body { width: 1280px; height: 800px; overflow: hidden }
-  body { font-family: "Segoe UI", sans-serif; background: #f5f4fc; position: relative }
+  body { font-family: "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif; background: #f5f4fc; position: relative }
   .panel { position: absolute; left: 0; top: 0; bottom: 0; width: 400px; color: #fff; padding: 64px 40px 0 44px;
     background: radial-gradient(circle at 20% 8%, #8f84f0 0, #6a5ce0 45%, #4b3fc4 100%) }
   .panel::after { content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -30,6 +30,10 @@
   .fig span { display: block; margin-top: 4px; font-size: 14px; color: #555 }
   .tag { position: absolute; background: #fff; color: #3b2fb0; font-weight: 800; font-size: 18px; padding: 10px 16px; border-radius: 12px;
     box-shadow: 0 10px 24px rgba(40, 30, 120, .18) }
+  html[lang="ja"] h1 { font-size: 30px; line-height: 1.3; letter-spacing: 0 }
+  html[lang="ja"] p, html[lang="ja"] li { word-break: auto-phrase }
+  html[lang="ja"] p { font-size: 16px; line-height: 1.7 }
+  html[lang="ja"] li { font-size: 15px; line-height: 1.5 }
 </style>
 </head>
 <body>
@@ -42,44 +46,85 @@
 </div>
 <div class="stage" id="stage"></div>
 <script>
-  const n = Number(new URLSearchParams(location.search).get("n"))
+  const q = new URLSearchParams(location.search)
+  const n = Number(q.get("n"))
+  const lang = q.get("lang") === "ja" ? "ja" : "en"
+  document.documentElement.lang = lang
+  const chips = (list) => `<div class="chips">${list.map((c) => `<span class="chip">${c}</span>`).join("")}</div>`
+  const list = (items) => `<ul>${items.map((i) => `<li>${i}</li>`).join("")}</ul>`
+  const SIZES = ["HD", "WXGA", "HD+", "FHD", "VGA", "SVGA", "XGA", "UXGA"]
+  const stages = {
+    1: `<img class="shot" src="wvr-step-2${lang === "ja" ? "" : "-en"}.png" style="width:820px">`,
+    3: `<img class="shot" src="picker-${lang}.png" style="width:820px">`,
+    4: `<div style="position:relative"><img class="shot" src="popup-${lang}.png" style="height:660px"></div>`,
+    5: `<img class="shot" src="options-crop-${lang}.png" style="height:690px">`
+  }
+  const fig = (img, name, text) => `<div class="fig"><img src="${img}"><b>${name}</b><span>${text}</span></div>`
   const S = {
-    1: {
-      title: "Resize to an exact size, then capture",
-      desc: "Switch the window or the viewport to a preset or your own size in one click, then save the visible area or the whole page.",
-      extra: `<div class="chips">${["HD", "WXGA", "HD+", "FHD", "VGA", "SVGA", "XGA", "UXGA", "Custom sizes"].map((c) => `<span class="chip">${c}</span>`).join("")}</div>`,
-      stage: `<img class="shot" src="wvr-step-2-en.png" style="width:820px">`
+    en: {
+      1: {
+        title: "Resize to an exact size, then capture",
+        desc: "Switch the window or the viewport to a preset or your own size in one click, then save the visible area or the whole page.",
+        extra: chips([...SIZES, "Custom sizes"])
+      },
+      2: {
+        title: "Window-based or viewport-based",
+        desc: "Choose which part of the browser gets the exact size. Viewport-based is ideal when every screenshot must be the same size.",
+        extra: "",
+        stage:
+          fig("wvr-diagram-window.png", "Window-based", "The whole window, toolbars included") +
+          fig("wvr-diagram-viewport.png", "Viewport-based", "Only the area where the page is shown")
+      },
+      3: {
+        title: "Capture pages that scroll inside",
+        desc: "On web apps where only an inner area scrolls, the main area is detected automatically and captured to the end.",
+        extra: list(["Or click any scrollable area to download or copy just that part", "Optionally keep the header and sidebar around it"])
+      },
+      4: {
+        title: "The size you set is the image size",
+        desc: "Set the viewport to 1280 x 720 and the image is 1280 x 720, whatever the page zoom or OS display scale.",
+        extra: list(["Keyboard shortcuts for resizing and capturing", "A 3, 5 or 10 second timer for menus that open on hover"])
+      },
+      5: {
+        title: "Save it your way",
+        desc: "",
+        extra: list(["PNG, WebP or JPEG", "Copy to the clipboard as PNG", "Choose the save folder name", "The result appears as a badge on the toolbar icon", "Light and dark themes, English / Japanese", "Only 4 permissions. Your screenshots and settings never leave your browser"])
+      }
     },
-    2: {
-      title: "Window-based or viewport-based",
-      desc: "Choose which part of the browser gets the exact size. Viewport-based is ideal when every screenshot must be the same size.",
-      extra: "",
-      stage: `<div class="fig"><img src="wvr-diagram-window.png"><b>Window-based</b><span>The whole window, toolbars included</span></div>
-              <div class="fig"><img src="wvr-diagram-viewport.png"><b>Viewport-based</b><span>Only the area where the page is shown</span></div>`
-    },
-    3: {
-      title: "Capture pages that scroll inside",
-      desc: "On web apps where only an inner area scrolls, the main area is detected automatically and captured to the end.",
-      extra: `<ul><li>Or click any scrollable area to download or copy just that part</li><li>Optionally keep the header and sidebar around it</li></ul>`,
-      stage: `<img class="shot" src="picker.png" style="width:820px">`
-    },
-    4: {
-      title: "The size you set is the image size",
-      desc: "Set the viewport to 1280 x 720 and the image is 1280 x 720, whatever the page zoom or OS display scale.",
-      extra: `<ul><li>Keyboard shortcuts for resizing and capturing</li><li>A 3, 5 or 10 second timer for menus that open on hover</li></ul>`,
-      stage: `<div style="position:relative"><img class="shot" src="popup.png" style="height:660px"></div>`
-    },
-    5: {
-      title: "Save it your way",
-      desc: "",
-      extra: `<ul><li>PNG, WebP or JPEG</li><li>Copy to the clipboard as PNG</li><li>Choose the save folder name</li>
-              <li>The result appears as a badge on the toolbar icon</li><li>Light and dark themes, English / Japanese</li>
-              <li>Only 4 permissions. Your screenshots and settings never leave your browser</li></ul>`,
-      stage: `<img class="shot" src="options-crop.png" style="height:690px">`
+    ja: {
+      1: {
+        title: "指定のサイズにして、<br>そのまま撮影",
+        desc: "ウィンドウやビューポートを、プリセットや自分で決めたサイズにワンクリックで変更。表示部分もページ全体も保存できます。",
+        extra: chips([...SIZES, "カスタムサイズ"])
+      },
+      2: {
+        title: "ウィンドウ基準と<br>ビューポート基準",
+        desc: "ブラウザのどこを指定のサイズにするかを選べます。画像のサイズを揃えたいときは、ビューポート基準が便利です。",
+        extra: "",
+        stage:
+          fig("wvr-diagram-window.png", "ウィンドウ基準", "ツールバーも含めたウィンドウ全体") +
+          fig("wvr-diagram-viewport.png", "ビューポート基準", "ページが表示される部分だけ")
+      },
+      3: {
+        title: "中だけスクロールする<br>ページも撮れる",
+        desc: "Webアプリのように内側だけがスクロールするページは、メインの範囲を自動で見つけて最後まで撮影します。",
+        extra: list(["範囲をクリックで選んで、その部分だけを保存・コピーすることも", "周りのヘッダーやサイドバーを含めることも"])
+      },
+      4: {
+        title: "指定したサイズが、<br>画像のサイズ",
+        desc: "ビューポートを 1280 x 720 にすれば、画像も 1280 x 720。ページの拡大率や OS の表示スケールに左右されません。",
+        extra: list(["リサイズと撮影をキーボードショートカットで", "3・5・10秒のタイマーで、ホバーで開くメニューも撮影"])
+      },
+      5: {
+        title: "保存も思いどおりに",
+        desc: "",
+        extra: list(["PNG / WebP / JPEG から選べる", "クリップボードへ PNG でコピー", "保存先のフォルダ名を指定できる", "撮影の結果はツールバーのアイコンでお知らせ", "ライトとダークのテーマ、日本語と英語に対応", "権限は 4 つだけ。画像も設定もブラウザの外へ送りません"])
+      }
     }
-  }[n]
+  }[lang][n]
+  S.stage = S.stage ?? stages[n]
   num.textContent = String(n).padStart(2, "0") + " / 05"
-  title.textContent = S.title
+  title.innerHTML = S.title
   desc.textContent = S.desc
   if (!S.desc) desc.remove()
   extra.innerHTML = S.extra
