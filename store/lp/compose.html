@@ -51,16 +51,29 @@
     x: S.popup[0] + box.x * S.scale, y: S.popup[1] + box.y * S.scale,
     w: box.w * S.scale, h: box.h * S.scale
   })
-  if (step === "2") {
-    // FHD ボタンを囲む楕円（右下から始まり一周して少し行き過ぎる）
-    const f = at(b.fhd), cx = f.x + f.w / 2, cy = f.y + f.h / 2 + 1
-    const rx = 62, ry = 34
-    const pts = []
-    for (let t = 0.25; t <= 2 * Math.PI + 0.75; t += 0.05) {
-      const a = -0.09, x = rx * Math.cos(t) * (1 + 0.04 * Math.sin(3 * t)), y = ry * Math.sin(t)
-      pts.push([cx + x * Math.cos(a) - y * Math.sin(a), cy + x * Math.sin(a) + y * Math.cos(a)])
+  const stroke = (pts) => "M" + pts.map((p) => p.map((v) => v.toFixed(1)).join(" ")).join(" L")
+  // 手書きの丸。一筆で少し多めに回り、書き終わりは書き始めの内側に少しずれて重なる。
+  // dir は回る向き（1 は時計回り）、end は書き終わりの角度。
+  const handLoop = (cx, cy, rx, ry, dir, end) => {
+    const pts = [], turn = 2 * Math.PI + 0.6, tilt = -0.08
+    for (let i = 0; i <= 120; i++) {
+      const p = i / 120, t = end - dir * (1 - p) * turn
+      const k = 1.07 - 0.13 * p + 0.012 * Math.sin(5 * t)
+      const x = rx * k * Math.cos(t) + 1.5 * p, y = ry * k * Math.sin(t) - 1.2 * p
+      pts.push([cx + x * Math.cos(tilt) - y * Math.sin(tilt), cy + x * Math.sin(tilt) + y * Math.cos(tilt)])
     }
-    mark.setAttribute("d", "M" + pts.map((p) => p.map((v) => v.toFixed(1)).join(" ")).join(" L"))
+    return pts
+  }
+  mark.setAttribute("stroke-width", "7")
+  if (step === "2") {
+    // 旧画像に焼き込まれた丸とツールチップ（ポップアップの右）を、すぐ上の何もない帯を引き伸ばして消す
+    const right = S.frame[0] + S.frame[2]
+    bg.onload = () => {
+      patch.getContext("2d").drawImage(bg, right, 170, 1200 - right, 30, right, 222, 1200 - right, 100)
+    }
+    // FHD ボタンを囲む丸
+    const f = at(b.fhd)
+    mark.setAttribute("d", stroke(handLoop(f.x + f.w / 2, f.y + f.h / 2, f.w / 2 + 9, f.h / 2 + 9, 1, -1.05)))
     Object.assign(tip.style, { display: "block", left: S.tip[0] + "px", top: S.tip[1] + "px" })
   } else {
     // 旧画像に焼き込まれた矢印を、すぐ上の何もない帯を引き伸ばして消す
@@ -69,22 +82,18 @@
       ctx.drawImage(bg, 430, 346, 176, 24, 430, 396, 176, 100) // ポップアップの右〜サムネイルの左
       ctx.drawImage(bg, 606, 382, 44, 18, 606, 400, 44, 96) // サムネイルの上
     }
-    // 表示部分のダウンロードボタンを囲み、行の間を通るまっすぐな矢印でエクスプローラーへ伸ばす
-    const d = at(b.visibleDownload), cx = d.x + d.w / 2, cy = d.y + d.h / 2
-    const rx = 32, ry = 24, pts = []
-    for (let t = 0.2; t <= 2 * Math.PI + 0.5; t += 0.05) {
-      const a = -0.12, x = rx * Math.cos(t), y = ry * Math.sin(t)
-      pts.push([cx + x * Math.cos(a) - y * Math.sin(a), cy + x * Math.sin(a) + y * Math.cos(a)])
-    }
-    const start = [cx + rx * 0.8, cy + ry * 0.8], tip = [632, 444]
-    const angle = Math.atan2(tip[1] - start[1], tip[0] - start[0])
-    const barb = (d) => [tip[0] - 38 * Math.cos(angle + d), tip[1] - 38 * Math.sin(angle + d)]
+    // 表示部分のダウンロードボタンを丸で囲み、そのまま一筆でエクスプローラーへ弧を描く
+    const d = at(b.visibleDownload)
+    const loop = handLoop(d.x + d.w / 2, d.y + d.h / 2, d.w / 2 + 8, d.h / 2 + 7, -1, 0.7)
+    const start = loop[loop.length - 1], tip = [634, 446]
+    const c1 = [start[0] + 62, start[1] + 12], c2 = [548, 382]
+    const angle = Math.atan2(tip[1] - c2[1], tip[0] - c2[0])
+    const barb = (d, l) => [tip[0] - l * Math.cos(angle + d), tip[1] - l * Math.sin(angle + d)]
     mark.setAttribute(
       "d",
-      "M" + pts.map((p) => p.map((v) => v.toFixed(1)).join(" ")).join(" L") +
-        ` M ${start.join(" ")} L ${tip.join(" ")} M ${barb(0.65).join(" ")} L ${tip.join(" ")} L ${barb(-0.65).join(" ")}`
+      stroke(loop) + ` C ${c1.join(" ")} ${c2.join(" ")} ${tip.join(" ")}` +
+        ` M ${barb(0.62, 36).join(" ")} L ${tip.join(" ")} L ${barb(-0.72, 31).join(" ")}`
     )
-    mark.setAttribute("stroke", "rgb(124, 114, 238)")
   }
 </script>
 </body>
