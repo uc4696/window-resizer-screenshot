@@ -10,7 +10,7 @@ disable-model-invocation: true
 
 1. `build/chrome-mv3-prod.zip` は `npm run package` 実行時点の `build/chrome-mv3-prod` から作られる。`npm run build` だけ実行した後は古い ZIP が残るので、必ず中の `manifest.json` の `version` を確認する（`unzip -p build/chrome-mv3-prod.zip manifest.json`）。
 2. 中身が 16 ファイル前後で、`licenses/LICENSE-tabler.txt`・`_locales/{en,ja}/messages.json`・アイコン 5 サイズが入っていること、`.map` やテスト用の `host_permissions` が入っていないことを確認する。
-3. `build/window-resizer-screenshot-v<version>-beta.<n>.zip` が同じ内容（サイズ一致）であることを確認する。
+3. `build/window-resizer-screenshot-v<version>.zip` が同じ内容（サイズ一致）であることを確認する。
 4. ストアで現在公開中のバージョン（ストアページの「バージョン」）を確認し、README の Changelog と照らして **ストア未反映の変更をすべて** 洗い出す。途中のバージョンをアップロードしていない場合は、それらの変更もまとめて説明文に反映する。
 
 ## 2. ストアの更新
@@ -26,7 +26,6 @@ disable-model-invocation: true
    - 「プライバシーへの取り組み」の正本は `store/privacy.md`（英語を貼り付け、日本語は確認用）。権限を変えたときは権限の用途を更新する。権限が同じでも、用途が増えた場合（例: `scripting` で範囲選択 UI を注入）は追記する。
    - 単一用途の説明・データ使用の申告・リモートコードの有無が現状と合っているか。
    - URL 欄: 公式 URL は Search Console で確認済みのプロパティしか選べない。LP のページ URL そのものを URL プレフィックスのプロパティとして Search Console に登録すれば、パス付きで選べる（日英の LP を登録済み。公式 URL は1つだけなので、どちらかを選ぶ）。新しい拡張機能の LP も同じ方法で登録する（サブドメインは不要）。ストアページに出る外部リンクはこれとサポート URL（GitHub Issues）だけで、ホームページ URL（LP のページ URL を入力済み）は現行のストアには表示されない（2026-10 時点で確認）。
-   - ベータ版表記（説明文末尾）を残すかどうか。
 4. **アップロード**: パッケージ → 新しいパッケージをアップロード で手順 1 の ZIP を選ぶ。説明文・画像を保存してから「審査のため送信」（ユーザーが押す）。
 
 ## 3. うしブロの拡張機能LP
@@ -58,5 +57,5 @@ LP は本番の固定ページ **10268**（https://www.ushiblo.com/window-viewpo
 
 ## 4. 後片付け
 
-- `store/` の更新を `main` にコミット（日本語メッセージ、末尾に `（<version>-beta.<n>）`）。Git タグ `v<version>-beta.<n>` を付ける。コミット・プッシュ・タグはユーザーの指示があってから。
+- `store/` の更新を `main` にコミット（日本語メッセージ、末尾に `（<version>）`）。ストアに提出したら、Git タグ `v<version>` を注釈付きで付ける。付ける先は `main` のコミットで、拡張のコードが提出した ZIP と同じものに限る（ZIP の後のコミットで `src/`・`assets/`・`package.json` などが変わっていないことを確かめる）。コミット・プッシュ・タグはユーザーの指示があってから。
 - 今回の作業で手順に漏れや変更があれば、このファイルを更新する。
