@@ -16,6 +16,7 @@ import {
   getCurrentViewportSize,
   getCurrentWindowSize,
   getCurrentWindowState,
+  getWindowFrame,
   resizeViewport,
   resizeWindow
 } from "~lib/resize"
@@ -66,6 +67,7 @@ function PopupContent() {
   const [windowSize, setWindowSize] = useState<DisplayBounds>({ width: 0, height: 0 })
   const [viewportSize, setViewportSize] = useState<DisplayBounds>({ width: 0, height: 0 })
   const [display, setDisplay] = useState<DisplayBounds>({ width: 0, height: 0 })
+  const [frame, setFrame] = useState<DisplayBounds>({ width: 0, height: 0 })
   const [windowState, setWindowState] = useState<string | undefined>(undefined)
   const [customSizes, setCustomSizes] = useState<CustomSize[]>([])
   const [presetOffsets, setPresetOffsets] = useState<Record<string, PresetModeOffsets>>(
@@ -105,6 +107,7 @@ function PopupContent() {
       setWindowState(state)
     })
     getCurrentDisplayBounds().then(setDisplay)
+    getWindowFrame().then(setFrame)
     getCustomSizes().then(setCustomSizes)
     getPresetOffsets().then(setPresetOffsets)
     // 最後に選択したサイズ基準を復元する
@@ -227,6 +230,7 @@ function PopupContent() {
         mode={mode}
         currentSize={currentSize}
         display={display}
+        frame={frame}
         onSelect={applySize}
         disabled={busy}
       />
@@ -236,6 +240,7 @@ function PopupContent() {
         customSizes={customSizes}
         currentSize={currentSize}
         display={display}
+        frame={frame}
         editingId={editingCustomSizeId}
         formOpen={customSizeOpen}
         onToggleForm={toggleCustomForm}

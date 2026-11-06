@@ -166,5 +166,7 @@ export const ja: Record<MessageKey, string> = {
     "この画面では {width} x {height} のウィンドウにできません（Chrome は、ウィンドウの半分以上が画面内にあることを求めます）。",
   errDelayTabChanged: "タイマーの間にタブが切り替わったので撮影しませんでした。",
   sizeOverDisplay: "このディスプレイ（{width} x {height}）より大きいサイズです",
+  viewportOverDisplay:
+    "ブラウザの枠を含めると、このディスプレイ（{width} x {height}）より大きくなります",
   errPickedAreaMissing: "選んだ範囲が見つかりませんでした。もう一度選んでください。"
 }

@@ -143,23 +143,29 @@ test.describe("リサイズでウィンドウを画面内に収める", () => {
     expect(bounds.top! + bounds.height!).toBeLessThanOrEqual(area.top + area.height)
   })
 
-  test("ビューポート基準で画面と同じサイズ: ウィンドウは画面を超えるが、上端に合わせてタイトルバーを残す", async ({
+  test("ビューポート基準は枠の分も比べる: 画面と同じサイズは押せず、理由をツールチップで知らせる", async ({
     openTarget,
-    openPopup,
-    serviceWorker
+    openPopup
   }) => {
     const target = await openTarget("/")
-    const area = await moveToBottomRight(serviceWorker, target)
     const popup = await openPopup(target)
+    const size = await popup.evaluate(() => ({
+      width: screen.width,
+      height: screen.height
+    }))
+    await popup.getByRole("button", { name: "Window-based" }).click()
+    if (size.width === 1920 && size.height === 1080) {
+      await expect(presetButton(popup, 1920, 1080)).toBeEnabled()
+    }
     await popup.getByRole("button", { name: "Viewport-based" }).click()
-    await presetButton(popup, 1920, 1080).click()
-    await waitForFinalStatus(popup)
-
-    await expect
-      .poll(async () => (await getBounds(serviceWorker, target)).top)
-      .toBe(area.top)
-    const bounds = await getBounds(serviceWorker, target)
-    expect(bounds.left! + bounds.width!).toBe(area.left + area.width)
+    if (size.width === 1920 && size.height === 1080) {
+      await expect(presetButton(popup, 1920, 1080)).toBeDisabled()
+      await expect(presetButton(popup, 1920, 1080)).toHaveAttribute(
+        "title",
+        /With the browser frame/
+      )
+    }
+    await expect(presetButton(popup, 640, 480)).toBeEnabled()
   })
 
   test("ディスプレイを超えるプリセットとカスタムサイズは押せず、理由をツールチップで知らせる", async ({
@@ -199,7 +205,7 @@ test.describe("リサイズでウィンドウを画面内に収める", () => {
       const [w, h] = dataSize.split("x").map(Number)
       expect(disabled).toBe(w > size.width || h > size.height)
     }
-    await expect(presetButton(popup, 3840, 2160)).toHaveAttribute(
+    await expect(presetButton(popup, 1600, 1200)).toHaveAttribute(
       "title",
       /Larger than this display/
     )

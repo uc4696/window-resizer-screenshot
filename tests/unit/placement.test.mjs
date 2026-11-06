@@ -2,8 +2,11 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 
 import {
+  alignPosition,
   exceedsDisplay,
+  nextWindowSize,
   placeWindow,
+  positionStep,
   resolveCurrentSize,
   snapToRequested
 } from "../../src/lib/placement.ts"
@@ -129,4 +132,71 @@ test("snapToRequested: 小さいときは切り詰めて揃えられないので
 test("snapToRequested: 指定がなければそのまま", () => {
   const actual = { width: 1280, height: 721 }
   assert.deepEqual(snapToRequested(actual, undefined), actual)
+})
+
+test("ビューポート基準は枠の分も足して比べる", () => {
+  const display = { width: 1463, height: 823 }
+  const frame = { width: 14, height: 94 }
+  assert.equal(exceedsDisplay({ width: 1024, height: 768 }, display), false)
+  assert.equal(exceedsDisplay({ width: 1024, height: 768 }, display, frame), true)
+  assert.equal(exceedsDisplay({ width: 1280, height: 720 }, display, frame), false)
+  assert.equal(exceedsDisplay({ width: 1449, height: 729 }, display, frame), false)
+  assert.equal(exceedsDisplay({ width: 1449, height: 730 }, display, frame), true)
+  assert.equal(exceedsDisplay({ width: 1450, height: 729 }, display, frame), true)
+})
+
+test("位置を揃える周期はスケールに掛けて整数になる倍数", () => {
+  assert.equal(positionStep(1), 1)
+  assert.equal(positionStep(2), 1)
+  assert.equal(positionStep(1.25), 4)
+  assert.equal(positionStep(1.5), 2)
+  assert.equal(positionStep(1.75), 4)
+  assert.equal(positionStep(2.25), 4)
+  assert.equal(positionStep(1.100000023841858), 1) // 周期 10 は揃えない
+})
+
+test("位置は周期の倍数へ切り下げ、作業領域の外に出るなら戻す", () => {
+  assert.deepEqual(alignPosition({ left: 103, top: 43 }, 4), { left: 100, top: 40 })
+  assert.deepEqual(alignPosition({ left: 103, top: 43 }, 2), { left: 102, top: 42 })
+  assert.deepEqual(alignPosition({ left: 103, top: 43 }, 1), { left: 103, top: 43 })
+  assert.deepEqual(alignPosition({ left: -7, top: 0 }, 4), { left: -8, top: 0 })
+  assert.deepEqual(alignPosition({ left: 1463, top: 0 }, 4, { left: 1463, top: 0 }), {
+    left: 1464,
+    top: 0
+  })
+})
+
+/** 実機の 125% の表（指定 → タブのサイズ）で手順を動かし、最後のタブのサイズを返す。 */
+function runFit(table, first, want) {
+  const attempts = []
+  let request = first
+  for (let i = 0; i < 5; i++) {
+    attempts.push({ request, actual: table[request] })
+    const next = nextWindowSize(attempts, want)
+    if (next === null) return attempts[attempts.length - 1].actual
+    request = next
+  }
+  return table[request]
+}
+
+const TABLE_125 = { 653: 640, 654: 640, 655: 641, 656: 642, 657: 644, 658: 645 }
+
+test("届くサイズはちょうどに直す", () => {
+  assert.equal(runFit(TABLE_125, 654, 640), 640)
+  assert.equal(runFit(TABLE_125, 657, 641), 641)
+  assert.equal(runFit(TABLE_125, 654, 642), 642)
+})
+
+test("届かないサイズは＋側で最小のものを残す", () => {
+  assert.equal(runFit(TABLE_125, 657, 643), 644)
+  assert.equal(runFit(TABLE_125, 656, 643), 644)
+})
+
+test("ちょうどなら直さない", () => {
+  assert.equal(nextWindowSize([{ request: 654, actual: 640 }], 640), null)
+})
+
+test("上限で伸びないときは止まる（同じ指定を繰り返さない）", () => {
+  const table = { 862: 746, 884: 746, 906: 746, 928: 746, 950: 746, 972: 746 }
+  assert.equal(runFit(table, 862, 768), 746)
 })

@@ -1,6 +1,14 @@
 import { MAX_SIZE_FALLBACK, MIN_SIZE } from "./constants"
 import { t } from "./i18n"
-import { placeWindow, snapToRequested, type WorkArea } from "./placement"
+import {
+  alignPosition,
+  nextWindowSize,
+  placeWindow,
+  positionStep,
+  snapToRequested,
+  type FitAttempt,
+  type WorkArea
+} from "./placement"
 import { getSettings } from "./storage"
 import type { DisplayBounds, ValidationResult } from "./types"
 
@@ -153,6 +161,43 @@ async function readWorkArea(tabId?: number): Promise<WorkArea | null> {
 }
 
 /**
+ * 表示スケール（ページの拡大率を除いた値）を読む。
+ * popup は自分の値、service worker はタブから読む。注入できないページでは null を返す。
+ */
+async function readDisplayScale(tabId?: number): Promise<number | null> {
+  if (typeof window !== "undefined") return window.devicePixelRatio
+  if (tabId === undefined) return null
+  try {
+    const [[{ result }], zoom] = await Promise.all([
+      chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => window.devicePixelRatio
+      }),
+      chrome.tabs.getZoom(tabId)
+    ])
+    return result && zoom ? result / zoom : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * ウィンドウの枠の大きさ（ウィンドウとタブのサイズの差）。
+ * popup 以外からはタブを渡す。読めなければ 0 とする。
+ */
+export async function getWindowFrame(tab?: chrome.tabs.Tab): Promise<DisplayBounds> {
+  const [active] = tab
+    ? [tab]
+    : await chrome.tabs.query({ active: true, currentWindow: true })
+  if (!active?.width || !active.height) return { width: 0, height: 0 }
+  const win = await chrome.windows.get(active.windowId)
+  return {
+    width: Math.max(0, (win.width ?? active.width) - active.width),
+    height: Math.max(0, (win.height ?? active.height) - active.height)
+  }
+}
+
+/**
  * 面積の半分以上が画面の外に出るウィンドウを Chrome は受け付けない
  * （Bounds must be at least 50% within visible screen space）。この拒否を分かる言葉に置き換える。
  */
@@ -171,7 +216,8 @@ async function updateWindowSize(
   win: chrome.windows.Window,
   width: number,
   height: number,
-  tabId?: number
+  tabId?: number,
+  step = 1
 ): Promise<void> {
   const windowId = win.id as number
   const { keepWindowOnScreen } = await getSettings()
@@ -193,7 +239,10 @@ async function updateWindowSize(
           .update(windowId, { state: "normal" })
           .then(() => chrome.windows.get(windowId))
   const position = { left: current.left ?? 0, top: current.top ?? 0 }
-  const placed = placeWindow(position, { width, height }, area)
+  const fitted = placeWindow(position, { width, height }, area) ?? position
+  const aligned = alignPosition(fitted, step, area)
+  const placed =
+    aligned.left === position.left && aligned.top === position.top ? null : aligned
   try {
     await chrome.windows.update(windowId, { width, height, state: "normal", ...placed })
   } catch (error) {
@@ -241,10 +290,55 @@ export async function resizeWindow(
   await chrome.storage.session.remove(requestedViewportKey(win.id))
 }
 
+/** ウィンドウのサイズを変えてから、タブのサイズを読むまでの待ち時間。 */
+const FIT_SETTLE_MS = 100
+/** タブのサイズを確かめて直す回数の上限。 */
+const FIT_MAX_ATTEMPTS = 5
+
+/**
+ * タブのサイズを見ながら、幅と高さを別々に直す。届かない数は指定より大きい最小のサイズにする。
+ * 前面にないタブのサイズは更新されないので、そのときは直さない。
+ */
+async function fitViewport(
+  windowId: number,
+  tabId: number,
+  want: DisplayBounds,
+  firstRequest: DisplayBounds,
+  step: number
+): Promise<void> {
+  const win = await chrome.windows.get(windowId)
+  const position =
+    step > 1 && win.left !== undefined && win.top !== undefined
+      ? alignPosition({ left: win.left, top: win.top }, step)
+      : {}
+  const widths: FitAttempt[] = []
+  const heights: FitAttempt[] = []
+  let request = firstRequest
+  for (let attempt = 0; attempt < FIT_MAX_ATTEMPTS; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, FIT_SETTLE_MS))
+    const tab = await chrome.tabs.get(tabId)
+    if (!tab.active || !tab.width || !tab.height) return
+    widths.push({ request: request.width, actual: tab.width })
+    heights.push({ request: request.height, actual: tab.height })
+    const width = nextWindowSize(widths, want.width)
+    const height = nextWindowSize(heights, want.height)
+    if (width === null && height === null) return
+    request = { width: width ?? request.width, height: height ?? request.height }
+    try {
+      await chrome.windows.update(windowId, { ...position, ...request })
+    } catch {
+      return // 最初の変更は済んでいるので、直せなくてもそのサイズのままにする
+    }
+  }
+}
+
 /**
  * ビューポート（コンテンツ表示領域）のサイズを指定サイズに変更する。
  * ウィンドウとタブのサイズの差（ブラウザのUI枠）を加えたウィンドウサイズに変更する。
  * タブのサイズはページの拡大率に左右されないので、拡大したままでも指定どおりになる。
+ *
+ * 端数の表示スケールでは丸めでサイズがズレるので、Windows と Linux では位置を揃えてから直す
+ * （実機で測った環境に限る。macOS は整数のスケール、ChromeOS は未測定なので 1 回だけ変更する）。
  */
 export async function resizeViewport(
   width: number,
@@ -274,18 +368,22 @@ export async function resizeViewport(
   }
   if (!tab?.width || !tab.height) throw new Error(t("errViewportUnavailable"))
 
-  await updateWindowSize(
-    win,
-    Math.round(width + win.width - tab.width),
-    Math.round(height + win.height - tab.height),
-    tab.id
-  )
+  const want = { width: Math.round(width), height: Math.round(height) }
+  const { os } = await chrome.runtime.getPlatformInfo()
+  const canFit = os === "win" || os === "linux"
+  const scale = canFit ? await readDisplayScale(tab.id) : null
+  const step = scale ? positionStep(scale) : 1
+  const firstRequest = {
+    width: want.width + win.width - tab.width,
+    height: want.height + win.height - tab.height
+  }
+  await updateWindowSize(win, firstRequest.width, firstRequest.height, tab.id, step)
+  // popup は途中で閉じることがあるので、直す前に記録する
   await chrome.storage.session.set({
-    [requestedViewportKey(win.id as number)]: {
-      width: Math.round(width),
-      height: Math.round(height)
-    }
+    [requestedViewportKey(win.id as number)]: want
   })
+  if (canFit)
+    await fitViewport(win.id as number, tab.id as number, want, firstRequest, step)
 }
 
 /** 現在のウィンドウの状態（normal / maximized / fullscreen など）を取得する */

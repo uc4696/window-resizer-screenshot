@@ -1,5 +1,6 @@
 import { IMAGE_MIME_TYPES } from "./constants"
 import { t } from "./i18n"
+import { getDrawingArea } from "./resize"
 import type { ImageFormat } from "./types"
 
 /** JPEG 出力時の品質（0〜100）。 */
@@ -27,27 +28,104 @@ async function encodeCanvas(canvas: OffscreenCanvas, format: ImageFormat): Promi
 }
 
 /**
+ * 画像の指定の範囲を、指定のサイズのキャンバスに描く。撮影した画像は表示スケールの分だけ大きいので、
+ * 縮小して描画エリアのサイズに揃える（文字がつぶれないよう、滑らかさは最高にする）。
+ */
+function drawScaled(
+  source: ImageBitmap | OffscreenCanvas,
+  sourceSize: { width: number; height: number },
+  size: { width: number; height: number }
+): OffscreenCanvas {
+  const canvas = new OffscreenCanvas(size.width, size.height)
+  const ctx = canvas.getContext("2d")
+  if (!ctx) throw new Error(t("errCanvas"))
+  ctx.imageSmoothingQuality = "high"
+  ctx.drawImage(
+    source,
+    0,
+    0,
+    sourceSize.width,
+    sourceSize.height,
+    0,
+    0,
+    size.width,
+    size.height
+  )
+  return canvas
+}
+
+/**
  * 現在の表示部分（Visible Tab）のスクリーンショットを撮影する。
+ * 画像は描画エリアのサイズ（ビューポート基準で指定したサイズ）になる。
+ * 端数の表示スケールで描画エリアが指定より 1〜2px 大きいときは、右と下を切り詰めて揃える。
  * @param format 出力形式（既定は PNG）
  * @returns 指定形式のdata URL
  */
 export async function captureVisibleTab(
+  tabId: number,
   windowId: number,
   format: ImageFormat = "png"
 ): Promise<string> {
   const pngDataUrl = await captureTilePng(windowId)
-  if (format === "png") return pngDataUrl
-
+  const area = await getDrawingArea(await chrome.tabs.get(tabId))
   const bitmap = await createImageBitmap(dataUrlToBlob(pngDataUrl))
   try {
-    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
-    const ctx = canvas.getContext("2d")
-    if (!ctx) throw new Error(t("errCanvas"))
-    ctx.drawImage(bitmap, 0, 0)
+    const size = area?.target ?? { width: bitmap.width, height: bitmap.height }
+    const isSameSize = size.width === bitmap.width && size.height === bitmap.height
+    if (format === "png" && isSameSize) return pngDataUrl
+    const canvas = drawScaled(
+      bitmap,
+      {
+        width: area ? (bitmap.width * size.width) / area.actual.width : bitmap.width,
+        height: area ? (bitmap.height * size.height) / area.actual.height : bitmap.height
+      },
+      size
+    )
     return await blobToDataUrl(await encodeCanvas(canvas, format))
   } finally {
     bitmap.close()
   }
+}
+
+/**
+ * 撮影した画像から描画エリアへの縮小の倍率（CSS px / 実ピクセル）を求める。
+ * tab.width は整数に丸められていて（803 / 1.25 = 642.4 が 642）、その比をページ全体の高さに掛けると
+ * 2〜3px 足りなくなるので、拡大率と devicePixelRatio から正確に求める。
+ * 値が画像と合わないとき（DevTools のデバイス表示など）と拡大率を読めないときは、タブのサイズとの比を使う。
+ */
+function getDrawingAreaScale(
+  zoom: number | null,
+  dpr: number,
+  tileWidth: number,
+  areaWidth: number
+): number {
+  const scale = zoom ? zoom / dpr : 0
+  return Math.abs(tileWidth * scale - areaWidth) <= 1 ? scale : areaWidth / tileWidth
+}
+
+/**
+ * つなぎ合わせた画像を、描画エリアのサイズを基準に縮小する（幅は描画エリア、高さは同じ倍率）。
+ * 1 画面に収まるページは表示部分と同じく、高さも描画エリアに揃える。
+ */
+function fitToDrawingArea(
+  canvas: OffscreenCanvas,
+  target: { width: number; height: number },
+  isOneScreen: boolean,
+  scale: number
+): OffscreenCanvas {
+  const size = {
+    width: Math.min(Math.round(canvas.width * scale), target.width),
+    height: isOneScreen ? target.height : Math.round(canvas.height * scale)
+  }
+  if (size.width === canvas.width && size.height === canvas.height) return canvas
+  return drawScaled(
+    canvas,
+    {
+      width: size.width / scale,
+      height: isOneScreen ? size.height / scale : canvas.height
+    },
+    size
+  )
 }
 
 /**
@@ -449,6 +527,7 @@ export async function captureFullPage(
 
     const firstTileDataUrl = await captureTilePng(windowId)
     const firstBitmap = await createImageBitmap(dataUrlToBlob(firstTileDataUrl))
+    const tileSize = { width: firstBitmap.width, height: firstBitmap.height }
 
     // 実際に撮影された画像から実DPRを算出（申告値とズレる場合があるため）
     const realDpr = firstBitmap.width / exactViewportWidth || dpr
@@ -634,7 +713,17 @@ export async function captureFullPage(
       }
     }
 
-    return await blobToDataUrl(await encodeCanvas(canvas, format))
+    const area = await getDrawingArea(await chrome.tabs.get(tabId))
+    const zoom = await chrome.tabs.getZoom(tabId).catch(() => null)
+    const output = area
+      ? fitToDrawingArea(
+          canvas,
+          area.target,
+          canvas.height === tileSize.height,
+          getDrawingAreaScale(zoom, dpr, tileSize.width, area.actual.width)
+        )
+      : canvas
+    return await blobToDataUrl(await encodeCanvas(output, format))
   } finally {
     await restoreAfterCapture(tabId, {
       scrollX,

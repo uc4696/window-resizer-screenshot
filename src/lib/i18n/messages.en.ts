@@ -170,6 +170,8 @@ export const en = {
   errDelayTabChanged:
     "The screenshot was not taken because the tab was switched during the timer.",
   sizeOverDisplay: "Larger than this display ({width} x {height})",
+  viewportOverDisplay:
+    "With the browser frame, this is larger than this display ({width} x {height})",
   errPickedAreaMissing: "The selected area was not found. Please choose it again."
 }
 

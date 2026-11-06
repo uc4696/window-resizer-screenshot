@@ -11,6 +11,7 @@ interface CustomSizeListProps {
   currentSize: DisplayBounds
   /** ディスプレイのサイズ。別のモニターや同期で登録した、超えるサイズは押せない。 */
   display: DisplayBounds
+  frame: DisplayBounds
   editingId: string | null
   formOpen: boolean
   onToggleForm: () => void
@@ -29,6 +30,7 @@ export function CustomSizeList({
   customSizes,
   currentSize,
   display,
+  frame,
   editingId,
   formOpen,
   onToggleForm,
@@ -69,11 +71,16 @@ export function CustomSizeList({
             const isCurrent =
               size.width + offW === currentSize.width &&
               size.height + offH === currentSize.height
-            const over = exceedsDisplay(size, display)
+            const isViewport = mode === "viewport"
+            const over = exceedsDisplay(size, display, isViewport ? frame : undefined)
             const title = [
               `${size.label} (${size.width} x ${size.height})`,
               hasOffset ? `${t("offsetBadge")}: ${formatOffset(offW, offH)}` : null,
-              over ? t("sizeOverDisplay", { ...display }) : null
+              over
+                ? t(isViewport ? "viewportOverDisplay" : "sizeOverDisplay", {
+                    ...display
+                  })
+                : null
             ]
               .filter(Boolean)
               .join("\n")

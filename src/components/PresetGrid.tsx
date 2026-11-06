@@ -19,6 +19,7 @@ interface PresetGridProps {
   currentSize: DisplayBounds
   /** ディスプレイのサイズ。超えるプリセットは押せない。 */
   display: DisplayBounds
+  frame: DisplayBounds
   onSelect: (preset: SizePreset) => void
   disabled?: boolean
 }
@@ -53,6 +54,7 @@ export function PresetGrid({
   mode,
   currentSize,
   display,
+  frame,
   onSelect,
   disabled
 }: PresetGridProps) {
@@ -75,11 +77,20 @@ export function PresetGrid({
                 const isCurrent =
                   preset.width + (offset?.offsetWidth ?? 0) === currentSize.width &&
                   preset.height + (offset?.offsetHeight ?? 0) === currentSize.height
-                const over = exceedsDisplay(preset, display)
+                const isViewport = mode === "viewport"
+                const over = exceedsDisplay(
+                  preset,
+                  display,
+                  isViewport ? frame : undefined
+                )
                 const title = [
                   preset.label,
                   offsetText,
-                  over ? t("sizeOverDisplay", { ...display }) : null
+                  over
+                    ? t(isViewport ? "viewportOverDisplay" : "sizeOverDisplay", {
+                        ...display
+                      })
+                    : null
                 ]
                   .filter(Boolean)
                   .join("\n")

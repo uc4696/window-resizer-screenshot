@@ -11,7 +11,12 @@ import type {
 import { startCopyInPage } from "~lib/page-copy"
 import { startPicker } from "~lib/picker"
 import { exceedsDisplay } from "~lib/placement"
-import { readDisplayFromTab, resizeViewport, resizeWindow } from "~lib/resize"
+import {
+  getWindowFrame,
+  readDisplayFromTab,
+  resizeViewport,
+  resizeWindow
+} from "~lib/resize"
 import {
   ensureInstalledAt,
   markReviewPromptOnUse,
@@ -282,8 +287,14 @@ async function handleResizeCommand(
   const size = await resolveResizeSize(command)
   // popup と同じく、ディスプレイを超えるサイズにはしない（読めない特殊なページではそのまま進める）
   const display = await readDisplayFromTab(tabId)
-  if (display && exceedsDisplay(size, display)) {
-    throw new Error(t("sizeOverDisplay", { ...display }))
+  const isViewport = size.mode === "viewport"
+  const frame = isViewport
+    ? await getWindowFrame(await chrome.tabs.get(tabId))
+    : undefined
+  if (display && exceedsDisplay(size, display, frame)) {
+    throw new Error(
+      t(isViewport ? "viewportOverDisplay" : "sizeOverDisplay", { ...display })
+    )
   }
   const target = { tabId, windowId: tab.windowId }
   if (size.mode === "window") {
@@ -324,7 +335,7 @@ async function handleCapture(
 
   const dataUrl =
     message.mode === "visible"
-      ? await captureVisibleTab(tab.windowId, format)
+      ? await captureVisibleTab(tab.id, tab.windowId, format)
       : await captureFullPage(tab.id, tab.windowId, format, {
           picked: message.mode === "picked",
           includeFrame: settings.scrollAreaIncludeFrame
