@@ -9,7 +9,7 @@ A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or v
 ## Overview
 
 - Resizing for both window size and viewport size
-- Resolution templates grouped by aspect ratio (16:9: HD/FHD/WQHD/4K, 4:3: VGA/SVGA/XGA/UXGA)
+- Resolution templates grouped by aspect ratio (16:9: HD/WXGA/HD+/FHD, 4:3: VGA/SVGA/XGA/UXGA)
 - Per-template, per-mode (window-based / viewport-based) offset (margin) values configurable on the Options page
 - When a resize would push the window off the screen, it is moved to stay on the screen without changing the size (can be turned off in the settings)
 - Add, edit and delete custom sizes (a correction offset can be specified in window-based mode). The list is always shown right below the templates, and the + next to its heading opens the add form. The name has a default value, and a button fills in the current size
@@ -203,16 +203,17 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
   - **Templates**: Applied as-is (no offset) to stay independent of the environment.
   - **Custom sizes (offset feature)**: To make the measured outer window size match the target size in your OS/scaling environment, specify a "size correction offset" (width/height correction in px) when adding or editing a custom size. For example, if the measured width is 14px smaller and the height 7px smaller, register `+14` / `+7` as the offset.
 
-### 2. Viewport-based resizing limitation (does not work on special pages)
-- Accurately measuring the viewport (page display area) requires running a script in the active tab (`chrome.scripting.executeScript`).
-- Because of Chrome's security policy, script injection is blocked on special pages such as `chrome://` (settings, extensions list, etc.), `chrome-extension://`, `edge://` and the Chrome Web Store.
-- If you run a viewport-based resize while such a page is active, a guidance error message is shown and the resize is aborted. Use a tab with a regular web page (`https://` or `http://`).
+### 2. Viewport-based resizing and the image size
+- The size you set with viewport-based resizing is the size of the captured image. This also works on special pages such as `chrome://`.
+- With a fractional display scale (125%, 150%, 175% and so on), window sizes are rounded and also depend on the window position. So on Windows and Linux, the window is aligned up to 3 px toward the top left and its size is corrected while checking the result. The window moves slightly on each resize, and one operation may change the size several times.
+- If the exact size cannot be made, the window is made 1 px larger. The popup shows the size you set, and the image is trimmed on the right and bottom to that size. If you later change the window by 3 px or more by hand, the actual size is used.
+- On high-density displays, the image still has the size you set (at 150%, a 960x720 capture is scaled down to 640x480), so some sharpness is lost.
+- On macOS and ChromeOS, the window is not aligned and the size is changed only once.
 
 ### 3. Resizing a zoomed page
-- When the page zoom is not 100%, the measured viewport changes with the zoom and the size does not come out as intended. So when you resize a tab whose zoom is not 100%, the zoom is reset to 100% before resizing.
-- By default, a confirmation message is shown before resetting (Cancel leaves both the zoom and the size unchanged). Turn off "Ask for confirmation before resetting the zoom" in the settings to reset to 100% without asking.
-- Chrome remembers zoom per site (origin), so resetting to 100% also affects other tabs of the same site.
+- The page zoom is not changed. Zoom does not affect the window or viewport size, so the size comes out as set while the page stays zoomed.
 - The viewport size shown in the popup does not depend on the zoom level. A 1280x720 viewport is shown as 1280 x 720 at 150% or 80% zoom.
+- A full-page image is as wide as the viewport and as tall as the zoomed page. Anything overflowing horizontally is not captured.
 
 ### 4. What the screenshots capture
 - Both screenshot features ("Visible area" and "Full page") capture **only the web page content inside the tab (the viewport area)**.
@@ -229,7 +230,7 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 | `activeTab` | Script injection and screenshot capture for the active tab you interact with the extension on |
 | `storage` | Saving settings and custom sizes (local/sync) |
 | `downloads` | Saving screenshots into the `Captures` folder |
-| `scripting` | Measuring the viewport, and scroll control/measurement scripts for full-page screenshots |
+| `scripting` | Reading the display scale and display size (for shortcuts), and scroll control/measurement scripts for full-page screenshots |
 
 `host_permissions` (`<all_urls>`), `tabs` and `system.display` are not used. The upper-limit check for custom sizes uses `window.screen` of the display where the popup is shown.
 
@@ -241,7 +242,7 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 ### 7. Keeping the window on screen
 - When a resize would push the window off the screen, the requested size is kept and the window is moved just enough to stay on the screen. This applies to window-based and viewport-based resizing and to shortcuts. The reference is the work area (excluding the taskbar and so on) of the display the window is on, read from `window.screen` without the `system.display` permission.
 - Sizes larger than the display cannot be selected. A preset or custom size that exceeds the display in either width or height is disabled, with the reason in its tooltip (shortcuts show `!`), because a window that goes off the screen may become impossible to operate. The comparison uses the size after display scaling, so a 1920x1080 monitor at 125% has a limit of 1536x864.
-- Setting the viewport to the display size makes the window larger than the screen by its frame. The window is aligned to the top so the title bar stays on screen, and to the right so the toolbar icons stay reachable (the left and bottom parts go off the screen).
+- Viewport-based sizes are compared with the window frame added. Window size has an upper limit (about the size of the screen with a single monitor), so a viewport the size of the screen, or one that leaves no room for the frame, cannot be made. On a 1920x1080 monitor at 100%, a viewport-based 1920x1080 cannot be selected.
 - Which monitors are adjacent cannot be known without a permission, so even a size meant to span several monitors is kept on the current one. To span monitors, turn off "Move the window to keep it on screen" on the settings page.
 - When a shortcut is used on a special page such as `chrome://`, the screen area cannot be read, so the window is not moved.
 
@@ -252,7 +253,6 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 - The popup does not open, so results appear as a badge on the toolbar icon (success `OK` / failure `!`). On failure, the reason is shown in the icon's tooltip while the badge is visible.
 - `activeTab` is also granted by a shortcut, so no extra permissions are needed. Scripts cannot be injected into special pages such as `chrome://`, so only downloading the visible area works there.
 - Copying writes to the clipboard from the page, so it works only on `https` pages and `localhost`.
-- On a tab that is not at 100% zoom, a confirmation appears on the page before the zoom is reset to 100% (unless the confirmation is turned off in the settings). On special pages where it cannot be shown, the zoom is left unchanged.
 
 ## Versioning and changelog
 

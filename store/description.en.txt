@@ -3,7 +3,7 @@ With a single click, you can switch the screen (window/viewport) to your target 
 
 [Key Features]
 ◆ Resizing (Window & Viewport Support)
-- Built-in resolution presets for 16:9 (HD / FHD / WQHD / 4K) and 4:3 (VGA / SVGA / XGA / UXGA).
+- Built-in resolution presets for 16:9 (HD / WXGA / HD+ / FHD) and 4:3 (VGA / SVGA / XGA / UXGA).
 - Customizable offset (margin) values for each preset, in both Window and Viewport modes.
 - Remembers your last selected size mode (Window / Viewport) and restores it the next time you open the popup.
 - When the page is zoomed (not 100%), the zoom is reset to 100% before resizing so the size comes out as intended (the confirmation message can be turned on or off in the settings).
