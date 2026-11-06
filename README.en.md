@@ -2,7 +2,7 @@
 
 [日本語](README.md) | **English**
 
-> **Current version: `0.4.0` (beta `0.4.0-beta.1`)**
+> **Current version: `1.0.0`**
 
 A Chrome extension (Manifest V3 / Plasmo framework) that resizes the window or viewport to a preset or custom size, and captures screenshots of the visible area or the full page and downloads them.
 
@@ -151,7 +151,7 @@ The project uses Plasmo's [src directory](https://docs.plasmo.com/framework/cust
   npm run package
   ```
 
-  This generates `build/chrome-mv3-prod.zip`. When distributing a beta version, rename the file by adding `-v<version>-beta.<number>`, for example `window-resizer-screenshot-v0.2.1-beta.2.zip`.
+  This generates `build/chrome-mv3-prod.zip`. When distributing it, rename the file by adding `-v<version>`, for example `window-resizer-screenshot-v1.0.0.zip`.
 
 - Format and lint the code:
 
@@ -256,10 +256,11 @@ The extension is loaded into a real browser with Playwright and Chrome for Testi
 
 ## Versioning and changelog
 
-Because of a Plasmo constraint, the `version` field of `package.json` is managed strictly as three dot-separated integers (MAJOR.MINOR.PATCH) (current: `0.4.0`). Beta status is expressed in the distributable ZIP file name, the README and Git tags (for example, `window-resizer-screenshot-v0.2.1-beta.2.zip`).
+Because of a Plasmo constraint, the `version` field of `package.json` is managed strictly as three dot-separated integers (MAJOR.MINOR.PATCH) (current: `1.0.0`). Version 1.0.0 is the first stable release. The 0.x betas were marked in the distributable ZIP file name, the README and Git tags (for example, `window-resizer-screenshot-v0.2.1-beta.2.zip`).
 
 | Version | Release date | Summary |
 |---|---|---|
+| 1.0.0 | 2026-11-06 | First stable release. The size set with viewport-based resizing is now the size of the captured image (with a fractional display scale, the window position is aligned and the size corrected; any error is 1 px larger and trimmed from the image). Resizing no longer changes the zoom, and the reset to 100% and its confirmation setting were removed. The 16:9 presets are now HD / WXGA / HD+ / FHD (WQHD and 4K were removed). Added keyboard shortcuts, a delayed capture timer (3, 5 or 10 seconds), keeping the window on screen, a store rating request and a theme setting. Sharing now covers 7 services. Sizes larger than the display (including the window frame for viewport-based sizes) cannot be selected. The popup was redesigned with a flat look, custom sizes are easier to enter, and the settings page saves as you change it. Fixed lines at the seams and a wrong image height in full-page captures of zoomed pages. |
 | 0.4.0 (beta.1) | 2026-10-31 | Resizing a page whose zoom is not 100% no longer ends up at an unintended size (after confirmation, the zoom is reset to 100% before resizing). Added the "Ask for confirmation before resetting the zoom" setting (on by default). Made the toolbar icon color stronger because it was faint in light mode |
 | 0.3.0 (beta.1) | 2026-10-31 | Fixed full-page screenshots stopping after one screen on pages where the page itself does not scroll and only an inner area does (a scrollable area covering at least 70% of the viewport is detected automatically and captured to the end). Added the "Include the surrounding frame and the part below the area" setting. Added choosing a scrollable area on the page to download or copy. The popup now closes as soon as you press a download button, and the result is shown as a badge on the toolbar icon (`...` / `OK` / `!`). Copy now closes the popup after it completes. Fixed a scrollbar appearing in the popup in Japanese |
 | 0.2.1 (beta.2) | 2026-10-21 | The distribution ZIP now includes the Tabler Icons MIT license (`licenses/LICENSE-tabler.txt`). Added `scripts/copy-license.mjs`, which copies it automatically on build / package |
