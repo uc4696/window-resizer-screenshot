@@ -67,7 +67,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `version` は必ず3桁の整数（`MAJOR.MINOR.PATCH`）。プレリリース表記や4桁は Plasmo のビルドエラーになるので禁止。ベータ版であることは ZIP 名・README・Git タグで表す（`window-resizer-screenshot-v0.2.1-beta.2.zip`）。
 - ドキュメントのみの変更ではバージョン更新もビルドも不要。
 - リリース後のストア更新と LP 更新は `/publish` で行う。ストア掲載の資料（説明文・プライバシー・画像）と LP の本文（`store/lp/page.{ja,en}.html`）の正本は `store/`。
-- LP（うしブロの固定ページ 10268／10273）を本番で直すときだけは、このリポジトリの外の `F:\claude\ai-ushiblo` のスクリプトとルールを使い、作業ログもそちらに残す（2026-10-31 ユーザーの指示）。それ以外で親フォルダや他のリポジトリには触れない。
+- LP（うしブロの固定ページ 10268／10273）を本番で直すときだけは、このリポジトリの外の `F:\claude\sdm\sites\www` のスクリプトとルールを使い、作業ログもそちらに残す（2026-10-31 ユーザーの指示）。それ以外で親フォルダや他のリポジトリには触れない。
 
 ## README
 
