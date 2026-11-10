@@ -4,8 +4,8 @@ name: E2E (Chrome Beta)
 # 失敗時は Issue の作成（または既存 Issue へのコメント追記）と Slack 通知を行う。
 on:
   schedule:
-    # 毎日 03:00 JST（18:00 UTC）
-    - cron: "0 18 * * *"
+    # 毎日 03:17 JST（18:17 UTC）。0・30 分は GitHub Actions の schedule が混んで遅れるため外す
+    - cron: "17 18 * * *"
   workflow_dispatch:
 
 permissions:
