@@ -3,9 +3,6 @@ name: E2E (Chrome Beta)
 # Chrome for Testing の Beta チャンネルで拡張機能の E2E テストを毎日実行する。
 # 失敗時は Issue の作成（または既存 Issue へのコメント追記）と Slack 通知を行う。
 on:
-  schedule:
-    # 毎日 03:17 JST（18:17 UTC）。0・30 分は GitHub Actions の schedule が混んで遅れるため外す
-    - cron: "17 18 * * *"
   workflow_dispatch:
 
 permissions:
